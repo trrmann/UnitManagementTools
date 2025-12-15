@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bishopric Dashboard</title>
+    <link rel="icon" type="image/png" href="images/church-logo.png">
+    <link rel="stylesheet" href="styles/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal active">
+        <div class="modal-content login-form-container">
+            <div class="login-header">
+                <img src="images/church-logo.png" alt="The Church of Jesus Christ of Latter-day Saints" class="login-logo">
+                <h2>Bishopric Dashboard</h2>
+                <p>Sign In to Your Account</p>
+            </div>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="text" id="email" name="email" list="emailList" required placeholder="Enter or select your email">
+                    <datalist id="emailList">
+                        <!-- Populated by JavaScript -->
+                    </datalist>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required placeholder="Enter your password">
+                </div>
+                <button type="submit" class="btn-login">Sign In</button>
+                <div class="demo-users">
+                    <p>Demo Accounts:</p>
+                    <small>Use any email from the dropdown with password: demo</small>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="container" id="mainContainer" style="display: none;">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo-container">
+                    <img src="images/church-logo.png" alt="The Church of Jesus Christ of Latter-day Saints" class="church-logo">
+                </div>
+                <div>
+                    <h1>Bishopric Dashboard</h1>
+                    <p>The Church of Jesus Christ of Latter-day Saints</p>
+                    <p class="subtitle">Ward Management Tools</p>
+                </div>
+            </div>
+            <div class="user-menu">
+                <span id="userName">John Smith</span>
+                <select id="roleSelector" class="role-selector" onchange="updateRole()" style="display: none;">
+                    <option value="">Select Role</option>
+                </select>
+                <div id="selectedRoles" class="user-roles"></div>
+                <button class="btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="navbar">
+            <button class="nav-btn active" onclick="showSection('dashboard')">
+                <i class="fas fa-home"></i> Dashboard
+            </button>
+            <button class="nav-btn" onclick="showSection('members')">
+                <i class="fas fa-users"></i> Members
+            </button>
+            <button class="nav-btn" onclick="showSection('assignments')">
+                <i class="fas fa-tasks"></i> Assignments
+            </button>
+            <button class="nav-btn" onclick="showSection('scheduling')">
+                <i class="fas fa-calendar"></i> Scheduling
+            </button>
+            <button class="nav-btn" onclick="showSection('forms')">
+                <i class="fas fa-file-alt"></i> Forms
+            </button>
+            <button class="nav-btn" onclick="showSection('reports')">
+                <i class="fas fa-chart-bar"></i> Reports
+            </button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="section active">
+                <h2>Dashboard</h2>
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Total Members</h3>
+                            <p class="stat">245</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>This Week Events</h3>
+                            <p class="stat">8</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Pending Tasks</h3>
+                            <p class="stat">12</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">
+                            <i class="fas fa-hand-holding-heart"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Needs Assistance</h3>
+                            <p class="stat">5</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-section">
+                    <h3>Quick Actions</h3>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="quickAction('new-member')">
+                            <i class="fas fa-user-plus"></i> Add Member
+                        </button>
+                        <button class="action-btn" onclick="quickAction('new-event')">
+                            <i class="fas fa-calendar-plus"></i> Schedule Event
+                        </button>
+                        <button class="action-btn" onclick="quickAction('assign-task')">
+                            <i class="fas fa-clipboard-list"></i> Assign Task
+                        </button>
+                        <button class="action-btn" onclick="quickAction('send-message')">
+                            <i class="fas fa-envelope"></i> Send Message
+                        </button>
+                    </div>
+                </div>
+
+                <div class="dashboard-section">
+                    <h3>Recent Activities</h3>
+                    <div class="activity-list">
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p>John Smith added to ward</p>
+                                <span class="time">2 hours ago</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p>Ward activity scheduled for Saturday</p>
+                                <span class="time">5 hours ago</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-clipboard-check"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p>Sacrament preparation assigned to Home Teachers</p>
+                                <span class="time">1 day ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Members Section -->
+            <section id="members" class="section">
+                <h2>Member Directory</h2>
+                <div class="section-toolbar">
+                    <input type="text" id="memberSearch" placeholder="Search members..." class="search-input" onkeyup="filterMembers()">
+                    <button class="btn-primary" onclick="openAddMember()">
+                        <i class="fas fa-user-plus"></i> Add Member
+                    </button>
+                </div>
+                <div id="membersTable" class="members-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Role</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="membersBody">
+                            <tr>
+                                <td>James Johnson</td>
+                                <td>james.johnson@email.com</td>
+                                <td>(801) 555-0101</td>
+                                <td>Home Teacher</td>
+                                <td>
+                                    <button class="btn-small" onclick="editMember(1)">Edit</button>
+                                    <button class="btn-small danger" onclick="deleteMember(1)">Delete</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Sarah Williams</td>
+                                <td>sarah.williams@email.com</td>
+                                <td>(801) 555-0102</td>
+                                <td>Relief Society</td>
+                                <td>
+                                    <button class="btn-small" onclick="editMember(2)">Edit</button>
+                                    <button class="btn-small danger" onclick="deleteMember(2)">Delete</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Michael Brown</td>
+                                <td>michael.brown@email.com</td>
+                                <td>(801) 555-0103</td>
+                                <td>Elders Quorum</td>
+                                <td>
+                                    <button class="btn-small" onclick="editMember(3)">Edit</button>
+                                    <button class="btn-small danger" onclick="deleteMember(3)">Delete</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Assignments Section -->
+            <section id="assignments" class="section">
+                <h2>Assignments & Responsibilities</h2>
+                <div class="section-toolbar">
+                    <button class="btn-primary" onclick="openNewAssignment()">
+                        <i class="fas fa-plus"></i> New Assignment
+                    </button>
+                    <select id="filterAssignments" onchange="filterAssignments()" class="filter-select">
+                        <option value="">All Assignments</option>
+                        <option value="active">Active</option>
+                        <option value="completed">Completed</option>
+                        <option value="overdue">Overdue</option>
+                    </select>
+                </div>
+                <div class="assignments-list">
+                    <div class="assignment-card">
+                        <div class="assignment-header">
+                            <h3>Sacrament Preparation</h3>
+                            <span class="status-badge active">Active</span>
+                        </div>
+                        <p class="assignment-desc">Prepare and distribute sacrament for Sunday meeting</p>
+                        <div class="assignment-info">
+                            <span><i class="fas fa-user"></i> James Johnson</span>
+                            <span><i class="fas fa-calendar"></i> Due: Dec 20, 2025</span>
+                        </div>
+                        <div class="assignment-actions">
+                            <button class="btn-small" onclick="editAssignment(1)">Edit</button>
+                            <button class="btn-small" onclick="markComplete(1)">Complete</button>
+                        </div>
+                    </div>
+
+                    <div class="assignment-card">
+                        <div class="assignment-header">
+                            <h3>Youth Activity Planning</h3>
+                            <span class="status-badge active">Active</span>
+                        </div>
+                        <p class="assignment-desc">Organize and plan the monthly youth activity</p>
+                        <div class="assignment-info">
+                            <span><i class="fas fa-users"></i> Sarah Williams, Michael Brown</span>
+                            <span><i class="fas fa-calendar"></i> Due: Dec 25, 2025</span>
+                        </div>
+                        <div class="assignment-actions">
+                            <button class="btn-small" onclick="editAssignment(2)">Edit</button>
+                            <button class="btn-small" onclick="markComplete(2)">Complete</button>
+                        </div>
+                    </div>
+
+                    <div class="assignment-card">
+                        <div class="assignment-header">
+                            <h3>Ward Newsletter</h3>
+                            <span class="status-badge completed">Completed</span>
+                        </div>
+                        <p class="assignment-desc">Create and distribute ward newsletter</p>
+                        <div class="assignment-info">
+                            <span><i class="fas fa-user"></i> Jane Doe</span>
+                            <span><i class="fas fa-calendar"></i> Due: Dec 18, 2025</span>
+                        </div>
+                        <div class="assignment-actions">
+                            <button class="btn-small" onclick="viewAssignment(3)">View</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Scheduling Section -->
+            <section id="scheduling" class="section">
+                <h2>Ward Scheduling</h2>
+                <div class="section-toolbar">
+                    <button class="btn-primary" onclick="openScheduleEvent()">
+                        <i class="fas fa-calendar-plus"></i> Schedule Event
+                    </button>
+                    <select id="scheduleFilter" onchange="filterSchedule()" class="filter-select">
+                        <option value="">All Events</option>
+                        <option value="sacrament">Sacrament Meeting</option>
+                        <option value="activities">Activities</option>
+                        <option value="meetings">Meetings</option>
+                    </select>
+                </div>
+                <div class="calendar-view">
+                    <div class="calendar-header">
+                        <button onclick="previousMonth()">&lt;</button>
+                        <h3 id="currentMonth">December 2025</h3>
+                        <button onclick="nextMonth()">&gt;</button>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid">
+                        <!-- Calendar will be generated by JavaScript -->
+                    </div>
+                </div>
+                <div class="events-list">
+                    <h3>Upcoming Events</h3>
+                    <div class="event-item">
+                        <div class="event-date">
+                            <div class="date-day">20</div>
+                            <div class="date-month">DEC</div>
+                        </div>
+                        <div class="event-details">
+                            <h4>Sacrament Meeting</h4>
+                            <p>9:00 AM - 10:15 AM</p>
+                        </div>
+                        <button class="btn-small" onclick="editEvent(1)">Edit</button>
+                    </div>
+
+                    <div class="event-item">
+                        <div class="event-date">
+                            <div class="date-day">22</div>
+                            <div class="date-month">DEC</div>
+                        </div>
+                        <div class="event-details">
+                            <h4>Youth Activity</h4>
+                            <p>6:00 PM - 8:00 PM</p>
+                        </div>
+                        <button class="btn-small" onclick="editEvent(2)">Edit</button>
+                    </div>
+
+                    <div class="event-item">
+                        <div class="event-date">
+                            <div class="date-day">25</div>
+                            <div class="date-month">DEC</div>
+                        </div>
+                        <div class="event-details">
+                            <h4>Ward Christmas Party</h4>
+                            <p>5:00 PM - 7:00 PM</p>
+                        </div>
+                        <button class="btn-small" onclick="editEvent(3)">Edit</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Forms Section -->
+            <section id="forms" class="section">
+                <h2>Forms & Templates</h2>
+                <div class="forms-grid">
+                    <div class="form-card">
+                        <div class="form-icon">
+                            <i class="fas fa-file-signature"></i>
+                        </div>
+                        <h3>Member Referral Form</h3>
+                        <p>Submit referrals for members needing assistance</p>
+                        <button class="btn-primary" onclick="openForm('referral')">
+                            Open Form
+                        </button>
+                    </div>
+
+                    <div class="form-card">
+                        <div class="form-icon">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <h3>Home Teaching Report</h3>
+                        <p>Record monthly home teaching visits and updates</p>
+                        <button class="btn-primary" onclick="openForm('homeTeaching')">
+                            Open Form
+                        </button>
+                    </div>
+
+                    <div class="form-card">
+                        <div class="form-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h3>Welfare Assistance Request</h3>
+                        <p>Request welfare or emergency assistance</p>
+                        <button class="btn-primary" onclick="openForm('welfare')">
+                            Open Form
+                        </button>
+                    </div>
+
+                    <div class="form-card">
+                        <div class="form-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <h3>Missionary Recommendation</h3>
+                        <p>Submit missionary recommendations and tracking</p>
+                        <button class="btn-primary" onclick="openForm('missionary')">
+                            Open Form
+                        </button>
+                    </div>
+
+                    <div class="form-card">
+                        <div class="form-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3>Activity Planning Form</h3>
+                        <p>Plan and coordinate ward activities</p>
+                        <button class="btn-primary" onclick="openForm('activity')">
+                            Open Form
+                        </button>
+                    </div>
+
+                    <div class="form-card">
+                        <div class="form-icon">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                        <h3>Service Project Log</h3>
+                        <p>Track and log service projects completed</p>
+                        <button class="btn-primary" onclick="openForm('service')">
+                            Open Form
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Reports Section -->
+            <section id="reports" class="section">
+                <h2>Reports & Analytics</h2>
+                <div class="reports-grid">
+                    <div class="report-card">
+                        <h3>Ward Statistics</h3>
+                        <div class="report-stats">
+                            <div class="stat-item">
+                                <span class="label">Active Members</span>
+                                <span class="value">245</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="label">Recent Converts</span>
+                                <span class="value">8</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="label">Missionaries</span>
+                                <span class="value">12</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="label">In Need of Help</span>
+                                <span class="value">5</span>
+                            </div>
+                        </div>
+                        <button class="btn-secondary" onclick="exportReport('ward-stats')">Export</button>
+                    </div>
+
+                    <div class="report-card">
+                        <h3>Activity Attendance</h3>
+                        <p class="report-desc">Monthly attendance summary for ward activities</p>
+                        <button class="btn-secondary" onclick="generateReport('attendance')">Generate Report</button>
+                    </div>
+
+                    <div class="report-card">
+                        <h3>Assignment Completion</h3>
+                        <p class="report-desc">Track completion rates for assigned tasks</p>
+                        <button class="btn-secondary" onclick="generateReport('assignments')">Generate Report</button>
+                    </div>
+
+                    <div class="report-card">
+                        <h3>Visiting Teaching</h3>
+                        <p class="report-desc">Visiting Teaching completion and report statistics</p>
+                        <button class="btn-secondary" onclick="generateReport('visitingTeaching')">Generate Report</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Modal for adding/editing items -->
+        <div id="modal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h3 id="modalTitle">Modal Title</h3>
+                <form id="modalForm">
+                    <div id="modalBody">
+                        <!-- Dynamic form content goes here -->
+                    </div>
+                    <div class="modal-actions">
+                        <button type="submit" class="btn-primary">Save</button>
+                        <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script src="scripts/script.js"></script>
+</body>
+</html>
