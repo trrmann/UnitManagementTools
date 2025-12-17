@@ -1,0 +1,89 @@
+{
+    "login": {
+        "target": "body:prepend",
+        "destinationID": "loginModal",
+        "formID": "loginForm",
+        "emailInputID": "email",
+        "emailListID": "emailList",
+        "passwordInputID": "password"
+    },
+    "main": {
+        "container": "mainContainer",
+        "roleSelector": "roleSelector",
+        "selectedRoles": "selectedRoles",
+        "logout": "logout"
+    },
+    "access": {
+        "dashboard" : {
+            "page" : [1,2,3,4,5,6,7,8],
+            "parts": {
+                "totalMembers" : [1,2,3,4,5,6,7,8],
+                "thisWeeksEvents" :[1,2,3,4,5,6,8],
+                "pendingTasks" :[1,2,3,4,5,6,7,8],
+                "needsAssistance" :[1,2,3,6,8],
+                "QuickActions" : {
+                    "AddMember" : "members.parts.AddMember",
+                    "ScheduleEvent" : "scheduling.parts.ScheduleEvent",
+                    "AssignTask" : "assignments.parts.AssignTask",
+                    "SendMessage" : [1,2,3,4,5,6,7,8]
+                },
+                "RecentActivities" : [1,2,3,4,5,6,8]
+            }
+        },
+        "members" : {
+            "page" : [1,2,3,4,5,6,7,8],
+            "parts": {
+                "AddMember" : [1,2,3,6,7],
+                "SearchMember" : [1,2,3,4,5,6,7,8],
+                "EditMember" : [1,2,3,6,7],
+                "RemoveMember" : [1,2,3,6,7]
+            }
+        },
+        "assignments" : {
+            "page" : [1,2,3,4,5,6,7,8],
+            "parts": {
+                "AssignTask" : [1,2,3,4,5,6],
+                "FilterTasks" : [1,2,3,4,5,6,7,8],
+                "EditTask" : [1,2,3,4,5,6],
+                "ActionTask" : [1,2,3,4,5,6,7,8],
+                "ViewTask" : [1,2,3,4,5,6,7,8]
+            }
+        },
+        "scheduling" : {
+            "page" : [1,2,3,4,5,6,7,8],
+            "parts": {
+                "ScheduleEvent" : [1,2,3,4,5],
+                "FilterEventTypes" : [1,2,3,4,5,6,7,8],
+                "FilterEventDates" : [1,2,3,4,5,6,7,8],
+                "EditEvents" : [1,2,3,4,5]
+            }
+        },
+        "forms" : {
+            "page" : [1,2,3,4,5,6,7,8],
+            "parts": {
+                "MemberReferral" : [1,2,3,4,5,6,7,8],
+                "HomeTeaching" : [1,2,3,4,5,6,7,8],
+                "WelfareAssistance" : [1,2,3,4,5,6,7,8],
+                "MissionaryRecommendation" : [1,2,3,4,5,6,7,8],
+                "ActivityPlanning" : [1,2,3,4,5,6,7,8],
+                "ServiceProjectLog" : [1,2,3,4,5,6,7,8]
+            }
+        },
+        "reports" : {
+            "page" : [1,2,3,4,5,6,7,8],
+            "parts": {
+                "Statistics" : {
+                    "card": [1,2,3,4,5,6,7,8],
+                    "parts": {
+                        "activeMembers" : [1,2,3,4,5,6,7,8],
+                        "recentConverts" : [1,2,3,4,5,6,7,8],
+                        "Missionaries" : [1,2,3,4,5,6,7,8],
+                        "InNeedOfHelp" : [1,2,3,4,5,6,7,8]
+                    }},
+                "ActivityAttendance" : [1,2,3,4,5,6,7,8],
+                "AssignmentCompletion" : [1,2,3,4,5,6,7,8],
+                "VisitingTeaching" : [1,2,3,4,5,6,7,8]
+            }
+        }
+    }
+}
