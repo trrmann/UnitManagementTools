@@ -1,7 +1,6 @@
-import { Callings } from "../modules/callings.mjs";
 import { Members } from "../modules/members.mjs";
-import { Roles } from "../modules/roles.mjs";
 import { Users } from "../modules/users.mjs";
+import { Configuration } from "./configuration.mjs";
 // modules/auth.mjs
 // Authentication management module for Bishopric Dashboard
 export class Auth {
@@ -19,7 +18,7 @@ export class Auth {
         this.allUsers = [];
         this.currentUser = null;
     }
-    static async Factory(configuration) {
+    static async Factory() {
         //const callings = await Callings.Factory();
         //console.log(callings);
         //console.log(callings.GetCallings());
@@ -34,7 +33,9 @@ export class Auth {
         console.log(await users.GetUsers());
         console.log('data ready');
 
-        const auth = new Auth(configuration);
+        const configuration = await Configuration.Factory();
+        //console.log(configuration);
+        const auth = new Auth(configuration.configuration);
         // Call this before any login modal logic        
         auth.CreateLoginModalWithSpecs();
         // Module-level initialization (runs after DOM is parsed because modules are deferred)

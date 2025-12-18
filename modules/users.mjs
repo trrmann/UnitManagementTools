@@ -126,21 +126,29 @@ export class Users {
     if (!this._usersArray) this._buildCache();
     // Dynamically import Members if not already imported
     let members = await Members.Factory();
+    let membersData = await members.GetMembers(); 
     return this._usersArray.map(user => {
-      const member = members._idMap.get(user.id);
-      let memberactive = member.active;
-      let name = member.name;
-      let email = member.email;
-      let phone = member.phone;
+      const member = membersData.filter(member => {return member.id === user.id;})[0];
       return {
         id: user.id,
-        name: name,
+        name: member.name,
         password: user.password,
-        email: email,
-        phone: phone,
-        roles: user.roles,
-        memberactive: memberactive,
-        active: user.active
+        email: member.email,
+        phone: member.phone,
+        callingIDs: member.callingIDs,
+        callingNames: member.callingNames,
+        roleIDs: member.callingRoleIDs,
+        roleNames: member.callingRoleNames,
+        callingsActive: member.callingsActive,
+        allSubRoles: member.callingsAllSubRoles,
+        allSubRoleNames: member.callingsAllSubRoleNames,
+        subRoles: member.callingsSubRoles,
+        subRoleNames: member.callingsSubRoleNames,
+        memberID: member.id,
+        levels: member.levels,
+        memberactive: member.active,
+        active: user.active,
+        roles: user.roles
       };
     });
   }

@@ -121,7 +121,9 @@ export class Roles{
             const callingArr = this.callings ? this.callings.GetCallingById(role.calling) : [];
             const calling = callingArr && callingArr.length > 0 ? callingArr[0] : {};
             const subRoles = this.GetRawSubRolesById(role.id);
+            const subRoleNames = this._rolesArray.filter(role => {return subRoles.includes(role.id);}).map(role => {return role.name;});
             const allSubRoles = this.GetSubRolesById(role.id);
+            const allSubRoleNames = this._rolesArray.filter(role => {return allSubRoles.includes(role.id);}).map(role => {return role.name;});
             return {
                 "id": role.id,
                 "name": role.name,
@@ -130,7 +132,9 @@ export class Roles{
                 "level": calling.level,
                 "callingActive": calling.active,
                 "subRoles": subRoles,
+                "subRoleNames": subRoleNames,
                 "allSubRoles": allSubRoles,
+                "allSubRoleNames": allSubRoleNames,
                 "active": role.active
             };
         });

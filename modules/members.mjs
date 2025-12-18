@@ -147,14 +147,25 @@ export class Members{
             const callingsRoles = [];
             rawCallingsRoles.forEach(roleArray => {roleArray.forEach(role => {if(!callingsRoles.includes(role)) {callingsRoles.push(role);}})});
             const callingsRoleId = callingsRoles.map(role => {return role.id;});
+            const callingsRoleName = callingsRoles.map(role => {return role.name;});
             const callingSubRoles = callingsRoleId.map(callingRoleId => {
                 const role = roles.filter(role => {return role.id === callingRoleId})[0];
                 const subRoles = role.subRoles;
                 return subRoles;
             });
+            const callingSubRoleNames = callingsRoleId.map(callingRoleId => {
+                const role = roles.filter(role => {return role.id === callingRoleId})[0];
+                const subRoles = role.subRoleNames;
+                return subRoles;
+            });
             const callingAllSubRoles = callingsRoleId.map(callingRoleId => {
                 const role = roles.filter(role => {return role.id === callingRoleId})[0];
                 const allSubRoles = role.allSubRoles;
+                return allSubRoles;
+            });
+            const callingAllSubRoleNames = callingsRoleId.map(callingRoleId => {
+                const role = roles.filter(role => {return role.id === callingRoleId})[0];
+                const allSubRoles = role.allSubRoleNames;
                 return allSubRoles;
             });
             return {
@@ -167,8 +178,11 @@ export class Members{
                 "levels": callingLevels,
                 "callingsActive": callingsActive,
                 "callingRoleIDs": callingsRoleId,
+                "callingRoleNames": callingsRoleName,
                 "callingsSubRoles": callingSubRoles,
+                "callingsSubRoleNames": callingSubRoleNames,
                 "callingsAllSubRoles": callingAllSubRoles,
+                "callingsAllSubRoleNames": callingAllSubRoleNames,
                 "active": member.active
             };
         });

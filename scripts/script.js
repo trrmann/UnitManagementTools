@@ -1,26 +1,6 @@
-import { Callings } from "../modules/callings.mjs";
-import { Members } from "../modules/members.mjs";
-import { Roles } from "../modules/roles.mjs";
-import { Users } from "../modules/users.mjs";
 import { Auth } from "../modules/auth.mjs";
 
-const auth = Auth.Factory({
-    login: {
-        target:'body:prepend',
-        destinationID:'loginModal',
-        formID:'loginForm',
-        emailInputID:'email',
-        emailListID:'emailList',
-        passwordInputID:'password'
-    },
-    main: {
-        container: 'mainContainer',
-        roleSelector: 'roleSelector',
-        selectedRoles: 'selectedRoles',
-        logout: 'logout'
-    }
-});
-
+/*const auth = */Auth.Factory();
 
 // Section navigation
 function showSection(sectionId) {
