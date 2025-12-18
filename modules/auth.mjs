@@ -304,7 +304,7 @@ export class Auth {
             const matchesAnyTitle = callingTitles.some(title => (title || '').trim().toLowerCase() === normRole);
             return !(matchesDisplay || matchesAnyTitle);
         });
-        if (roleSelector) roleSelector.classList.remove('show-mobile');
+        roleSelector.classList.remove('show');
         if (filteredRoleNames.length > 1) {
             if (roleSelector) {
                 // Only show in mobile if multiple roles
@@ -327,8 +327,7 @@ export class Auth {
             }
         } else if (filteredRoleNames.length === 1) {
             if (roleSelector) {
-                roleSelector.style.display = 'none';
-                roleSelector.classList.remove('show-mobile');
+                roleSelector.classList.remove('show');
             }
             if (selectedRoles) {
                 selectedRoles.innerHTML = '';

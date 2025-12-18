@@ -1,0 +1,30 @@
+{
+  "commentTypes": [
+    "TODO",
+    "FIXME",
+    "OPTIMIZE",
+    "REFACTOR",
+    "REVIEW",
+    "DEBUG",
+    "NOTE",
+    "DEPRECATED"
+  ],
+  "fileTypes": [
+    "js",
+    "jsx",
+    "ts",
+    "tsx",
+    "html",
+    "css",
+    "scss",
+    "json",
+    "py",
+    "java",
+    "dart",
+    "php",
+    "rb",
+    "cs",
+    "go",
+    "rs"
+  ]
+}
