@@ -112,7 +112,8 @@ export class Users {
     this._idMap = new Map();
     this._emailMap = new Map();
     for (const user of this._usersArray) {
-      this._idMap.set(user.id, user);
+      // Only use memberNumber for mapping
+      this._idMap.set(user.memberNumber, user);
       this._emailMap.set(user.email, user);
     }
   }
@@ -128,41 +129,53 @@ export class Users {
     let members = await Members.Factory();
     let membersData = await members.GetMembers(); 
     return this._usersArray.map(user => {
-      const member = membersData.filter(member => member.id === user.id)[0];
+      // Only use memberNumber for matching
+      const member = membersData.find(member => member.memberNumber === user.memberNumber);
       return {
-        id: user.id,
-        name: member.name,
-        firstName: member.firstName,
-        middleName: member.middleName,
-        maidenName: member.maidenName,
-        maternalLastName: member.maternalLastName,
-        paternalLastName: member.paternalLastName,
-        maidenNameMaternal: member.maidenNameMaternal,
-        genderMale: member.genderMale,
-        gender: member.gender,
+        memberNumber: member ? member.memberNumber : user.memberNumber,
+        fullname: member ? member.fullname : '',
+        firstName: member ? member.firstName : '',
+        middleName: member ? member.middleName : '',
+        maidenName: member ? member.maidenName : '',
+        maternalLastName: member ? member.maternalLastName : '',
+        paternalLastName: member ? member.paternalLastName : '',
+        maidenNameMaternal: member ? member.maidenNameMaternal : false,
+        genderMale: member ? member.genderMale : false,
+        gender: member ? member.gender : '',
         password: user.password,
-        email: member.email,
-        phone: member.phone,
-        callingIDs: member.callingIDs,
-        callingNames: member.callingNames,
-        roleIDs: member.callingRoleIDs,
-        roleNames: member.callingRoleNames,
-        callingsActive: member.callingsActive,
-        allSubRoles: member.callingsAllSubRoles,
-        allSubRoleNames: member.callingsAllSubRoleNames,
-        subRoles: member.callingsSubRoles,
-        subRoleNames: member.callingsSubRoleNames,
-        memberID: member.id,
-        levels: member.levels,
-        memberactive: member.active,
-        active: user.active
+        email: member ? member.email : user.email,
+        phone: member ? member.phone : '',
+        callingIDs: member ? member.callingIDs : [],
+        callingNames: member ? member.callingNames : [],
+        callingHaveTitles: member ? member.callingHaveTitles : [],
+        callingTitles: member ? member.callingTitles : [],
+        callingTitleOrdinals: member ? member.callingTitleOrdinals : [],
+        roleIDs: member ? member.callingRoleIDs : [],
+        roleNames: member ? member.callingRoleNames : [],
+        callingsActive: member ? member.callingsActive : [],
+        allSubRoles: member ? member.callingsAllSubRoles : [],
+        allSubRoleNames: member ? member.callingsAllSubRoleNames : [],
+        subRoles: member ? member.callingsSubRoles : [],
+        subRoleNames: member ? member.callingsSubRoleNames : [],
+        levels: member ? member.levels : [],
+        memberactive: member ? member.active : false,
+        active: user.active,
+        stakeUnitNumber: member ? member.stakeUnitNumber : undefined,
+        unitNumber: member ? member.unitNumber : undefined,
+        stakeName: member ? member.stakeName : '',
+        unitName: member ? member.unitName : '',
+        unitType: member ? member.unitType : ''
       };
     });
   }
 
   GetUserById(id) {
     if (!this._idMap) this._buildCache();
-    const u = this._idMap.get(id);
+    // Only use memberNumber for lookup
+    let u = this._idMap.get(id);
+    if (!u) {
+      u = this._idMap.get(String(id)) || this._idMap.get(Number(id));
+    }
     return u ? [u] : [];
   }
 

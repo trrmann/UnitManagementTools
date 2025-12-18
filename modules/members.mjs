@@ -1,6 +1,7 @@
 import { Callings } from "./callings.mjs";
 import { HasPreference, GetPreferenceObject, SetPreferenceObject } from "./localStorage.mjs";
 import { Roles } from "./roles.mjs";
+import { Org } from "./org.mjs";
 export class Members{
     static local = true;
     constructor() {
@@ -8,6 +9,7 @@ export class Members{
         this.lastFetched = null;
         this.callings = null;
         this.roles = null;
+        this.org = null;
         this._membersArray = null; // cache array
         this._idMap = null; // cache id lookup
         this._emailMap = null; // cache email lookup
@@ -78,6 +80,7 @@ export class Members{
     async Fetch() {
         this.callings = await Callings.Factory();
         this.roles = await Roles.Factory();
+        this.org = await Org.Factory();
         const isFetched = this.IsFetched();
         if(!isFetched) {
             const key = this.GetLocalStoreKey();
@@ -112,6 +115,9 @@ export class Members{
     async GetRoles() {
         return await this.roles.GetRoles();
     }
+    async GetOrg() {
+        return await this.org;
+    }
 
     _buildCache() {
         // Build array and lookup maps for fast access
@@ -119,7 +125,8 @@ export class Members{
         this._idMap = new Map();
         this._emailMap = new Map();
         for (const member of this._membersArray) {
-            this._idMap.set(member.id, member);
+            // Only use memberNumber for mapping
+            this._idMap.set(member.memberNumber, member);
             this._emailMap.set(member.email, member);
         }
     }
@@ -128,18 +135,21 @@ export class Members{
         if (!this._membersArray) this._buildCache();
         return this._membersArray;
     }
-    async GetMembers(){
+    async GetMembers() {
         // Use cached array and minimize repeated lookups
         if (!this._membersArray) this._buildCache();
         const callings = await this.GetCallings();
         const roles = await this.GetRoles();
-        // Dynamically import Users if not already imported
+        const org = await this.GetOrg();
         return this._membersArray.map(member => {
             // Pre-resolve all callings for this member
             const callingsResolved = member.callings.map(callingid => callings.GetCallingById(callingid));
             const callingNames = callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].name : null);
             const callingLevels = callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].level : null);
             const callingsActive = callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].active === true : false);
+            const callingHaveTitles = callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].hasTitle : null);
+            const callingTitles = callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].title : null);
+            const callingTitleOrdinals = callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].titleOrdinal : null);
             // Add callings-role-id: single array of unique role ids for all callings
             const rawCallingsRoles = callingsResolved
                 .map(callingArr => {return roles.filter(function(r){return callingArr.map(call => {return call.id;}).includes(r.callingID);});})
@@ -169,18 +179,47 @@ export class Members{
                 return allSubRoles;
             });
 
-            // Build name from components, only include maidenName for female members
+            // Build full name with title or default prefix
+            let prefix = null;
+            // Find the calling title with the lowest non-null ordinal
+            let minOrdinal = null;
+            let selectedTitle = null;
+            for (let i = 0; i < callingTitles.length; i++) {
+                const title = callingTitles[i];
+                const ordinal = callingTitleOrdinals[i];
+                if (title && title.trim() && ordinal !== null && ordinal !== undefined) {
+                    if (minOrdinal === null || ordinal < minOrdinal) {
+                        minOrdinal = ordinal;
+                        selectedTitle = title;
+                    }
+                }
+            }
+            // If no ordinal-based title, fallback to first non-empty title
+            if (!selectedTitle) {
+                selectedTitle = callingTitles.find(t => t && t.trim());
+            }
+            if (selectedTitle) {
+                prefix = selectedTitle;
+            } else {
+                prefix = (member.genderMale === true) ? "Brother" : "Sister";
+            }
             const nameParts = [];
             if (member.firstName) nameParts.push(member.firstName);
             if (member.middleName) nameParts.push(member.middleName);
             if (member.maidenName && member.genderMale === false) nameParts.push(member.maidenName);
             if (member.maternalLastName) nameParts.push(member.maternalLastName);
             if (member.paternalLastName) nameParts.push(member.paternalLastName);
-            const name = nameParts.filter(Boolean).join(' ');
+            const fullname = [prefix, ...nameParts.filter(Boolean)].join(' ');
+
+            const stake = org.GetStake(member.stakeUnitNumber);
+            const unit = org.GetUnit(member.unitNumber);
+            const stakeName = stake ? stake.name : '';
+            const unitName = unit ? unit.name : '';
+            const unitType = unit ? unit.type : '';
 
             return {
-                id: member.id,
-                name: name,
+                memberNumber: member.memberNumber,
+                fullname: fullname,
                 firstName: member.firstName,
                 middleName: member.middleName,
                 maidenName: member.maidenName,
@@ -195,26 +234,35 @@ export class Members{
                 callingNames: callingNames,
                 levels: callingLevels,
                 callingsActive: callingsActive,
+                callingHaveTitles: callingHaveTitles,
+                callingTitles: callingTitles,
+                callingTitleOrdinals: callingTitleOrdinals,
                 callingRoleIDs: callingsRoleId,
                 callingRoleNames: callingsRoleName,
                 callingsSubRoles: callingSubRoles,
                 callingsSubRoleNames: callingSubRoleNames,
                 callingsAllSubRoles: callingAllSubRoles,
                 callingsAllSubRoleNames: callingAllSubRoleNames,
-                active: member.active
+                active: member.active,
+                stakeUnitNumber: member.stakeUnitNumber,
+                unitNumber: member.unitNumber,
+                stakeName: stakeName,
+                unitName: unitName,
+                unitType: unitType
             };
         });
     }
 
-
-
-
-/*
-      "id": 1,
-      "name": "Robert Wallace",
-      "email": "rdw.engineer@gmail.com",
-      "phone": "(864) 607-2777",
-      "calling": [ 9 ],
-      "active": true
-*/
+    // Get leadership for a stake by unitNumber using an Org instance
+    static GetStakeLeadership(orgInstance, stakeUnitNumber) {
+        if (!orgInstance || typeof orgInstance.GetStake !== 'function') return null;
+        const stake = orgInstance.GetStake(stakeUnitNumber);
+        return stake && stake.leadership ? stake.leadership : null;
+    }
+    // Get leadership for a ward by unitNumber using an Org instance
+    static GetWardLeadership(orgInstance, wardUnitNumber) {
+        if (!orgInstance || typeof orgInstance.GetWard !== 'function') return null;
+        const ward = orgInstance.GetWard(wardUnitNumber);
+        return ward && ward.leadership ? ward.leadership : null;
+    }
 }

@@ -1,7 +1,7 @@
 {
   "members": [
     {
-      "id": 1,
+      "memberNumber": 1,
       "firstName": "Robert",
       "middleName": "",
       "maidenName": "",
@@ -12,10 +12,12 @@
       "callings": [ 9 ],
       "active": true,
       "maidenNameMaternal": false,
-      "genderMale": true
+      "genderMale": true,
+      "stakeUnitNumber": 1,
+      "unitNumber": 101
     },
     {
-      "id": 2,
+      "memberNumber": 2,
       "firstName": "Jacob",
       "middleName": "Alan",
       "maidenName": "",
@@ -26,10 +28,12 @@
       "callings": [ 10 ],
       "active": true,
       "maidenNameMaternal": false,
-      "genderMale": true
+      "genderMale": true,
+      "stakeUnitNumber": 1,
+      "unitNumber": 102
     },
     {
-      "id": 3,
+      "memberNumber": 3,
       "firstName": "Cameron",
       "middleName": "",
       "maidenName": "",
@@ -40,10 +44,12 @@
       "callings": [ 11 ],
       "active": true,
       "maidenNameMaternal": false,
-      "genderMale": true
+      "genderMale": true,
+      "stakeUnitNumber": 1,
+      "unitNumber": 101
     },
     {
-      "id": 4,
+      "memberNumber": 4,
       "firstName": "Jake",
       "middleName": "",
       "maidenName": "",
@@ -54,10 +60,12 @@
       "callings": [ 12 ],
       "active": true,
       "maidenNameMaternal": false,
-      "genderMale": true
+      "genderMale": true,
+      "stakeUnitNumber": 1,
+      "unitNumber": 102
     },
     {
-      "id": 5,
+      "memberNumber": 5,
       "firstName": "Jon",
       "middleName": "",
       "maidenName": "",
@@ -68,10 +76,12 @@
       "callings": [ 13 ],
       "active": true,
       "maidenNameMaternal": false,
-      "genderMale": true
+      "genderMale": true,
+      "stakeUnitNumber": 1,
+      "unitNumber": 103
     },
     {
-      "id": 6,
+      "memberNumber": 6,
       "firstName": "Craig",
       "middleName": "",
       "maidenName": "",
@@ -82,10 +92,12 @@
       "callings": [ 14 ],
       "active": true,
       "maidenNameMaternal": false,
-      "genderMale": true
+      "genderMale": true,
+      "stakeUnitNumber": 1,
+      "unitNumber": 101
     },
     {
-      "id": 7,
+      "memberNumber": 7,
       "firstName": "Charles",
       "middleName": "",
       "maidenName": "",
@@ -96,10 +108,12 @@
       "callings": [ 15 ],
       "active": true,
       "maidenNameMaternal": false,
-      "genderMale": true
+      "genderMale": true,
+      "stakeUnitNumber": 1,
+      "unitNumber": 102
     },
     {
-      "id": 8,
+      "memberNumber": 8,
       "firstName": "Thomas",
       "middleName": "",
       "maidenName": "",
@@ -110,10 +124,12 @@
       "callings": [ 16 ],
       "active": true,
       "maidenNameMaternal": false,
-      "genderMale": true
+      "genderMale": true,
+      "stakeUnitNumber": 1,
+      "unitNumber": 103
     },
     {
-      "id": 9,
+      "memberNumber": 9,
       "firstName": "Tracy",
       "middleName": "Robert",
       "maidenName": "",
@@ -124,7 +140,9 @@
       "callings": [ 15, 16 ],
       "active": true,
       "maidenNameMaternal": false,
-      "genderMale": true
+      "genderMale": true,
+      "stakeUnitNumber": 1,
+      "unitNumber": 101
     }
   ]
 }

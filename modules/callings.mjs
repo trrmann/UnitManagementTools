@@ -105,7 +105,16 @@ export class Callings{
         if (!this._callingsArray) {
             this._buildCache();
         }
-        return this._callingsArray;
+        // Return callings with new fields (hasTitle, title, titleOrdinal) included
+        return this._callingsArray.map(calling => ({
+            id: calling.id,
+            name: calling.name,
+            level: calling.level,
+            active: calling.active,
+            hasTitle: calling.hasTitle,
+            title: calling.title,
+            titleOrdinal: calling.titleOrdinal
+        }));
 
     }
 

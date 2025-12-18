@@ -172,14 +172,8 @@ export class Auth {
             return;
         }
         // Store user session
-        this.currentUser = {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            phone: user.phone,
-            roleNames: user.roleNames,
-            active: user.memberactive !== undefined ? user.memberactive : user.active
-        };
+        // Store all user fields in session
+        this.currentUser = { ...user };
         sessionStorage.setItem('currentUser', JSON.stringify(this.currentUser));
         document.getElementById(this.formID).reset();
         this.ShowDashboard();
@@ -244,11 +238,33 @@ export class Auth {
     }
     // Update user display in header
     UpdateUserDisplay() {
+                        // ...existing code...
+                // ...existing code...
         if (!this.currentUser) return;
-        
         const userName = document.getElementById('userName');
         if (userName) {
-            userName.textContent = this.currentUser.name;
+            // Show only the user's full name (no unit or stake info)
+            userName.textContent = this.currentUser.fullname;
+        }
+
+        // Update the Management Tools label with the stake name before the unit name and type, with a comma if both are present
+        const subtitleElem = document.querySelector('.subtitle');
+        if (subtitleElem) {
+            let stake = this.currentUser.stakeName || '';
+            let unit = this.currentUser.unitName || '';
+            let unitType = this.currentUser.unitType || '';
+            if (unitType) {
+                unitType = unitType.charAt(0).toUpperCase() + unitType.slice(1);
+            }
+            if (stake && unit) {
+                subtitleElem.textContent = `${stake} Stake, ${unit} ${unitType} Management Tools`;
+            } else if (unit) {
+                subtitleElem.textContent = `${unit} ${unitType} Management Tools`;
+            } else if (stake) {
+                subtitleElem.textContent = `${stake} Stake Management Tools`;
+            } else {
+                subtitleElem.textContent = 'Management Tools';
+            }
         }
     }
 
@@ -258,7 +274,21 @@ export class Auth {
         const roleSelector = document.getElementById(this.roleSelectorID);
         const selectedRoles = document.getElementById(this.selectedRolesID);
         const roleNames = this.currentUser.roleNames || [];
-        if (roleNames.length > 1) {
+        const callingTitles = this.currentUser.callingTitles || [];
+        const displayName = this.currentUser.fullname || '';
+        // Determine if any roleName is different from the displayName/calling title
+        // Only show role if it is not the same as the display name or any calling title
+        const filteredRoleNames = roleNames.filter(roleName => {
+            // If the roleName matches the displayName or any calling title, suppress it
+            if (!roleName) return false;
+            // Compare ignoring case and whitespace
+            const normRole = roleName.trim().toLowerCase();
+            const normDisplay = displayName.trim().toLowerCase();
+            const matchesDisplay = normRole === normDisplay;
+            const matchesAnyTitle = callingTitles.some(title => (title || '').trim().toLowerCase() === normRole);
+            return !(matchesDisplay || matchesAnyTitle);
+        });
+        if (filteredRoleNames.length > 1) {
             // Show role selector for multiple roles
             if (roleSelector) {
                 roleSelector.style.display = 'block';
@@ -266,27 +296,31 @@ export class Auth {
                 while (roleSelector.options.length > 1) {
                     roleSelector.remove(1);
                 }
-                // Add only the user's roleNames to the dropdown
-                roleNames.forEach((roleName, idx) => {
+                // Add only the filtered roleNames to the dropdown
+                filteredRoleNames.forEach((roleName, idx) => {
                     const option = document.createElement('option');
                     option.value = roleName;
                     option.textContent = roleName;
                     roleSelector.appendChild(option);
                 });
                 // Set first role as selected
-                roleSelector.value = roleNames[0];
+                roleSelector.value = filteredRoleNames[0];
+                // Remove any role badge if selector is present
+                if (selectedRoles) selectedRoles.innerHTML = '';
                 this.UpdateRole();
             }
         } else {
-            // Hide selector and show single role as badge
+            // Hide selector and show single role as badge, only if not suppressed
             if (roleSelector) roleSelector.style.display = 'none';
             if (selectedRoles) {
                 selectedRoles.innerHTML = '';
-                const badge = document.createElement('span');
-                const roleName = roleNames[0] || '';
-                badge.className = `role-badge`;
-                badge.textContent = roleName;
-                selectedRoles.appendChild(badge);
+                const roleName = filteredRoleNames[0] || '';
+                if (roleName) {
+                    const badge = document.createElement('span');
+                    badge.className = `role-badge`;
+                    badge.textContent = roleName;
+                    selectedRoles.appendChild(badge);
+                }
             }
         }
     }
@@ -366,7 +400,7 @@ export class Auth {
         if (password !== user.password) return null;
         // Only store safe fields
         const sessionUser = {
-            id: user.id,
+            memberNumber: user.memberNumber,
             name: user.name,
             email: user.email,
             phone: user.phone,
