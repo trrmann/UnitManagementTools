@@ -25,9 +25,9 @@ export class Auth {
         //const roles = await Roles.Factory();
         //console.log(roles);
         //console.log(roles.GetRoles());
-        const members = await Members.Factory();
-        console.log(members);
-        console.log(await members.GetMembers());
+        //const members = await Members.Factory();
+        //console.log(members);
+        //console.log(await members.GetMembers());
         const users = await Users.Factory();
         console.log(users);
         console.log(await users.GetUsers());
