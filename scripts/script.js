@@ -1,6 +1,55 @@
-import { Auth } from "../modules/auth.mjs";
+// Hamburger toggle for user menu in mobile
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.getElementById('userMenuToggle');
+    const navBar = document.querySelector('.navbar');
+    if (toggleBtn && navBar) {
+        const icon = document.getElementById('userMenuToggleIcon');
+        // Show toggle only in mobile
+        function updateToggleVisibility() {
+            if (window.innerWidth <= 600) {
+                toggleBtn.style.display = 'block';
+                navBar.classList.remove('show');
+                if (icon) {
+                    icon.classList.remove('fa-xmark', 'fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            } else {
+                toggleBtn.style.display = 'none';
+                navBar.classList.add('show');
+                if (icon) {
+                    icon.classList.remove('fa-xmark', 'fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            }
+        }
+        updateToggleVisibility();
+        window.addEventListener('resize', updateToggleVisibility);
+        toggleBtn.addEventListener('click', function() {
+            navBar.classList.toggle('show');
+            if (icon) {
+                if (navBar.classList.contains('show')) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-xmark');
+                } else {
+                    icon.classList.remove('fa-xmark');
+                    icon.classList.add('fa-bars');
+                }
+            }
+        });
+    }
+});
 
-/*const auth = */Auth.Factory();
+import { Auth } from "../modules/auth.mjs";
+let authInstance = null;
+Auth.Factory().then(auth => {
+    authInstance = auth;
+    // Ensure role selector is correct on resize
+    window.addEventListener('resize', () => {
+        if (authInstance && typeof authInstance.LoadRoleSelector === 'function') {
+            authInstance.LoadRoleSelector();
+        }
+    });
+});
 
 // Section navigation
 function showSection(sectionId) {

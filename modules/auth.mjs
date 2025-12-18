@@ -218,14 +218,32 @@ export class Auth {
     }
     // Logout function
     Logout() {
-        if (confirm('Are you sure you want to log out?')) {
-            // Clear session
+        // Prevent multiple confirmations by using a static flag
+        if (this._logoutConfirming) return;
+        this._logoutConfirming = true;
+        const confirmed = confirm('Are you sure you want to log out?');
+        this._logoutConfirming = false;
+        if (confirmed) {
+            // Clear all session and role info
             sessionStorage.removeItem('currentUser');
+            sessionStorage.removeItem('activeRole');
+            sessionStorage.removeItem('roles');
+            sessionStorage.removeItem('userRoles');
+            sessionStorage.removeItem('roleSelector');
             this.currentUser = null;
-            
+            // Also clear any role selector UI
+            const roleSelector = document.getElementById(this.roleSelectorID);
+            if (roleSelector) {
+                roleSelector.style.display = 'none';
+                roleSelector.classList.remove('show-mobile');
+                while (roleSelector.options.length > 1) {
+                    roleSelector.remove(1);
+                }
+            }
+            const selectedRoles = document.getElementById(this.selectedRolesID);
+            if (selectedRoles) selectedRoles.innerHTML = '';
             // Show login form
             this.ShowLoginForm();
-            
             // Clear any form data
             const form = document.getElementById(this.formID);
             if (form) form.reset();
@@ -276,42 +294,42 @@ export class Auth {
         const roleNames = this.currentUser.roleNames || [];
         const callingTitles = this.currentUser.callingTitles || [];
         const displayName = this.currentUser.fullname || '';
+        const isMobile = window.innerWidth <= 600;
         // Determine if any roleName is different from the displayName/calling title
-        // Only show role if it is not the same as the display name or any calling title
         const filteredRoleNames = roleNames.filter(roleName => {
-            // If the roleName matches the displayName or any calling title, suppress it
             if (!roleName) return false;
-            // Compare ignoring case and whitespace
             const normRole = roleName.trim().toLowerCase();
             const normDisplay = displayName.trim().toLowerCase();
             const matchesDisplay = normRole === normDisplay;
             const matchesAnyTitle = callingTitles.some(title => (title || '').trim().toLowerCase() === normRole);
             return !(matchesDisplay || matchesAnyTitle);
         });
+        if (roleSelector) roleSelector.classList.remove('show-mobile');
         if (filteredRoleNames.length > 1) {
-            // Show role selector for multiple roles
             if (roleSelector) {
+                // Only show in mobile if multiple roles
+                if (isMobile) {
+                    roleSelector.classList.add('show-mobile');
+                }
                 roleSelector.style.display = 'block';
-                // Clear existing options except the first one
                 while (roleSelector.options.length > 1) {
                     roleSelector.remove(1);
                 }
-                // Add only the filtered roleNames to the dropdown
                 filteredRoleNames.forEach((roleName, idx) => {
                     const option = document.createElement('option');
                     option.value = roleName;
                     option.textContent = roleName;
                     roleSelector.appendChild(option);
                 });
-                // Set first role as selected
                 roleSelector.value = filteredRoleNames[0];
-                // Remove any role badge if selector is present
                 if (selectedRoles) selectedRoles.innerHTML = '';
                 this.UpdateRole();
             }
-        } else {
-            // Hide selector and show single role as badge, only if not suppressed
-            if (roleSelector) roleSelector.style.display = 'none';
+        } else if (filteredRoleNames.length === 1) {
+            if (roleSelector) {
+                roleSelector.style.display = 'none';
+                roleSelector.classList.remove('show-mobile');
+            }
             if (selectedRoles) {
                 selectedRoles.innerHTML = '';
                 const roleName = filteredRoleNames[0] || '';
@@ -321,6 +339,15 @@ export class Auth {
                     badge.textContent = roleName;
                     selectedRoles.appendChild(badge);
                 }
+            }
+        } else {
+            // No roles to select, hide selector and badge
+            if (roleSelector) {
+                roleSelector.style.display = 'none';
+                roleSelector.classList.remove('show-mobile');
+            }
+            if (selectedRoles) {
+                selectedRoles.innerHTML = '';
             }
         }
     }
