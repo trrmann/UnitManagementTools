@@ -53,10 +53,10 @@ export class Auth {
             if (loggedInUser) {
                 try {
                     auth.currentUser = JSON.parse(loggedInUser);
-                            auth.ShowLoginForm();
+                    await auth.ShowDashboard();
                 } catch (error) {
                     console.error('Error restoring session:', error);
-                            auth.ShowLoginForm();
+                    auth.ShowLoginForm();
                 }
             } else {
                 auth.ShowLoginForm();
