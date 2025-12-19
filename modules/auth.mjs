@@ -28,10 +28,10 @@ export class Auth {
         //const members = await Members.Factory();
         //console.log(members);
         //console.log(await members.GetMembers());
-        const users = await Users.Factory();
-        console.log(users);
-        console.log(await users.GetUsers());
-        console.log('data ready');
+        //const users = await Users.Factory();
+        //console.log(users);
+        //console.log(await users.GetUsers());
+        //console.log('data ready');
 
         const configuration = await Configuration.Factory();
         //console.log(configuration);
@@ -200,17 +200,174 @@ export class Auth {
         if (mainContainer) mainContainer.style.display = 'none';
     }
     // Show dashboard
-    ShowDashboard() {
+    async ShowDashboard() {
+        const config = await (await Configuration.Factory()).configuration;
         const loginModal = document.getElementById(this.destinationID);
         const mainContainer = document.getElementById(this.mainContainerID);
         const logoutButton = document.getElementById(this.logoutID);
         const roleSelector = document.getElementById(this.roleSelectorID);
-    
+
         if (loginModal) loginModal.classList.remove('active');
         if (mainContainer) mainContainer.style.display = 'block';
         if (logoutButton) logoutButton.addEventListener('click', () => { this.Logout(); });
-        if (roleSelector) roleSelector.addEventListener('change', () => { this.UpdateRole(); });
-    
+        // Get selected role from role selector
+        let selectedRole = null;
+        const roleSelectorEl = document.getElementById(this.roleSelectorID);
+        if (roleSelectorEl && roleSelectorEl.value) {
+            selectedRole = roleSelectorEl.value;
+        } else if (this.currentUser && this.currentUser.activeRole) {
+            selectedRole = this.currentUser.activeRole;
+        }
+
+        // Helper to control menu item and part visibility using only selected role
+        // Use unique names to avoid redeclaration errors if ShowDashboard is called multiple times
+        const _setMenuAccess = (menuClass, accessConfig) => {
+            const menuItem = document.querySelector('.' + menuClass);
+            if (!menuItem || !config || !config.access || !config.access[accessConfig] || !Array.isArray(config.access[accessConfig].page)) return;
+            const allowedRoleIDs = config.access[accessConfig].page;
+            // Get the user's role IDs (from currentUser)
+            const userRoleIDs = (this.currentUser && Array.isArray(this.currentUser.roleIDs)) ? this.currentUser.roleIDs : [];
+            // If a role is selected, try to map it to its ID (fallback to all userRoleIDs if not found)
+            let selectedRoleID = null;
+            if (selectedRole && this.currentUser && Array.isArray(this.currentUser.roleNames) && Array.isArray(this.currentUser.roleIDs)) {
+                const idx = this.currentUser.roleNames.indexOf(selectedRole);
+                if (idx !== -1) {
+                    selectedRoleID = this.currentUser.roleIDs[idx];
+                }
+            }
+            // Check access: if a role is selected, use its ID; otherwise, check all userRoleIDs
+            let hasAccess = false;
+            if (selectedRoleID !== null && allowedRoleIDs.includes(selectedRoleID)) {
+                hasAccess = true;
+            } else if (selectedRoleID === null && userRoleIDs.some(id => allowedRoleIDs.includes(id))) {
+                hasAccess = true;
+            }
+            if (!hasAccess) {
+                menuItem.classList.add('hide');
+            } else {
+                menuItem.classList.remove('hide');
+            }
+        };
+
+        // Helper for parts (recursive for nested parts)
+        const _setPartsAccess = (section, parts, prefix) => {
+            if (!parts) return;
+            // Get the user's role IDs (from currentUser)
+            const userRoleIDs = (this.currentUser && Array.isArray(this.currentUser.roleIDs)) ? this.currentUser.roleIDs : [];
+            // If a role is selected, try to map it to its ID (fallback to all userRoleIDs if not found)
+            let selectedRoleID = null;
+            if (selectedRole && this.currentUser && Array.isArray(this.currentUser.roleNames) && Array.isArray(this.currentUser.roleIDs)) {
+                const idx = this.currentUser.roleNames.indexOf(selectedRole);
+                if (idx !== -1) {
+                    selectedRoleID = this.currentUser.roleIDs[idx];
+                }
+            }
+            Object.entries(parts).forEach(([key, value]) => {
+                if (Array.isArray(value)) {
+                    // Direct access array
+                    const partClass = `${section}-${key}`;
+                    const partEls = document.querySelectorAll('.' + partClass);
+                    let hasAccess = false;
+                    if (selectedRoleID !== null && value.includes(selectedRoleID)) {
+                        hasAccess = true;
+                    } else if (selectedRoleID === null && userRoleIDs.some(id => value.includes(id))) {
+                        hasAccess = true;
+                    }
+                    partEls.forEach(el => {
+                        if (!hasAccess) {
+                            el.classList.add('hide');
+                        } else {
+                            el.classList.remove('hide');
+                        }
+                    });
+                } else if (typeof value === 'object' && value !== null) {
+                    // Nested parts (e.g., QuickActions, Statistics)
+                    if (value.parts) {
+                        _setPartsAccess(`${section}-${key}`, value.parts, `${prefix}${key}-`);
+                    }
+                    // For objects with direct access arrays (e.g., card)
+                    if (value.card && Array.isArray(value.card)) {
+                        const partClass = `${section}-${key}`;
+                        const partEls = document.querySelectorAll('.' + partClass);
+                        let hasAccess = false;
+                        if (selectedRoleID !== null && value.card.includes(selectedRoleID)) {
+                            hasAccess = true;
+                        } else if (selectedRoleID === null && userRoleIDs.some(id => value.card.includes(id))) {
+                            hasAccess = true;
+                        }
+                        partEls.forEach(el => {
+                            if (!hasAccess) {
+                                el.classList.add('hide');
+                            } else {
+                                el.classList.remove('hide');
+                            }
+                        });
+                    }
+                    // For objects with string references (e.g., QuickActions)
+                    Object.entries(value).forEach(([subKey, subValue]) => {
+                        if (typeof subValue === 'string' && subValue.startsWith('access.')) {
+                            // Resolve string reference
+                            const refPath = subValue.replace('access.', '').split('.');
+                            let ref = config.access;
+                            for (const p of refPath) {
+                                ref = ref && ref[p];
+                            }
+                            if (Array.isArray(ref)) {
+                                const partClass = `${section}-${key}`;
+                                const partEls = document.querySelectorAll('.' + partClass);
+                                let hasAccess = false;
+                                if (selectedRoleID !== null && ref.includes(selectedRoleID)) {
+                                    hasAccess = true;
+                                } else if (selectedRoleID === null && userRoleIDs.some(id => ref.includes(id))) {
+                                    hasAccess = true;
+                                }
+                                partEls.forEach(el => {
+                                    if (!hasAccess) {
+                                        el.classList.add('hide');
+                                    } else {
+                                        el.classList.remove('hide');
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+            });
+        };
+
+        // Bind helpers to this (declare once, outside any conditional)
+        // Use let to avoid redeclaration errors if this function is called multiple times
+        // Use only instance properties to avoid redeclaration errors
+        _setMenuAccess('dashboardmenuitem', 'dashboard');
+        _setMenuAccess('membersmenuitem', 'members');
+        _setMenuAccess('assignmentsmenuitem', 'assignments');
+        _setMenuAccess('schedulingmenuitem', 'scheduling');
+        _setMenuAccess('formsmenuitem', 'forms');
+        _setMenuAccess('reportsmenuitem', 'reports');
+
+        // Apply access control to all parts
+        Object.entries(config.access).forEach(([section, sectionObj]) => {
+            if (sectionObj.parts) {
+                _setPartsAccess(section, sectionObj.parts, section + '-');
+            }
+        });
+        if (roleSelector && !roleSelector._copilotRoleHandlerSet) {
+            // Remove previous event listeners to avoid stacking
+            roleSelector.onchange = null;
+            roleSelector.addEventListener('change', (e) => {
+                // Set the selected role as activeRole on the user
+                if (this.currentUser) {
+                    this.currentUser.activeRole = roleSelector.value;
+                }
+                this.UpdateRole();
+                this.ShowDashboard();
+            });
+            roleSelector._copilotRoleHandlerSet = true;
+        }
+
+
+        // All setMenuAccess and setPartsAccess logic is now handled by _setMenuAccess and _setPartsAccess above
+
         // Initialize dashboard
         if (this.currentUser) {
             this.InitializeDashboard();
@@ -221,7 +378,8 @@ export class Auth {
         // Prevent multiple confirmations by using a static flag
         if (this._logoutConfirming) return;
         this._logoutConfirming = true;
-        const confirmed = confirm('Are you sure you want to log out?');
+        //const confirmed = confirm('Are you sure you want to log out?');
+        const confirmed = true;
         this._logoutConfirming = false;
         if (confirmed) {
             // Clear all session and role info
@@ -321,7 +479,12 @@ export class Auth {
                     option.textContent = roleName;
                     roleSelector.appendChild(option);
                 });
-                roleSelector.value = filteredRoleNames[0];
+                // Set selector to user's activeRole if valid, else default to first
+                let setValue = filteredRoleNames[0];
+                if (this.currentUser && this.currentUser.activeRole && filteredRoleNames.includes(this.currentUser.activeRole)) {
+                    setValue = this.currentUser.activeRole;
+                }
+                roleSelector.value = setValue;
                 if (selectedRoles) selectedRoles.innerHTML = '';
                 this.UpdateRole();
             }

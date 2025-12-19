@@ -46,22 +46,22 @@
 
         <!-- Navigation -->
         <nav class="navbar">
-            <button class="nav-btn active" onclick="showSection('dashboard')">
+            <button class="nav-btn active dashboardmenuitem" onclick="showSection('dashboard')">
                 <i class="fas fa-home"></i> Dashboard
             </button>
-            <button class="nav-btn" onclick="showSection('members')">
+            <button class="nav-btn membersmenuitem" onclick="showSection('members')">
                 <i class="fas fa-users"></i> Members
             </button>
-            <button class="nav-btn" onclick="showSection('assignments')">
+            <button class="nav-btn assignmentsmenuitem" onclick="showSection('assignments')">
                 <i class="fas fa-tasks"></i> Assignments
             </button>
-            <button class="nav-btn" onclick="showSection('scheduling')">
+            <button class="nav-btn schedulingmenuitem" onclick="showSection('scheduling')">
                 <i class="fas fa-calendar"></i> Scheduling
             </button>
-            <button class="nav-btn" onclick="showSection('forms')">
+            <button class="nav-btn formsmenuitem" onclick="showSection('forms')">
                 <i class="fas fa-file-alt"></i> Forms
             </button>
-            <button class="nav-btn" onclick="showSection('reports')">
+            <button class="nav-btn reportsmenuitem" onclick="showSection('reports')">
                 <i class="fas fa-chart-bar"></i> Reports
             </button>
         </nav>
@@ -72,7 +72,7 @@
             <section id="dashboard" class="section active">
                 <h2>Dashboard</h2>
                 <div class="dashboard-grid">
-                    <div class="card">
+                    <div class="card dashboard-totalMembers">
                         <div class="card-icon">
                             <i class="fas fa-users"></i>
                         </div>
@@ -82,7 +82,7 @@
                         </div>
                     </div>
 
-                    <div class="card">
+                    <div class="card dashboard-thisWeeksEvents">
                         <div class="card-icon">
                             <i class="fas fa-calendar-check"></i>
                         </div>
@@ -92,7 +92,7 @@
                         </div>
                     </div>
 
-                    <div class="card">
+                    <div class="card dashboard-pendingTasks">
                         <div class="card-icon">
                             <i class="fas fa-tasks"></i>
                         </div>
@@ -102,7 +102,7 @@
                         </div>
                     </div>
 
-                    <div class="card">
+                    <div class="card dashboard-needsAssistance">
                         <div class="card-icon">
                             <i class="fas fa-hand-holding-heart"></i>
                         </div>
@@ -116,16 +116,16 @@
                 <div class="dashboard-section">
                     <h3>Quick Actions</h3>
                     <div class="action-buttons">
-                        <button class="action-btn" onclick="quickAction('new-member')">
+                        <button class="action-btn dashboard-QuickActions-AddMember" onclick="quickAction('new-member')">
                             <i class="fas fa-user-plus"></i> Add Member
                         </button>
-                        <button class="action-btn" onclick="quickAction('new-event')">
+                        <button class="action-btn dashboard-QuickActions-ScheduleEvent" onclick="quickAction('new-event')">
                             <i class="fas fa-calendar-plus"></i> Schedule Event
                         </button>
-                        <button class="action-btn" onclick="quickAction('assign-task')">
+                        <button class="action-btn dashboard-QuickActions-AssignTask" onclick="quickAction('assign-task')">
                             <i class="fas fa-clipboard-list"></i> Assign Task
                         </button>
-                        <button class="action-btn" onclick="quickAction('send-message')">
+                        <button class="action-btn dashboard-QuickActions-SendMessage" onclick="quickAction('send-message')">
                             <i class="fas fa-envelope"></i> Send Message
                         </button>
                     </div>
@@ -134,7 +134,7 @@
                 <div class="dashboard-section">
                     <h3>Recent Activities</h3>
                     <div class="activity-list">
-                        <div class="activity-item">
+                        <div class="activity-item dashboard-RecentActivities">
                             <div class="activity-icon">
                                 <i class="fas fa-user-check"></i>
                             </div>
@@ -169,8 +169,8 @@
             <section id="members" class="section">
                 <h2>Member Directory</h2>
                 <div class="section-toolbar">
-                    <input type="text" id="memberSearch" placeholder="Search members..." class="search-input" onkeyup="filterMembers()">
-                    <button class="btn-primary" onclick="openAddMember()">
+                    <input type="text members-SearchMember" id="memberSearch" placeholder="Search members..." class="search-input" onkeyup="filterMembers()">
+                    <button class="btn-primary members-AddMember" onclick="openAddMember()">
                         <i class="fas fa-user-plus"></i> Add Member
                     </button>
                 </div>
@@ -192,8 +192,8 @@
                                 <td>(801) 555-0101</td>
                                 <td>Home Teacher</td>
                                 <td>
-                                    <button class="btn-small" onclick="editMember(1)">Edit</button>
-                                    <button class="btn-small danger" onclick="deleteMember(1)">Delete</button>
+                                    <button class="btn-small members-EditMember" onclick="editMember(1)">Edit</button>
+                                    <button class="btn-small danger members-RemoveMember" onclick="deleteMember(1)">Delete</button>
                                 </td>
                             </tr>
                             <tr>
@@ -202,8 +202,8 @@
                                 <td>(801) 555-0102</td>
                                 <td>Relief Society</td>
                                 <td>
-                                    <button class="btn-small" onclick="editMember(2)">Edit</button>
-                                    <button class="btn-small danger" onclick="deleteMember(2)">Delete</button>
+                                    <button class="btn-small members-EditMember" onclick="editMember(2)">Edit</button>
+                                    <button class="btn-small danger members-RemoveMember" onclick="deleteMember(2)">Delete</button>
                                 </td>
                             </tr>
                             <tr>
@@ -212,8 +212,8 @@
                                 <td>(801) 555-0103</td>
                                 <td>Elders Quorum</td>
                                 <td>
-                                    <button class="btn-small" onclick="editMember(3)">Edit</button>
-                                    <button class="btn-small danger" onclick="deleteMember(3)">Delete</button>
+                                    <button class="btn-small members-EditMember" onclick="editMember(3)">Edit</button>
+                                    <button class="btn-small danger members-RemoveMember" onclick="deleteMember(3)">Delete</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -225,10 +225,10 @@
             <section id="assignments" class="section">
                 <h2>Assignments & Responsibilities</h2>
                 <div class="section-toolbar">
-                    <button class="btn-primary" onclick="openNewAssignment()">
+                    <button class="btn-primary assignments-AssignTask" onclick="openNewAssignment()">
                         <i class="fas fa-plus"></i> New Assignment
                     </button>
-                    <select id="filterAssignments" onchange="filterAssignments()" class="filter-select">
+                    <select id="filterAssignments" onchange="filterAssignments()" class="filter-select assignments-FilterTasks">
                         <option value="">All Assignments</option>
                         <option value="active">Active</option>
                         <option value="completed">Completed</option>
@@ -248,7 +248,8 @@
                         </div>
                         <div class="assignment-actions">
                             <button class="btn-small" onclick="editAssignment(1)">Edit</button>
-                            <button class="btn-small" onclick="markComplete(1)">Complete</button>
+                            <button class="btn-small assignments-EditTask" onclick="editAssignment(1)">Edit</button>
+                            <button class="btn-small assignments-ActionTask" onclick="markComplete(1)">Complete</button>
                         </div>
                     </div>
 
@@ -264,7 +265,8 @@
                         </div>
                         <div class="assignment-actions">
                             <button class="btn-small" onclick="editAssignment(2)">Edit</button>
-                            <button class="btn-small" onclick="markComplete(2)">Complete</button>
+                            <button class="btn-small assignments-EditTask" onclick="editAssignment(2)">Edit</button>
+                            <button class="btn-small assignments-ActionTask" onclick="markComplete(2)">Complete</button>
                         </div>
                     </div>
 
@@ -280,6 +282,7 @@
                         </div>
                         <div class="assignment-actions">
                             <button class="btn-small" onclick="viewAssignment(3)">View</button>
+                                                    <button class="btn-small assignments-ViewTask" onclick="viewAssignment(3)">View</button>
                         </div>
                     </div>
                 </div>
@@ -289,10 +292,10 @@
             <section id="scheduling" class="section">
                 <h2>Ward Scheduling</h2>
                 <div class="section-toolbar">
-                    <button class="btn-primary" onclick="openScheduleEvent()">
+                    <button class="btn-primary scheduling-ScheduleEvent" onclick="openScheduleEvent()">
                         <i class="fas fa-calendar-plus"></i> Schedule Event
                     </button>
-                    <select id="scheduleFilter" onchange="filterSchedule()" class="filter-select">
+                    <select id="scheduleFilter" onchange="filterSchedule()" class="filter-select scheduling-FilterEventTypes scheduling-FilterEventDates">
                         <option value="">All Events</option>
                         <option value="sacrament">Sacrament Meeting</option>
                         <option value="activities">Activities</option>
@@ -321,6 +324,7 @@
                             <p>9:00 AM - 10:15 AM</p>
                         </div>
                         <button class="btn-small" onclick="editEvent(1)">Edit</button>
+                                            <button class="btn-small scheduling-EditEvents" onclick="editEvent(1)">Edit</button>
                     </div>
 
                     <div class="event-item">
@@ -333,6 +337,7 @@
                             <p>6:00 PM - 8:00 PM</p>
                         </div>
                         <button class="btn-small" onclick="editEvent(2)">Edit</button>
+                                            <button class="btn-small scheduling-EditEvents" onclick="editEvent(2)">Edit</button>
                     </div>
 
                     <div class="event-item">
@@ -345,6 +350,7 @@
                             <p>5:00 PM - 7:00 PM</p>
                         </div>
                         <button class="btn-small" onclick="editEvent(3)">Edit</button>
+                                            <button class="btn-small scheduling-EditEvents" onclick="editEvent(3)">Edit</button>
                     </div>
                 </div>
             </section>
@@ -353,7 +359,7 @@
             <section id="forms" class="section">
                 <h2>Forms & Templates</h2>
                 <div class="forms-grid">
-                    <div class="form-card">
+                    <div class="form-card forms-MemberReferral">
                         <div class="form-icon">
                             <i class="fas fa-file-signature"></i>
                         </div>
@@ -370,7 +376,7 @@
                         </div>
                         <h3>Home Teaching Report</h3>
                         <p>Record monthly home teaching visits and updates</p>
-                        <button class="btn-primary" onclick="openForm('homeTeaching')">
+                        <button class="btn-primary forms-HomeTeaching" onclick="openForm('homeTeaching')">
                             Open Form
                         </button>
                     </div>
@@ -381,7 +387,7 @@
                         </div>
                         <h3>Welfare Assistance Request</h3>
                         <p>Request welfare or emergency assistance</p>
-                        <button class="btn-primary" onclick="openForm('welfare')">
+                        <button class="btn-primary forms-WelfareAssistance" onclick="openForm('welfare')">
                             Open Form
                         </button>
                     </div>
@@ -392,7 +398,7 @@
                         </div>
                         <h3>Missionary Recommendation</h3>
                         <p>Submit missionary recommendations and tracking</p>
-                        <button class="btn-primary" onclick="openForm('missionary')">
+                        <button class="btn-primary forms-MissionaryRecommendation" onclick="openForm('missionary')">
                             Open Form
                         </button>
                     </div>
@@ -403,7 +409,7 @@
                         </div>
                         <h3>Activity Planning Form</h3>
                         <p>Plan and coordinate ward activities</p>
-                        <button class="btn-primary" onclick="openForm('activity')">
+                        <button class="btn-primary forms-ActivityPlanning" onclick="openForm('activity')">
                             Open Form
                         </button>
                     </div>
@@ -414,7 +420,7 @@
                         </div>
                         <h3>Service Project Log</h3>
                         <p>Track and log service projects completed</p>
-                        <button class="btn-primary" onclick="openForm('service')">
+                        <button class="btn-primary forms-ServiceProjectLog" onclick="openForm('service')">
                             Open Form
                         </button>
                     </div>
@@ -425,22 +431,22 @@
             <section id="reports" class="section">
                 <h2>Reports & Analytics</h2>
                 <div class="reports-grid">
-                    <div class="report-card">
+                    <div class="report-card reports-Statistics">
                         <h3>Ward Statistics</h3>
                         <div class="report-stats">
-                            <div class="stat-item">
+                            <div class="stat-item reports-Statistics-activeMembers">
                                 <span class="label">Active Members</span>
                                 <span class="value">245</span>
                             </div>
-                            <div class="stat-item">
+                            <div class="stat-item reports-Statistics-recentConverts">
                                 <span class="label">Recent Converts</span>
                                 <span class="value">8</span>
                             </div>
-                            <div class="stat-item">
+                            <div class="stat-item reports-Statistics-Missionaries">
                                 <span class="label">Missionaries</span>
                                 <span class="value">12</span>
                             </div>
-                            <div class="stat-item">
+                            <div class="stat-item reports-Statistics-InNeedOfHelp">
                                 <span class="label">In Need of Help</span>
                                 <span class="value">5</span>
                             </div>
@@ -451,19 +457,19 @@
                     <div class="report-card">
                         <h3>Activity Attendance</h3>
                         <p class="report-desc">Monthly attendance summary for ward activities</p>
-                        <button class="btn-secondary" onclick="generateReport('attendance')">Generate Report</button>
+                        <button class="btn-secondary reports-ActivityAttendance" onclick="generateReport('attendance')">Generate Report</button>
                     </div>
 
                     <div class="report-card">
                         <h3>Assignment Completion</h3>
                         <p class="report-desc">Track completion rates for assigned tasks</p>
-                        <button class="btn-secondary" onclick="generateReport('assignments')">Generate Report</button>
+                        <button class="btn-secondary reports-AssignmentCompletion" onclick="generateReport('assignments')">Generate Report</button>
                     </div>
 
                     <div class="report-card">
                         <h3>Visiting Teaching</h3>
                         <p class="report-desc">Visiting Teaching completion and report statistics</p>
-                        <button class="btn-secondary" onclick="generateReport('visitingTeaching')">Generate Report</button>
+                        <button class="btn-secondary reports-VisitingTeaching" onclick="generateReport('visitingTeaching')">Generate Report</button>
                     </div>
                 </div>
             </section>

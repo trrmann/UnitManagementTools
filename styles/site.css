@@ -1,3 +1,62 @@
+/* Access control for dashboard parts */
+.dashboard-totalMembers.hide,
+.dashboard-thisWeeksEvents.hide,
+.dashboard-pendingTasks.hide,
+.dashboard-needsAssistance.hide,
+.dashboard-QuickActions-AddMember.hide,
+.dashboard-QuickActions-ScheduleEvent.hide,
+.dashboard-QuickActions-AssignTask.hide,
+.dashboard-QuickActions-SendMessage.hide,
+.dashboard-RecentActivities.hide {
+    display: none !important;
+}
+
+/* Access control for members parts */
+.members-AddMember.hide,
+.members-SearchMember.hide,
+.members-EditMember.hide,
+.members-RemoveMember.hide {
+    display: none !important;
+}
+
+/* Access control for assignments parts */
+.assignments-AssignTask.hide,
+.assignments-FilterTasks.hide,
+.assignments-EditTask.hide,
+.assignments-ActionTask.hide,
+.assignments-ViewTask.hide {
+    display: none !important;
+}
+
+/* Access control for scheduling parts */
+.scheduling-ScheduleEvent.hide,
+.scheduling-FilterEventTypes.hide,
+.scheduling-FilterEventDates.hide,
+.scheduling-EditEvents.hide {
+    display: none !important;
+}
+
+/* Access control for forms parts */
+.forms-MemberReferral.hide,
+.forms-HomeTeaching.hide,
+.forms-WelfareAssistance.hide,
+.forms-MissionaryRecommendation.hide,
+.forms-ActivityPlanning.hide,
+.forms-ServiceProjectLog.hide {
+    display: none !important;
+}
+
+/* Access control for reports parts */
+.reports-Statistics.hide,
+.reports-Statistics-activeMembers.hide,
+.reports-Statistics-recentConverts.hide,
+.reports-Statistics-Missionaries.hide,
+.reports-Statistics-InNeedOfHelp.hide,
+.reports-ActivityAttendance.hide,
+.reports-AssignmentCompletion.hide,
+.reports-VisitingTeaching.hide {
+    display: none !important;
+}
 
 :root {
 	--primary-color: #1f3a93;
