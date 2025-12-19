@@ -398,8 +398,20 @@ html, body {
 }
 
 .members-table td:last-child {
-    display: flex;
-    gap: 8px;
+    /* Remove flex to ensure cell height matches other cells */
+    /* display: flex; */
+    /* gap: 8px; */
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.members-table td:last-child button {
+    display: inline-block;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+.members-table td:last-child button:last-child {
+    margin-right: 0;
 }
 
 /* ===== Assignments ===== */
