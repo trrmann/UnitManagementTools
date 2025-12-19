@@ -150,7 +150,7 @@ async function renderMembersTable() {
     // Show/hide Unit column header
     const unitHeader = document.getElementById('unitHeader');
     if (unitHeader) unitHeader.style.display = showUnitColumn ? '' : 'none';
-    // Update sort icons
+    // Update sort icons for all sortable columns
     const sortColumns = ['name', 'email', 'phone', 'calling'];
     sortColumns.forEach(col => {
         const icon = document.getElementById(col + 'SortIcon');
@@ -161,29 +161,20 @@ async function renderMembersTable() {
                 icon.textContent = '';
             }
         }
-    });
-    // Sorting event listeners
-    document.addEventListener('DOMContentLoaded', function() {
-        const sortMap = {
-            nameHeader: 'name',
-            emailHeader: 'email',
-            phoneHeader: 'phone',
-            callingHeader: 'calling'
-        };
-        Object.keys(sortMap).forEach(headerId => {
-            const el = document.getElementById(headerId);
-            if (el) {
-                el.addEventListener('click', function() {
-                    if (membersSortColumn === sortMap[headerId]) {
-                        membersSortAsc = !membersSortAsc;
-                    } else {
-                        membersSortColumn = sortMap[headerId];
-                        membersSortAsc = true;
-                    }
-                    renderMembersTable();
-                });
-            }
-        });
+        // Add click handler to header for sorting
+        const header = document.getElementById(col + 'Header');
+        if (header && !header._copilotSortHandlerSet) {
+            header.addEventListener('click', function() {
+                if (membersSortColumn === col) {
+                    membersSortAsc = !membersSortAsc;
+                } else {
+                    membersSortColumn = col;
+                    membersSortAsc = true;
+                }
+                renderMembersTable();
+            });
+            header._copilotSortHandlerSet = true;
+        }
     });
     const tbody = document.getElementById('membersBody');
     tbody.innerHTML = '';
