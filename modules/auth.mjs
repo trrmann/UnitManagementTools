@@ -697,7 +697,16 @@ export class Auth {
                 // Unit (only for mission-level users)
                 if (showUnitColumn) {
                     const unitTd = document.createElement('td');
-                    unitTd.textContent = member.unitName || member.unitNumber || '';
+                    let unitDisplay = '';
+                    if (member.unitName) {
+                        unitDisplay = member.unitName;
+                        if (member.unitType) {
+                            unitDisplay += ` ${member.unitType.charAt(0).toUpperCase() + member.unitType.slice(1)}`;
+                        }
+                    } else if (member.unitNumber) {
+                        unitDisplay = member.unitNumber;
+                    }
+                    unitTd.textContent = unitDisplay;
                     tr.appendChild(unitTd);
                 } else {
                     const unitTd = document.createElement('td');

@@ -29,6 +29,11 @@
           "unitNumber": 201,
           "type": "ward",
           "name": "Green Valley"
+        },
+        {
+          "unitNumber": 202,
+          "type": "ward",
+          "name": "Holly Green"
         }
       ]
     }

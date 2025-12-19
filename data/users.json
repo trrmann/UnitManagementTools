@@ -1,69 +1,16 @@
 {
   "users": [
-    {
-      "memberNumber": 1,
-      "password": "demo",
-      "active": true
-    },
-    {
-      "memberNumber": 3,
-      "password": "demo",
-      "active": true
-    },
-    {
-      "memberNumber": 4,
-      "password": "demo",
-      
-      "active": true
-    },
-    {
-      "memberNumber": 5,
-      "password": "demo",
-      
-      "active": true
-    },
-    {
-      "memberNumber": 6,
-      "password": "demo",
-      
-      "active": true
-    },
-    {
-      "memberNumber": 7,
-      "password": "demo",
-      
-      "active": true
-    },
-    {
-      "memberNumber": 8,
-      "password": "demo",
-      
-      "active": true
-    },
-    {
-      "memberNumber": 9,
-      "password": "demo",
-
-      "active": true
-    }
-    ,
-    {
-      "memberNumber": 17,
-      "password": "demo",
-      "email": "mark.white@email.com",
-      "active": true
-    },
-    {
-      "memberNumber": 18,
-      "password": "demo",
-      "email": "brian.green@email.com",
-      "active": true
-    },
-    {
-      "memberNumber": 19,
-      "password": "demo",
-      "email": "james.miller@email.com",
-      "active": true
-    }
+    { "memberNumber": 1, "password": "demo", "active": true },
+    { "memberNumber": 3, "password": "demo", "active": true },
+    { "memberNumber": 4, "password": "demo", "active": true },
+    { "memberNumber": 5, "password": "demo", "active": true },
+    { "memberNumber": 6, "password": "demo", "active": true },
+    { "memberNumber": 7, "password": "demo", "active": true },
+    { "memberNumber": 8, "password": "demo", "active": true },
+    { "memberNumber": 9, "password": "demo", "active": true },
+    { "memberNumber": 17, "password": "demo", "active": true },
+    { "memberNumber": 18, "password": "demo", "active": true },
+    { "memberNumber": 19, "password": "demo", "active": true },
+    { "memberNumber": 20, "password": "demo", "active": true }
   ]
 }
