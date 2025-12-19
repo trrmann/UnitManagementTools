@@ -136,12 +136,15 @@ async function renderMembersTable() {
             else roleLevel = 'ward';
         }
         if (roleLevel === 'mission' && userMember && userMember.stakeUnitNumber) {
-            // Mission-level: show all members in user's stake
-            filteredMembers = members.filter(m => m.stakeUnitNumber === userMember.stakeUnitNumber);
+            // Mission-level: show all members in user's stake (type-safe)
+            filteredMembers = members.filter(m => String(m.stakeUnitNumber) === String(userMember.stakeUnitNumber));
             showUnitColumn = true;
         } else if ((roleLevel === 'stake' || roleLevel === 'ward') && userMember && userMember.unitNumber) {
-            // Stake/ward-level: show only members in user's ward
-            filteredMembers = members.filter(m => m.unitNumber === userMember.unitNumber);
+            // Stake/ward-level: show only members in user's ward (type-safe)
+            filteredMembers = members.filter(m => String(m.unitNumber) === String(userMember.unitNumber));
+        } else {
+            // Fallback: show all members if user/unit not found
+            filteredMembers = members;
         }
     }
     // Show/hide Unit column header
