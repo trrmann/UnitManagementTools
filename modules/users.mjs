@@ -134,6 +134,7 @@ export class Users {
       return {
         memberNumber: member ? member.memberNumber : user.memberNumber,
         fullname: member ? member.fullname : '',
+        titlelessFullname: member ? member.titlelessFullname : '',
         firstName: member ? member.firstName : '',
         middleName: member ? member.middleName : '',
         maidenName: member ? member.maidenName : '',

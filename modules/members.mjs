@@ -216,6 +216,8 @@ export class Members{
             if (member.maternalLastName) nameParts.push(member.maternalLastName);
             if (member.paternalLastName) nameParts.push(member.paternalLastName);
             const fullname = [prefix, ...nameParts.filter(Boolean)].join(' ');
+            // Titleless full name (no prefix/title)
+            const titlelessFullname = nameParts.filter(Boolean).join(' ');
 
             const stake = org.GetStake(member.stakeUnitNumber);
             const unit = org.GetUnit(member.unitNumber);
@@ -226,6 +228,7 @@ export class Members{
             return {
                 memberNumber: member.memberNumber,
                 fullname: fullname,
+                titlelessFullname: titlelessFullname,
                 firstName: member.firstName,
                 middleName: member.middleName,
                 maidenName: member.maidenName,

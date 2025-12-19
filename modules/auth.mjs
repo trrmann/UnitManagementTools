@@ -680,11 +680,11 @@ export class Auth {
             window.renderMembersPagination(membersCurrentPage, totalPages);
         }
         if (tbody) {
-            pageMembers.forEach(member => {
+            pageMembers.forEach(async member => {
                 const tr = document.createElement('tr');
-                // Name
+                // Name (titleless)
                 const nameTd = document.createElement('td');
-                nameTd.textContent = member.fullname || '';
+                nameTd.textContent = member.titlelessFullname || member.fullname || '';
                 tr.appendChild(nameTd);
                 // Email
                 const emailTd = document.createElement('td');
@@ -721,18 +721,47 @@ export class Auth {
                     callingTd.textContent = 'no calling';
                 }
                 tr.appendChild(callingTd);
-                // Actions
+                // Actions (only show if user has access)
                 const actionsTd = document.createElement('td');
-                const editBtn = document.createElement('button');
-                editBtn.className = 'btn-small members-EditMember';
-                editBtn.textContent = 'Edit';
-                editBtn.onclick = () => window.editMember(member.memberNumber);
-                actionsTd.appendChild(editBtn);
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'btn-small danger members-RemoveMember';
-                deleteBtn.textContent = 'Delete';
-                deleteBtn.onclick = () => window.deleteMember(member.memberNumber);
-                actionsTd.appendChild(deleteBtn);
+                let canEdit = false;
+                let canRemove = false;
+                // Check access config for current role
+                const config = await (await Configuration.Factory()).configuration;
+                let selectedRoleID = null;
+                if (this.currentUser && this.currentUser.activeRole && Array.isArray(this.currentUser.roleNames) && Array.isArray(this.currentUser.roleIDs)) {
+                    const idx = this.currentUser.roleNames.indexOf(this.currentUser.activeRole);
+                    if (idx !== -1) {
+                        selectedRoleID = this.currentUser.roleIDs[idx];
+                    }
+                }
+                // Fallback to all userRoleIDs if no selectedRoleID
+                const userRoleIDs = (this.currentUser && Array.isArray(this.currentUser.roleIDs)) ? this.currentUser.roleIDs : [];
+                // EditMember access
+                const editAccess = config && config.access && config.access.members && config.access.members.parts && config.access.members.parts.EditMember;
+                if (editAccess) {
+                    if (selectedRoleID !== null && editAccess.includes(selectedRoleID)) canEdit = true;
+                    else if (selectedRoleID === null && userRoleIDs.some(id => editAccess.includes(id))) canEdit = true;
+                }
+                // RemoveMember access
+                const removeAccess = config && config.access && config.access.members && config.access.members.parts && config.access.members.parts.RemoveMember;
+                if (removeAccess) {
+                    if (selectedRoleID !== null && removeAccess.includes(selectedRoleID)) canRemove = true;
+                    else if (selectedRoleID === null && userRoleIDs.some(id => removeAccess.includes(id))) canRemove = true;
+                }
+                if (canEdit) {
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'btn-small members-EditMember';
+                    editBtn.textContent = 'Edit';
+                    editBtn.onclick = () => window.editMember(member.memberNumber);
+                    actionsTd.appendChild(editBtn);
+                }
+                if (canRemove) {
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'btn-small danger members-RemoveMember';
+                    deleteBtn.textContent = 'Delete';
+                    deleteBtn.onclick = () => window.deleteMember(member.memberNumber);
+                    actionsTd.appendChild(deleteBtn);
+                }
                 tr.appendChild(actionsTd);
                 tbody.appendChild(tr);
             });

@@ -151,30 +151,31 @@ function filterSchedule() {
 }
 
 // Edit functions
-function editMember(id) {
-    alert(`Edit member ${id}`);
-}
 
-function deleteMember(id) {
+window.editMember = function(id) {
+    alert(`Edit member ${id}`);
+};
+
+window.deleteMember = function(id) {
     if (confirm('Are you sure you want to delete this member?')) {
         alert(`Member ${id} deleted`);
     }
-}
+};
 
-function editAssignment(id) {
+window.editAssignment = function(id) {
     alert(`Edit assignment ${id}`);
-}
+};
 
-function markComplete(id) {
+window.markComplete = function(id) {
     alert(`Assignment ${id} marked complete`);
-}
+};
 
-function viewAssignment(id) {
+window.viewAssignment = function(id) {
     alert(`View assignment ${id}`);
-}
+};
 
-function openAddMember() {
-    openModal('Add Member', `
+window.openAddMember = function() {
+    window.openModal('Add Member', `
         <div class="form-group">
             <label>First Name</label>
             <input type="text" placeholder="Enter first name" required>
@@ -202,10 +203,10 @@ function openAddMember() {
             </select>
         </div>
     `);
-}
+};
 
-function openNewAssignment() {
-    openModal('New Assignment', `
+window.openNewAssignment = function() {
+    window.openModal('New Assignment', `
         <div class="form-group">
             <label>Assignment Title</label>
             <input type="text" placeholder="Enter assignment title" required>
@@ -228,10 +229,10 @@ function openNewAssignment() {
             <input type="date" required>
         </div>
     `);
-}
+};
 
-function openScheduleEvent() {
-    openModal('Schedule Event', `
+window.openScheduleEvent = function() {
+    window.openModal('Schedule Event', `
         <div class="form-group">
             <label>Event Name</label>
             <input type="text" placeholder="Enter event name" required>
@@ -253,9 +254,9 @@ function openScheduleEvent() {
             <input type="text" placeholder="Enter location" required>
         </div>
     `);
-}
+};
 
-function openForm(formType) {
+window.openForm = function(formType) {
     const formTitles = {
         referral: 'Member Referral Form',
         homeTeaching: 'Home Teaching Report',
@@ -264,8 +265,7 @@ function openForm(formType) {
         activity: 'Activity Planning Form',
         service: 'Service Project Log'
     };
-    
-    openModal(formTitles[formType] || 'Form', `
+    window.openModal(formTitles[formType] || 'Form', `
         <div class="form-group">
             <label>Form Type: ${formTitles[formType]}</label>
             <textarea placeholder="Enter form details..." rows="6"></textarea>
@@ -275,42 +275,41 @@ function openForm(formType) {
             <textarea placeholder="Additional notes..." rows="3"></textarea>
         </div>
     `);
-}
+};
 
-function generateReport(reportType) {
+window.generateReport = function(reportType) {
     alert(`Generating ${reportType} report...`);
-}
+};
 
-function exportReport(reportType) {
+window.exportReport = function(reportType) {
     alert(`Exporting ${reportType} report...`);
-}
+};
 
-function editEvent(eventId) {
+window.editEvent = function(eventId) {
     alert(`Edit event ${eventId}`);
-}
+};
 
-function previousMonth() {
+window.previousMonth = function() {
     alert('Previous month');
-}
+};
 
-function nextMonth() {
+window.nextMonth = function() {
     alert('Next month');
-}
+};
 
-function openModal(title, content) {
+window.openModal = function(title, content) {
     const modal = document.getElementById('modal');
     const modalTitle = document.getElementById('modalTitle');
     const modalBody = document.getElementById('modalBody');
-    
     modalTitle.textContent = title;
     modalBody.innerHTML = content;
     modal.classList.add('show');
-}
+};
 
-function closeModal() {
+window.closeModal = function() {
     const modal = document.getElementById('modal');
     modal.classList.remove('show');
-}
+};
 
 // Close modal when clicking outside of it
 window.onclick = function(event) {
@@ -318,4 +317,4 @@ window.onclick = function(event) {
     if (event.target === modal) {
         modal.classList.remove('show');
     }
-}
+};
