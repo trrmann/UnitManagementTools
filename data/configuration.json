@@ -1,4 +1,225 @@
 {
+    "organizations": {
+        "units": {
+            "mission": {
+                "unittypeid": 1,
+                "unitDisplayName": "Mission",
+                "members": [2],
+                 "presidingOrganization": null,
+                 "memberOrganizations": []
+            },
+            "stake": {
+                "unittypeid": 2,
+                "unitDisplayName": "Stake",
+                "members": [3,4],
+                 "presidingOrganization": 1,
+                 "memberOrganizations": [15,16]
+            },
+            "ward": {
+                "unittypeid": 3,
+                "unitDisplayName": "Ward",
+                "members": [4],
+                 "presidingOrganization": 2,
+                 "memberOrganizations": [4,5,6,9,10,11,17]
+            },
+            "branch": {
+                "unittypeid": 4,
+                "unitDisplayName": "Branch",
+                "members": [],
+                 "presidingOrganization": 3,
+                 "memberOrganizations": [4,5,6,9,11]
+            }
+        },
+        "departmentalOrganizations": {
+            "stakePresidency": {
+                "departmenttypeid": 1,
+                "departmentdisplayname": "Stake Presidency",
+                "members": [],
+                "leadershipcallings": {
+                    "presidingCalling": 1,
+                    "counselorsCallings": [2,3],
+                    "staffCallings": [4,5,6,7,8]
+                },
+                "departmentcallings": []
+            },
+            "bishopric": {
+                "departmenttypeid": 2,
+                "departmentdisplayname": "Bishopric",
+                "members": [],
+                "leadershipcallings": {
+                    "presidingCalling": 9,
+                    "counselorsCallings": [10,11],
+                    "staffCallings": [12,13,14,15,16]
+                },
+                "departmentcallings": []
+            },
+            "branchPresidency": {
+                "departmenttypeid": 3,
+                "departmentdisplayname": "Branch Presidency",
+                "members": [],
+                "leadershipcallings": {
+                    "presidingCalling": 17,
+                    "counselorsCallings": [10,11],
+                    "staffCallings": [12,14]
+                },
+                "departmentcallings": []
+            },
+            "eldersQuorum": {
+                "departmenttypeid": 4,
+                "departmentdisplayname": "Elders Quorum",
+                "members": [],
+                "leadershipcallings": {
+                    "presidingCalling": 18,
+                    "counselorsCallings": [19,20],
+                    "staffCallings": [21]
+                },
+                "departmentcallings": []
+            },
+            "reliefSociety": {
+                "departmenttypeid": 5,
+                "departmentdisplayname": "Relief Society",
+                "members": [],
+                "leadershipcallings": {
+                    "presidingCalling": 22,
+                    "counselorsCallings": [23,24],
+                    "staffCallings": [25]
+                },
+                "departmentcallings": []
+            },
+            "Youth": {
+                "departmenttypeid": 6,
+                "departmentdisplayname": "Youth",
+                "members": [7,8],
+                "leadershipcallings": {
+                    "presidingCalling": null,
+                    "counselorsCallings": [],
+                    "staffCallings": []
+                },
+                "departmentcallings": []
+            },
+            "YoungMens": {
+                "departmenttypeid": 7,
+                "departmentdisplayname": "Young Men",
+                "members": [12,13,14],
+                "leadershipcallings": {
+                    "presidingCalling": null,
+                    "counselorsCallings": [],
+                    "staffCallings": []
+                },
+                "departmentcallings": []
+            },
+            "YoungWomens": {
+                "departmenttypeid": 8,
+                "departmentdisplayname": "Young Women",
+                "members": [],
+                "leadershipcallings": {
+                    "presidingCalling": null,
+                    "counselorsCallings": [],
+                    "staffCallings": []
+                },
+                "departmentcallings": []
+            },
+            "primary": {
+                "departmenttypeid": 9,
+                "departmentdisplayname": "Primary",
+                "members": [10],
+                "leadershipcallings": {
+                    "presidingCalling": null,
+                    "counselorsCallings": [],
+                    "staffCallings": []
+                },
+                "departmentcallings": []
+            },
+            "nursery": {
+                "departmenttypeid": 10,
+                "departmentdisplayname": "Nursery",
+                "members": [],
+                "leadershipcallings": {
+                    "presidingCalling": null,
+                    "counselorsCallings": [],
+                    "staffCallings": []
+                },
+                "departmentcallings": []
+            },
+            "sundaySchool": {
+                "departmenttypeid": 11,
+                "departmentdisplayname": "Sunday School",
+                "members": [],
+                "leadershipcallings": {
+                    "presidingCalling": null,
+                    "counselorsCallings": [],
+                    "staffCallings": []
+                },
+                "departmentcallings": []
+            },
+            "priestsquorum": {
+                "departmenttypeid": 12,
+                "departmentdisplayname": "Priests Quorum",
+                "members": [],
+                "leadershipcallings": {
+                    "presidingCalling": null,
+                    "counselorsCallings": [],
+                    "staffCallings": []
+                },
+                "departmentcallings": []
+            },
+            "teacherquorum": {
+                "departmenttypeid": 13,
+                "departmentdisplayname": "Teachers Quorum",
+                "members": [],
+                "leadershipcallings": {
+                    "presidingCalling": null,
+                    "counselorsCallings": [],
+                    "staffCallings": []
+                },
+                "departmentcallings": []
+            },
+            "deaconsquorum": {
+                "departmenttypeid": 14,
+                "departmentdisplayname": "Deacons Quorum",
+                "members": [],
+                "leadershipcallings": {
+                    "presidingCalling": null,
+                    "counselorsCallings": [],
+                    "staffCallings": []
+                },
+                "departmentcallings": []
+            },
+            "stakereliefsociety": {
+                "departmenttypeid": 15,
+                "departmentdisplayname": "Stake Relief Society",
+                "members": [],
+                "leadershipcallings": {
+                    "presidingCalling": null,
+                    "counselorsCallings": [],
+                    "staffCallings": []
+                },
+                "departmentcallings": []
+            },
+            "stakesundayschool": {
+                "departmenttypeid": 16,
+                "departmentdisplayname": "Stake Sunday School",
+                "members": [],
+                "leadershipcallings": {
+                    "presidingCalling": null,
+                    "counselorsCallings": [],
+                    "staffCallings": []
+                },
+                "departmentcallings": []
+            },
+            "wardmission": {
+                "departmenttypeid": 17,
+                "departmentdisplayname": "Ward Mission",
+                "members": [],
+                "leadershipcallings": {
+                    "presidingCalling": null,
+                    "counselorsCallings": [],
+                    "staffCallings": []
+                },
+                "departmentcallings": []
+            }
+        }
+    },
     "login": {
         "target": "body:prepend",
         "destinationID": "loginModal",

@@ -11,6 +11,9 @@
     { "memberNumber": 17, "password": "demo", "active": true },
     { "memberNumber": 18, "password": "demo", "active": true },
     { "memberNumber": 19, "password": "demo", "active": true },
-    { "memberNumber": 20, "password": "demo", "active": true }
+    { "memberNumber": 20, "password": "demo", "active": true },
+    { "memberNumber": -1, "password": "demo", "active": true },
+    { "memberNumber": -2, "password": "demo", "active": true },
+    { "memberNumber": -3, "password": "demo", "active": true }
   ]
 }

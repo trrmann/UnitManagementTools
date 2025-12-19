@@ -61,6 +61,83 @@
       "calling": 1,
       "subRoles": [1],
       "active": true
+    },
+    {
+      "id": -1,
+      "name": "Application Administrator",
+      "subRoles": [],
+      "calling": null,
+      "active": true
+    },
+    {
+      "id": -2,
+      "name": "Application Tester",
+      "subRoles": [-1],
+      "calling": null,
+      "active": true
+    },
+    {
+      "id": -3,
+      "name": "Application Developer",
+      "subRoles": [-2],
+      "calling": null,
+      "active": true
+    },
+    {
+      "id": 18,
+      "name": "Elders Quorum President",
+      "calling": 18,
+      "subRoles": [19,20,21],
+      "active": true
+    },
+    {
+      "id": 19,
+      "name": "Elders Quorum First Counselor",
+      "calling": 19,
+      "subRoles": [20,21],
+      "active": true
+    },
+    {
+      "id": 20,
+      "name": "Elders Quorum Second Counselor",
+      "calling": 20,
+      "subRoles": [21],
+      "active": true
+    },
+    {
+      "id": 21,
+      "name": "Elders Quorum Secretary",
+      "calling": 21,
+      "subRoles": [],
+      "active": true
+    },
+    {
+      "id": 22,
+      "name": "Relief Society President",
+      "calling": 22,
+      "subRoles": [23,24,25],
+      "active": true
+    },
+    {
+      "id": 23,
+      "name": "Relief Society First Counselor",
+      "calling": 23,
+      "subRoles": [24,25],
+      "active": true
+    },
+    {
+      "id": 24,
+      "name": "Relief Society Second Counselor",
+      "calling": 24,
+      "subRoles": [25],
+      "active": true
+    },
+    {
+      "id": 25,
+      "name": "Relief Society Secretary",
+      "calling": 25,
+      "subRoles": [],
+      "active": true
     }
   ]
 }

@@ -143,6 +143,87 @@
       "hasTitle": false,
       "title": "",
       "titleOrdinal": null
+    },
+    {
+      "id": 17,
+      "name": "Branch President",
+      "level": "stake",
+      "active": true,
+      "hasTitle": true,
+      "title": "President",
+      "titleOrdinal": 2
+    },
+    {
+      "id": 18,
+      "name": "Elders Quorum President",
+      "level": "stake",
+      "active": true,
+      "hasTitle": true,
+      "title": "President",
+      "titleOrdinal": 2
+    },
+    {
+      "id": 19,
+      "name": "Elders Quorum First Counselor",
+      "level": "stake",
+      "active": true,
+      "hasTitle": false,
+      "title": "",
+      "titleOrdinal": null
+    },
+    {
+      "id": 20,
+      "name": "Elders Quorum Second Counselor",
+      "level": "stake",
+      "active": true,
+      "hasTitle": false,
+      "title": "",
+      "titleOrdinal": null
+    },
+    {
+      "id": 21,
+      "name": "Elders Quorum Secretary",
+      "level": "stake",
+      "active": true,
+      "hasTitle": false,
+      "title": "",
+      "titleOrdinal": null
+    },
+    {
+      "id": 22,
+      "name": "Relief Society President",
+      "level": "stake",
+      "active": true,
+      "hasTitle": true,
+      "title": "President",
+      "titleOrdinal": 2
+    },
+    {
+      "id": 23,
+      "name": "Relief Society First Counselor",
+      "level": "stake",
+      "active": true,
+      "hasTitle": false,
+      "title": "",
+      "titleOrdinal": null
+    },
+    {
+      "id": 24,
+      "name": "Relief Society Second Counselor",
+      "level": "stake",
+      "active": true,
+      "hasTitle": false,
+      "title": "",
+      "titleOrdinal": null
+    },
+    {
+      "id": 25,
+      "name": "Relief Society Secretary",
+      "level": "stake",
+      "active": true,
+      "hasTitle": false,
+      "title": "",
+      "titleOrdinal": null
     }
   ]
 }
