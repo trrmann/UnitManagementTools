@@ -42,135 +42,16 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 import { Auth } from "../modules/auth.mjs";
-import { Members } from "../modules/members.mjs";
-let membersInstance = null;
 // Pagination state
-let membersCurrentPage = 1;
-let membersPerPage = 10;
-// Dynamically render members table
-async function renderMembersTable() {
-    // Determine if any actions are present for the current page
-    // Always render Actions column
+window.membersCurrentPage = 1;
+window.membersPerPage = 10;
 
-
-    if (!membersInstance) {
-        membersInstance = await Members.Factory();
+// Expose renderMembersTable globally for legacy calls, but delegate to authInstance
+window.renderMembersTable = async function() {
+    if (window.authInstance && typeof window.authInstance.renderMembersTable === 'function') {
+        await window.authInstance.renderMembersTable();
     }
-    const members = await membersInstance.GetMembers();
-    // console.log('Members loaded for table:', members);
-    let filteredMembers = members;
-
-    let showUnitColumn = false;
-    if (authInstance && authInstance.currentUser && authInstance.currentUser.activeRole) {
-        const user = authInstance.currentUser;
-        let userMember = null;
-        if (user.memberNumber) {
-            userMember = members.find(m => m.memberNumber === user.memberNumber);
-        }
-        // Determine role level (mission, stake, ward)
-        // For this example, assume user.activeRoleLevel is set, otherwise fallback to role name check
-        let roleLevel = user.activeRoleLevel;
-        if (!roleLevel && user.activeRole) {
-            const roleName = user.activeRole.toLowerCase();
-            if (roleName.includes('mission')) roleLevel = 'mission';
-            else if (roleName.includes('stake')) roleLevel = 'stake';
-            else roleLevel = 'ward';
-        }
-        if (roleLevel === 'mission' && userMember && userMember.stakeUnitNumber) {
-            // Mission-level: show all members in user's stake (type-safe)
-            filteredMembers = members.filter(m => String(m.stakeUnitNumber) === String(userMember.stakeUnitNumber));
-            showUnitColumn = true;
-        } else if ((roleLevel === 'stake' || roleLevel === 'ward') && userMember && userMember.unitNumber) {
-            // Stake/ward-level: show only members in user's ward (type-safe)
-            filteredMembers = members.filter(m => String(m.unitNumber) === String(userMember.unitNumber));
-        } else {
-            // Fallback: show all members if user/unit not found
-            filteredMembers = members;
-        }
-    }
-    // Show/hide Unit column header
-    const unitHeader = document.getElementById('unitHeader');
-    if (unitHeader) unitHeader.style.display = showUnitColumn ? '' : 'none';
-
-    const tbody = document.getElementById('membersBody');
-    tbody.innerHTML = '';
-    // Update dashboard total members stat
-    const dashboardTotalMembers = document.getElementById('dashboardTotalMembers');
-    if (dashboardTotalMembers) {
-        dashboardTotalMembers.textContent = filteredMembers.length;
-    }
-
-    // Pagination logic
-    // Get page size from selector if present
-    const pageSizeSelect = document.getElementById('membersPageSize');
-    if (pageSizeSelect) {
-        const val = parseInt(pageSizeSelect.value, 10);
-        if (!isNaN(val) && val > 0) membersPerPage = val;
-    }
-    const totalPages = Math.ceil(filteredMembers.length / membersPerPage) || 1;
-    if (membersCurrentPage > totalPages) membersCurrentPage = totalPages;
-    const startIdx = (membersCurrentPage - 1) * membersPerPage;
-    const endIdx = startIdx + membersPerPage;
-    const pageMembers = filteredMembers.slice(startIdx, endIdx);
-// Change page size and reset to first page
-window.changeMembersPageSize = function() {
-    membersCurrentPage = 1;
-    renderMembersTable();
-}
-
-
-    // Render pagination controls
-    renderMembersPagination(membersCurrentPage, totalPages);
-
-    pageMembers.forEach(member => {
-        const tr = document.createElement('tr');
-        // Name
-        const nameTd = document.createElement('td');
-        nameTd.textContent = member.fullname || '';
-        tr.appendChild(nameTd);
-        // Email
-        const emailTd = document.createElement('td');
-        emailTd.textContent = member.email || '';
-        tr.appendChild(emailTd);
-        // Phone
-        const phoneTd = document.createElement('td');
-        phoneTd.textContent = member.phone || '';
-        tr.appendChild(phoneTd);
-        // Unit (only for mission-level users)
-        if (showUnitColumn) {
-            const unitTd = document.createElement('td');
-            unitTd.textContent = member.unitName || member.unitNumber || '';
-            tr.appendChild(unitTd);
-        } else {
-            // If not showing unit, add a hidden cell for alignment
-            const unitTd = document.createElement('td');
-            unitTd.style.display = 'none';
-            tr.appendChild(unitTd);
-        }
-        // Calling(s)
-        const callingTd = document.createElement('td');
-        if (Array.isArray(member.callingNames) && member.callingNames.length > 0 && member.callingNames.some(n => n)) {
-            callingTd.textContent = member.callingNames.filter(Boolean).join(', ');
-        } else {
-            callingTd.textContent = 'no calling';
-        }
-        tr.appendChild(callingTd);
-        // Actions
-        const actionsTd = document.createElement('td');
-        const editBtn = document.createElement('button');
-        editBtn.className = 'btn-small members-EditMember';
-        editBtn.textContent = 'Edit';
-        editBtn.onclick = () => editMember(member.memberNumber);
-        actionsTd.appendChild(editBtn);
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'btn-small danger members-RemoveMember';
-        deleteBtn.textContent = 'Delete';
-        deleteBtn.onclick = () => deleteMember(member.memberNumber);
-        actionsTd.appendChild(deleteBtn);
-        tr.appendChild(actionsTd);
-        tbody.appendChild(tr);
-    });
-}
+};
 
 // Render pagination controls for members view
 function renderMembersPagination(currentPage, totalPages) {

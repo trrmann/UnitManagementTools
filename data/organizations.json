@@ -20,6 +20,17 @@
           "name": "Spanish"
         }
       ]
+    },
+    {
+      "unitNumber": 2,
+      "name": "Greenville East",
+      "units": [
+        {
+          "unitNumber": 201,
+          "type": "ward",
+          "name": "Green Valley"
+        }
+      ]
     }
   ]
 }

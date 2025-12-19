@@ -3,19 +3,11 @@
     {
       "memberNumber": 1,
       "password": "demo",
-      
-      "active": true
-    },
-    {
-      "memberNumber": 2,
-      "password": "demo",
-      
       "active": true
     },
     {
       "memberNumber": 3,
       "password": "demo",
-      
       "active": true
     },
     {
@@ -52,6 +44,25 @@
       "memberNumber": 9,
       "password": "demo",
 
+      "active": true
+    }
+    ,
+    {
+      "memberNumber": 17,
+      "password": "demo",
+      "email": "mark.white@email.com",
+      "active": true
+    },
+    {
+      "memberNumber": 18,
+      "password": "demo",
+      "email": "brian.green@email.com",
+      "active": true
+    },
+    {
+      "memberNumber": 19,
+      "password": "demo",
+      "email": "james.miller@email.com",
       "active": true
     }
   ]

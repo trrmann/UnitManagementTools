@@ -54,6 +54,13 @@
       "subRoles": [],
       "calling": 16,
       "active": true
+    },
+    {
+      "id": 9,
+      "name": "Stake President",
+      "calling": 1,
+      "subRoles": [1],
+      "active": true
     }
   ]
 }

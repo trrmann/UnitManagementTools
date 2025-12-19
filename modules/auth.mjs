@@ -183,10 +183,8 @@ export class Auth {
         const emailList = document.getElementById(elementID);
         if (!emailList || !this.allUsers) return;
         emailList.innerHTML = '';
-        //console.log('Populating email list with users:', this.allUsers);
         this.allUsers.forEach(user => {
-            if (user.memberactive || user.active) {
-                //console.log('Adding user to email list:', user);
+            if ((user.memberactive || user.active) && user.email && typeof user.email === 'string' && user.email.trim() !== '') {
                 const option = document.createElement('option');
                 option.value = user.email;
                 emailList.appendChild(option);
@@ -202,6 +200,10 @@ export class Auth {
     // Show dashboard
     async ShowDashboard() {
         const config = await (await Configuration.Factory()).configuration;
+        // Ensure members table is rendered for the current user
+        if (typeof this.renderMembersTable === 'function') {
+            this.renderMembersTable();
+        }
         const loginModal = document.getElementById(this.destinationID);
         const mainContainer = document.getElementById(this.mainContainerID);
         const logoutButton = document.getElementById(this.logoutID);
@@ -607,5 +609,124 @@ export class Auth {
     // Handle logout
     static logout() {
         Auth.clearSession();
+    }
+    // Render members table (moved from scripts/script.js)
+    async renderMembersTable() {
+        if (!this.membersInstance) {
+            this.membersInstance = await Members.Factory();
+        }
+        const members = await this.membersInstance.GetMembers();
+        let filteredMembers = members;
+        let showUnitColumn = false;
+        const user = this.currentUser;
+        let userMember = null;
+        if (user && user.memberNumber) {
+            userMember = members.find(m => m.memberNumber === user.memberNumber);
+        }
+        // Determine calling level from member's callings
+        let callingLevel = null;
+        if (userMember && Array.isArray(userMember.levels) && userMember.levels.length > 0) {
+            if (userMember.levels.includes('mission')) callingLevel = 'mission';
+            else if (userMember.levels.includes('stake')) callingLevel = 'stake';
+            else if (userMember.levels.includes('ward')) callingLevel = 'ward';
+        }
+        if (callingLevel === 'mission' && userMember && userMember.stakeUnitNumber) {
+            filteredMembers = members.filter(m => m.stakeUnitNumber === userMember.stakeUnitNumber);
+            showUnitColumn = true;
+        } else if ((callingLevel === 'stake' || callingLevel === 'ward') && userMember && userMember.unitNumber) {
+            filteredMembers = members.filter(
+                m => m.unitNumber === userMember.unitNumber
+            );
+            showUnitColumn = false;
+        } else {
+            filteredMembers = members;
+        }
+        // Show/hide Unit column header (always show for mission-level users)
+        const unitHeader = document.getElementById('unitHeader');
+        if (unitHeader) {
+            if (showUnitColumn) {
+                unitHeader.style.display = '';
+            } else {
+                unitHeader.style.display = 'none';
+            }
+        }
+        const tbody = document.getElementById('membersBody');
+        if (tbody) tbody.innerHTML = '';
+        // Update dashboard total members stat
+        const dashboardTotalMembers = document.getElementById('dashboardTotalMembers');
+        if (dashboardTotalMembers) {
+            dashboardTotalMembers.textContent = filteredMembers.length;
+        }
+        // Pagination logic
+        let membersPerPage = window.membersPerPage || 10;
+        let membersCurrentPage = window.membersCurrentPage || 1;
+        const pageSizeSelect = document.getElementById('membersPageSize');
+        if (pageSizeSelect) {
+            const val = parseInt(pageSizeSelect.value, 10);
+            if (!isNaN(val) && val > 0) membersPerPage = val;
+        }
+        const totalPages = Math.ceil(filteredMembers.length / membersPerPage) || 1;
+        if (membersCurrentPage > totalPages) membersCurrentPage = totalPages;
+        const startIdx = (membersCurrentPage - 1) * membersPerPage;
+        const endIdx = startIdx + membersPerPage;
+        const pageMembers = filteredMembers.slice(startIdx, endIdx);
+        window.changeMembersPageSize = function() {
+            window.membersCurrentPage = 1;
+            if (window.authInstance && typeof window.authInstance.renderMembersTable === 'function') {
+                window.authInstance.renderMembersTable();
+            }
+        };
+        if (typeof window.renderMembersPagination === 'function') {
+            window.renderMembersPagination(membersCurrentPage, totalPages);
+        }
+        if (tbody) {
+            pageMembers.forEach(member => {
+                const tr = document.createElement('tr');
+                // Name
+                const nameTd = document.createElement('td');
+                nameTd.textContent = member.fullname || '';
+                tr.appendChild(nameTd);
+                // Email
+                const emailTd = document.createElement('td');
+                emailTd.textContent = member.email || '';
+                tr.appendChild(emailTd);
+                // Phone
+                const phoneTd = document.createElement('td');
+                phoneTd.textContent = member.phone || '';
+                tr.appendChild(phoneTd);
+                // Unit (only for mission-level users)
+                if (showUnitColumn) {
+                    const unitTd = document.createElement('td');
+                    unitTd.textContent = member.unitName || member.unitNumber || '';
+                    tr.appendChild(unitTd);
+                } else {
+                    const unitTd = document.createElement('td');
+                    unitTd.style.display = 'none';
+                    tr.appendChild(unitTd);
+                }
+                // Calling(s)
+                const callingTd = document.createElement('td');
+                if (Array.isArray(member.callingNames) && member.callingNames.length > 0 && member.callingNames.some(n => n)) {
+                    callingTd.textContent = member.callingNames.filter(Boolean).join(', ');
+                } else {
+                    callingTd.textContent = 'no calling';
+                }
+                tr.appendChild(callingTd);
+                // Actions
+                const actionsTd = document.createElement('td');
+                const editBtn = document.createElement('button');
+                editBtn.className = 'btn-small members-EditMember';
+                editBtn.textContent = 'Edit';
+                editBtn.onclick = () => window.editMember(member.memberNumber);
+                actionsTd.appendChild(editBtn);
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'btn-small danger members-RemoveMember';
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.onclick = () => window.deleteMember(member.memberNumber);
+                actionsTd.appendChild(deleteBtn);
+                tr.appendChild(actionsTd);
+                tbody.appendChild(tr);
+            });
+        }
     }
 }
