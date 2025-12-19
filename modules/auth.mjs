@@ -2,7 +2,7 @@ import { Members } from "../modules/members.mjs";
 import { Users } from "../modules/users.mjs";
 import { Configuration } from "./configuration.mjs";
 // modules/auth.mjs
-// Authentication management module for Bishopric Dashboard
+// Authentication management module for Unit Management Tools
 export class Auth {
     constructor(configuration) {
         this.target = configuration.login.target;
@@ -101,7 +101,7 @@ export class Auth {
         loginButton.className = 'btn-login';
         loginSpecialAttentionSection.className = 'demo-users';
 
-        loginTitle.textContent = 'Bishopric Dashboard';
+        loginTitle.textContent = 'Unit Management Tools';
         loginMessage.textContent = 'Sign In to Your Account';
         emailLabel.textContent = 'Email Address';
         passwordLabel.textContent = 'Password';
