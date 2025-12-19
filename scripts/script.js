@@ -1,6 +1,4 @@
-// Sorting state
-let membersSortColumn = 'name';
-let membersSortAsc = true;
+
 
 // Hamburger toggle for user menu in mobile
 document.addEventListener('DOMContentLoaded', function() {
@@ -61,64 +59,7 @@ async function renderMembersTable() {
     const members = await membersInstance.GetMembers();
     // console.log('Members loaded for table:', members);
     let filteredMembers = members;
-    // Sorting logic
-    if (membersSortColumn) {
-        filteredMembers = [...filteredMembers].sort((a, b) => {
-            let aVal, bVal;
-            switch (membersSortColumn) {
-                case 'name':
-                    aVal = (a.paternalLastName || '').toLowerCase() + (a.firstName || '').toLowerCase();
-                    bVal = (b.paternalLastName || '').toLowerCase() + (b.firstName || '').toLowerCase();
-                    break;
-                case 'email':
-                    aVal = (a.email || '').toLowerCase();
-                    bVal = (b.email || '').toLowerCase();
-                    break;
-                case 'phone':
-                    aVal = (a.phone || '');
-                    bVal = (b.phone || '');
-                    break;
-                case 'calling': {
-                    // Custom sort: Counselors in numeric order, assistants after primary, then alpha
-                    function callingSortKey(calling) {
-                        if (!calling) return 'zzz';
-                        let key = calling.toLowerCase();
-                        // Numeric order for counselors
-                        if (/first counselor/.test(key)) return '1-counselor';
-                        if (/second counselor/.test(key)) return '2-counselor';
-                        if (/third counselor/.test(key)) return '3-counselor';
-                        // Place assistants after primary for clerk/secretary
-                        if (/^clerk$/.test(key)) return '4-clerk';
-                        if (/assistant clerk/.test(key)) return '5-clerk-assistant';
-                        if (/^secretary$/.test(key)) return '4-secretary';
-                        if (/assistant secretary/.test(key)) return '5-secretary-assistant';
-                        // Place other assistants after primary
-                        if (/assistant/.test(key)) return 'z-' + key;
-                        return 'm-' + key;
-                    }
-                    const aCallings = Array.isArray(a.callingNames) ? a.callingNames.filter(Boolean) : [];
-                    const bCallings = Array.isArray(b.callingNames) ? b.callingNames.filter(Boolean) : [];
-                    const aNoCalling = aCallings.length === 0;
-                    const bNoCalling = bCallings.length === 0;
-                    if (aNoCalling && !bNoCalling) return membersSortAsc ? 1 : -1;
-                    if (!aNoCalling && bNoCalling) return membersSortAsc ? -1 : 1;
-                    if (aNoCalling && bNoCalling) return 0;
-                    // Sort callings for each member by custom key, then use the first
-                    const aSorted = [...aCallings].sort((x, y) => callingSortKey(x).localeCompare(callingSortKey(y)));
-                    const bSorted = [...bCallings].sort((x, y) => callingSortKey(x).localeCompare(callingSortKey(y)));
-                    aVal = aSorted[0] ? callingSortKey(aSorted[0]) : '';
-                    bVal = bSorted[0] ? callingSortKey(bSorted[0]) : '';
-                    break;
-                }
-                default:
-                    aVal = '';
-                    bVal = '';
-            }
-            if (aVal < bVal) return membersSortAsc ? -1 : 1;
-            if (aVal > bVal) return membersSortAsc ? 1 : -1;
-            return 0;
-        });
-    }
+
     let showUnitColumn = false;
     if (authInstance && authInstance.currentUser && authInstance.currentUser.activeRole) {
         const user = authInstance.currentUser;
@@ -150,32 +91,7 @@ async function renderMembersTable() {
     // Show/hide Unit column header
     const unitHeader = document.getElementById('unitHeader');
     if (unitHeader) unitHeader.style.display = showUnitColumn ? '' : 'none';
-    // Update sort icons for all sortable columns
-    const sortColumns = ['name', 'email', 'phone', 'calling'];
-    sortColumns.forEach(col => {
-        const icon = document.getElementById(col + 'SortIcon');
-        if (icon) {
-            if (membersSortColumn === col) {
-                icon.textContent = membersSortAsc ? '▲' : '▼';
-            } else {
-                icon.textContent = '';
-            }
-        }
-        // Add click handler to header for sorting
-        const header = document.getElementById(col + 'Header');
-        if (header && !header._copilotSortHandlerSet) {
-            header.addEventListener('click', function() {
-                if (membersSortColumn === col) {
-                    membersSortAsc = !membersSortAsc;
-                } else {
-                    membersSortColumn = col;
-                    membersSortAsc = true;
-                }
-                renderMembersTable();
-            });
-            header._copilotSortHandlerSet = true;
-        }
-    });
+
     const tbody = document.getElementById('membersBody');
     tbody.innerHTML = '';
     // Update dashboard total members stat
