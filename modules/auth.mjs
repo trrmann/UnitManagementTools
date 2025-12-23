@@ -26,7 +26,7 @@ export class Auth {
     static async Factory(storageObject) {
         //const callings = await Callings.Factory();
         //console.log(callings);
-        //console.log(callings.GetCallings());
+        //console.log(callings.GetCallingsDetails());
         //const roles = await Roles.Factory();
         //console.log(roles);
         //console.log(roles.GetRoles());

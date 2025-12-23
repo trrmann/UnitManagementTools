@@ -29,17 +29,29 @@ export class Callings {
     }
 
     // ----- File/Storage Accessors -----
-    GetCallingsFilename() {
-        return "callings.json";
+    static get CallingsFileBasename() {
+        return "callings";
     }
-    GetCallingsExpireMS() {
-        return 1000 * 60 * 60 * 1; // 1 hour
+    static get CallingsFileExtension() {
+        return "json";
     }
-    GetStorageConfig() {
+    static get CallingsFilename() {
+        return `${Callings.CallingsFileBasename}.${Callings.CallingsFileExtension}`;
+    }
+    static get CallingsCacheExpireMS() {
+        return 1000 * 60 * 30; // 1/2 hour
+    }
+    static get CallingsSessionExpireMS() {
+        return 1000 * 60 * 60; // 1 hour
+    }
+    static get CallingsLocalExpireMS() {
+        return 1000 * 60 * 60 * 2; // 2 hours
+    }
+    static get StorageConfig() {
         return {
-            cacheTtlMs: null,
-            sessionTtlMs: null,
-            localTtlMs: null,
+            cacheTtlMs: Callings.CallingsCacheExpireMS,
+            sessionTtlMs: Callings.CallingsSessionExpireMS,
+            localTtlMs: Callings.CallingsLocalExpireMS,
             googleId: null,
             githubFilename: null,
             privateKey: null,
@@ -50,7 +62,7 @@ export class Callings {
 
     // ----- Data Fetching -----
     async Fetch() {
-        let callingsObj = await this.storage.Get(this.GetCallingsFilename(), this.GetStorageConfig());
+        let callingsObj = await this.storage.Get(Callings.CallingsFilename, Callings.StorageConfig);
         if (callingsObj) {
             this.callings = callingsObj;
         } else {
@@ -62,7 +74,7 @@ export class Callings {
     GetCallingsEntries() {
         return this.callings.callings;
     }
-    GetCallings() {
+    GetCallingsDetails() {
         return this.GetCallingsEntries().map(calling => ({
             id: calling.id,
             name: calling.name,
@@ -76,13 +88,13 @@ export class Callings {
 
     // ----- Filtering Methods -----
     GetActiveCallings() {
-        return this.GetCallings().filter(calling => calling.active === true);
+        return this.GetCallingsDetails().filter(calling => calling.active === true);
     }
     GetWardCallings() {
-        return this.GetCallings().filter(calling => calling.level === "ward");
+        return this.GetCallingsDetails().filter(calling => calling.level === "ward");
     }
     GetStakeCallings() {
-        return this.GetCallings().filter(calling => calling.level === "stake");
+        return this.GetCallingsDetails().filter(calling => calling.level === "stake");
     }
     GetActiveWardCallings() {
         return this.GetWardCallings().filter(calling => calling.active === true);
@@ -93,10 +105,10 @@ export class Callings {
 
     // ----- Lookup Methods -----
     GetCallingById(id) {
-        return this.GetCallings().filter(calling => calling.id === id);
+        return this.GetCallingsDetails().filter(calling => calling.id === id);
     }
     GetCallingByName(name) {
-        return this.GetCallings().filter(calling => calling.name === name);
+        return this.GetCallingsDetails().filter(calling => calling.name === name);
     }
     GetActiveCallingById(id) {
         return this.GetCallingById(id).filter(calling => calling.active === true);
@@ -131,7 +143,7 @@ export class Callings {
 
     // ----- Existence Checks -----
     HasCallings() {
-        const callings = this.GetCallings();
+        const callings = this.GetCallingsDetails();
         return callings !== null && callings.length > 0;
     }
     HasActiveCallings() {
@@ -192,10 +204,10 @@ export class Callings {
 
     // ----- ID/Name Accessors -----
     GetCallingIds() {
-        return this.GetCallings().map(calling => calling.id);
+        return this.GetCallingsDetails().map(calling => calling.id);
     }
     GetCallingNames() {
-        return this.GetCallings().map(calling => calling.name);
+        return this.GetCallingsDetails().map(calling => calling.name);
     }
     GetActiveCallingIds() {
         return this.GetActiveCallings().map(calling => calling.id);
