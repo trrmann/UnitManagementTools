@@ -95,20 +95,20 @@ export class Callings {
     }
 
     // ----- Filtering Methods -----
-    GetActiveCallings() {
+    get ActiveCallings() {
         return this.CallingsDetails.filter(calling => calling.active === true);
     }
-    GetWardCallings() {
+    get WardCallings() {
         return this.CallingsDetails.filter(calling => calling.level === "ward");
     }
-    GetStakeCallings() {
+    get StakeCallings() {
         return this.CallingsDetails.filter(calling => calling.level === "stake");
     }
-    GetActiveWardCallings() {
-        return this.GetWardCallings().filter(calling => calling.active === true);
+    get ActiveWardCallings() {
+        return this.WardCallings.filter(calling => calling.active === true);
     }
-    GetActiveStakeCallings() {
-        return this.GetStakeCallings().filter(calling => calling.active === true);
+    get ActiveStakeCallings() {
+        return this.StakeCallings.filter(calling => calling.active === true);
     }
 
     // ----- Lookup Methods -----
@@ -155,23 +155,23 @@ export class Callings {
         return callings !== null && callings.length > 0;
     }
     HasActiveCallings() {
-        const active = this.GetActiveCallings();
+        const active = this.ActiveCallings;
         return active !== null && active.length > 0;
     }
     HasWardCallings() {
-        const ward = this.GetWardCallings();
+        const ward = this.WardCallings;
         return ward !== null && ward.length > 0;
     }
     HasStakeCallings() {
-        const stake = this.GetStakeCallings();
+        const stake = this.StakeCallings;
         return stake !== null && stake.length > 0;
     }
     HasActiveWardCallings() {
-        const activeWard = this.GetActiveWardCallings();
+        const activeWard = this.ActiveWardCallings;
         return activeWard !== null && activeWard.length > 0;
     }
     HasActiveStakeCallings() {
-        return this.GetActiveStakeCallings() !== null && this.GetActiveStakeCallings().length > 0;
+        return this.ActiveStakeCallings !== null && this.ActiveStakeCallings.length > 0;
     }
     HasCallingById(id) {
         return this.GetCallingById(id) !== null && this.GetCallingById(id).length > 0;
@@ -218,28 +218,28 @@ export class Callings {
         return this.GetCallingsDetails().map(calling => calling.name);
     }
     GetActiveCallingIds() {
-        return this.GetActiveCallings().map(calling => calling.id);
+        return this.ActiveCallings.map(calling => calling.id);
     }
     GetActiveCallingNames() {
-        return this.GetActiveCallings().map(calling => calling.name);
+        return this.ActiveCallings.map(calling => calling.name);
     }
     GetWardCallingIds() {
-        return this.GetWardCallings().map(calling => calling.id);
+        return this.WardCallings.map(calling => calling.id);
     }
     GetWardCallingNames() {
-        return this.GetWardCallings().map(calling => calling.name);
+        return this.WardCallings.map(calling => calling.name);
     }
     GetStakeCallingIds() {
-        return this.GetStakeCallings().map(calling => calling.id);
+        return this.StakeCallings.map(calling => calling.id);
     }
     GetStakeCallingNames() {
-        return this.GetStakeCallings().map(calling => calling.name);
+        return this.StakeCallings.map(calling => calling.name);
     }
     GetActiveWardCallingIds() {
-        return this.GetActiveWardCallings().map(calling => calling.id);
+        return this.ActiveWardCallings.map(calling => calling.id);
     }
     GetActiveWardCallingNames() {
-        return this.GetActiveWardCallings().map(calling => calling.name);
+        return this.ActiveWardCallings.map(calling => calling.name);
     }
     GetActiveStakeCallingIds() {
         return this.GetActiveStakeCallings().map(calling => calling.id);
