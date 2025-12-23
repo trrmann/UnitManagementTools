@@ -1,22 +1,22 @@
 export class Callings {
 
     // ----- Constructor -----
-    constructor(config) {
-        this._storageObj = config._storageObj;
-        this.callings = null;
+    constructor(configuration) {
+        this.storage = configuration._storageObj;
+        this.callings = undefined;
     }
     
     // ----- Static Methods -----
     static CopyFromJSON(dataJSON) {
-        this._storageObj = dataJSON._storageObj;
+        this.storage = dataJSON._storageObj;
         this.callings = dataJSON.callings;
     }
     static CopyFromObject(destination, source) {
-        destination._storageObj = source._storageObj;
+        destination.storage = source._storageObj;
         destination.callings = source.callings;
     }
-    static async Factory(config) {
-        const callings = new Callings(config);
+    static async Factory(configuration) {
+        const callings = new Callings(configuration);
         await callings.Fetch();
         return callings;
     }
@@ -43,7 +43,7 @@ export class Callings {
 
     // ----- Data Fetching -----
     async Fetch() {
-        let callingsObj = await this._storageObj.Get(this.GetCallingsFilename(), this.GetStorageConfig());
+        let callingsObj = await this.storage.Get(this.GetCallingsFilename(), this.GetStorageConfig());
         if (callingsObj) {
             this.callings = callingsObj;
         } else {
