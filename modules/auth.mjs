@@ -32,7 +32,7 @@ export class Auth {
         //console.log(roles.RolesDetails);
         //const members = await Members.Factory();
         //console.log(members);
-        //console.log(await members.GetMembers());
+        //console.log(await members.MembersDetails());
         //const users = await Users.Factory();
         //console.log(users);
         //console.log(await users.GetUsers());
@@ -631,7 +631,7 @@ export class Auth {
         if (!this.membersInstance) {
             this.membersInstance = await Members.Factory({configuration: this.configuration, _storageObj:this._storageObj});
         }
-        const members = await this.membersInstance.GetMembers();
+        const members = await this.membersInstance.MembersDetails();
         let filteredMembers = members;
         let showUnitColumn = false;
         const user = this.currentUser;

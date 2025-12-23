@@ -57,7 +57,7 @@ export class Users {
 
   async GetUsers() {
     // Dynamically import Members if not already imported
-    let membersData = await this.members.GetMembers();
+    let membersData = await this.members.MembersDetails();
     return this.GetUserEntries().map(user => {
       // Only use memberNumber for matching
       const member = membersData.find(member => member.memberNumber === user.memberNumber);

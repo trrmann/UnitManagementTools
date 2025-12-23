@@ -3,57 +3,54 @@ import { Roles } from "./roles.mjs";
 import { Org } from "./org.mjs";
 
 export class Members {
-
     // ===== Instance Accessors =====
-    get Storage() { return this.storage; }
-    get Members() { return this.members; }
     get Roles() { return this.roles; }
-    get Callings() { return this.callings; }
+    get Callings() { return this.roles ? this.roles.Callings : undefined; }
+    get Storage() {
+        if (!this.roles || !this.roles.Callings || !this.roles.Callings.storage) {
+            throw new Error("Callings instance or its storage is not set on Members.");
+        }
+        return this.roles.Callings.storage;
+    }
+    get Members() { return this.members; }
     get Org() { return this.org; }
 
     // ===== Constructor =====
-    constructor(configuration) {
-        this.storage = configuration._storageObj;
+    constructor() {
         this.members = undefined;
         this.roles = undefined;
-        this.callings = undefined;
         this.org = undefined;
     }
 
     // ===== Static Methods =====
+
     static CopyFromJSON(dataJSON) {
-        const members = new Members(dataJSON._storageObj);
+        const members = new Members();
         members.members = dataJSON.members;
-        members.roles = dataJSON.roles;
-        members.callings = dataJSON.callings;
-        members.org = dataJSON.org;
+        members.roles = dataJSON.roles ? Roles.CopyFromJSON(dataJSON.roles) : undefined;
+        members.org = dataJSON.org ? Org.CopyFromJSON(dataJSON.org) : undefined;
         return members;
     }
 
     static CopyToJSON(instance) {
         return {
-            _storageObj: instance.storage,
             members: instance.members,
-            roles: instance.roles,
-            callings: instance.callings,
-            org: instance.org
+            roles: instance.roles ? Roles.CopyToJSON(instance.roles) : undefined,
+            org: instance.org ? Org.CopyToJSON(instance.org) : undefined
         };
     }
 
     static CopyFromObject(destination, source) {
-        destination.storage = source.storage;
         destination.members = source.members;
         destination.roles = source.roles;
-        destination.callings = source.callings;
         destination.org = source.org;
     }
 
     static async Factory(configuration) {
-        const members = new Members(configuration);
-        await members.Fetch();
+        const members = new Members();
         members.roles = await Roles.Factory(configuration);
-        members.callings = members.roles.Callings;
         members.org = await Org.Factory(configuration);
+        await members.Fetch();
         return members;
     }
 
@@ -78,7 +75,11 @@ export class Members {
     }
 
     // ===== Data Fetching =====
+
     async Fetch() {
+        if (!this.Storage) {
+            throw new Error("Storage is not available in Members. Ensure Roles and Callings are properly initialized.");
+        }
         let membersObj = await this.Storage.Get(Members.MembersFilename, Members.StorageConfig);
         this.members = membersObj ? membersObj : undefined;
     }
@@ -86,16 +87,16 @@ export class Members {
     // ===== Core Data Accessors =====
     get MemberEntries() { return this.members?.members || []; }
 
-    async GetMembers() {
-        const callings = this.callings.CallingsDetails;
-        const roles = this.roles.RolesDetails;
-        const org = this.org.Organization;
+    async MembersDetails() {
+        const callings = this.roles && this.roles.Callings ? this.roles.Callings.CallingsDetails : undefined;
+        const roles = this.roles ? this.roles.RolesDetails : undefined;
+        const org = this.org ? this.org.Organization : undefined;
         const memberEntries = this.MemberEntries;
         return memberEntries.map(member => {
             // ...existing code for mapping members...
             // Allow members with no callings
             const memberCallings = Array.isArray(member.callings) ? member.callings : [];
-            const callingsResolved = memberCallings.length > 0 ? memberCallings.filter(callingid => this.callings.CallingIds.includes(callingid)).map(callingid => this.callings.CallingById(callingid)) : [];
+            const callingsResolved = memberCallings.length > 0 && this.roles && this.roles.Callings ? memberCallings.filter(callingid => this.roles.Callings.CallingIds.includes(callingid)).map(callingid => this.roles.Callings.CallingById(callingid)) : [];
             const callingNames = callingsResolved.length > 0 ? callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].name : null) : [];
             const callingLevels = callingsResolved.length > 0 ? callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].level : null) : [];
             const callingsActive = callingsResolved.length > 0 ? callingsResolved.map(callingArr => (callingArr && callingArr[0]) ? callingArr[0].active === true : false) : [];
