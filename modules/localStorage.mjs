@@ -50,25 +50,21 @@ export class LocalStorage {
             }
             return value;
         }
-        else {
-            return undefined;
-        }
+        return undefined;
     }
     GetObject(key) {
         const val = this.Get(key);
-        if(val) {
-            return JSON.parse(val);
-        } else {
-            return val;
-        }
+        return val ? JSON.parse(val) : val;
     }
     Clear() {
-        this.GetAllKeys().forEach(key =>{
+        const keys = this.GetAllKeys();
+        keys.forEach(key =>{
             this.Delete(key);
         });
     }
     LocalStoragePrune() {
-        this.GetAllKeys().forEach(key =>{
+        const keys = this.GetAllKeys();
+        keys.forEach(key =>{
             this.Get(key);
         });
     }

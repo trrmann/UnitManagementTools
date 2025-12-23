@@ -17,7 +17,7 @@ export class Configuration {
         destination._storageObj = source._storageObj;
     }
     static async Factory(storageObject) {
-        const configuration = new Configuration(await storageObject);
+        const configuration = new Configuration(storageObject);
         await configuration.Fetch();
         return configuration;
     }
@@ -72,12 +72,15 @@ export class Configuration {
         return c ? [c] : [];
     }
     HasConfiguration() {
-        return this.GetConfiguration() !== null && this.GetConfiguration().length > 0;
+        const config = this.GetConfiguration();
+        return config !== null && config.length > 0;
     }
     HasConfigurationByKey(key) {
-        return this.GetConfigurationByKey(key) !== null && this.GetConfigurationByKey(key).length > 0;
+        const configByKey = this.GetConfigurationByKey(key);
+        return configByKey !== null && configByKey.length > 0;
     }
     GetConfigurationKeys() {
-        return Object.keys(this.GetConfiguration());
+        const config = this.GetConfiguration();
+        return Object.keys(config);
     }
 }

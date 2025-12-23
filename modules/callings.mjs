@@ -12,7 +12,7 @@ export class Callings {
         destination.callings = source.callings;
     }
     static async Factory(config) {
-        const callings = new Callings(await config);
+        const callings = new Callings(config);
         await callings.Fetch();
         return callings;
     }
@@ -59,64 +59,84 @@ export class Callings {
             return this.GetCallings().filter(calling => calling.level === "ward");
         }
         GetStakeCallings() {
-            return this.GetCallings().filter(calling => calling.level === "stake");
+        const callings = this.GetCallings();
+        return callings.filter(calling => calling.level === "stake");
         }
         GetActiveWardCallings() {
-            return this.GetWardCallings().filter(calling => calling.active === true);
+        const wardCallings = this.GetWardCallings();
+        return wardCallings.filter(calling => calling.active === true);
         }
         GetActiveStakeCallings() {
-            return this.GetStakeCallings().filter(calling => calling.active === true);
+        const stakeCallings = this.GetStakeCallings();
+        return stakeCallings.filter(calling => calling.active === true);
         }
         GetCallingById(id) {
-            return this.GetCallings().filter(calling => calling.id === id);
+        const callings = this.GetCallings();
+        return callings.filter(calling => calling.id === id);
         }
         GetCallingByName(name) {
-            return this.GetCallings().filter(calling => calling.name === name);
+        const callings = this.GetCallings();
+        return callings.filter(calling => calling.name === name);
         }
         GetActiveCallingById(id) {
-            return this.GetCallingById(id).filter(calling => calling.active === true);
+        const byId = this.GetCallingById(id);
+        return byId.filter(calling => calling.active === true);
         }
         GetActiveCallingByName(name) {
-            return this.GetCallingByName(name).filter(calling => calling.active === true);
+        const byName = this.GetCallingByName(name);
+        return byName.filter(calling => calling.active === true);
         }
         GetWardCallingById(id) {
-            return this.GetCallingById(id).filter(calling => calling.level === "ward");
+        const byId = this.GetCallingById(id);
+        return byId.filter(calling => calling.level === "ward");
         }
         GetWardCallingByName(name) {
-            return this.GetCallingByName(name).filter(calling => calling.level === "ward");
+        const byName = this.GetCallingByName(name);
+        return byName.filter(calling => calling.level === "ward");
         }
         GetActiveWardCallingById(id) {
-            return this.GetActiveCallingById(id).filter(calling => calling.level === "ward");
+        const activeById = this.GetActiveCallingById(id);
+        return activeById.filter(calling => calling.level === "ward");
         }
         GetActiveWardCallingByName(name) {
-            return this.GetActiveCallingById(name).filter(calling => calling.level === "ward");
+        const activeByName = this.GetActiveCallingById(name);
+        return activeByName.filter(calling => calling.level === "ward");
         }
         GetStakeCallingById(id) {
-            return this.GetCallingById(id).filter(calling => calling.level === "stake");
+        const byId = this.GetCallingById(id);
+        return byId.filter(calling => calling.level === "stake");
         }
         GetStakeCallingByName(name) {
-            return this.GetCallingByName(name).filter(calling => calling.level === "stake");
+        const byName = this.GetCallingByName(name);
+        return byName.filter(calling => calling.level === "stake");
         }
         GetActiveStakeCallingById(id) {
-            return this.GetActiveCallingById(id).filter(calling => calling.level === "stake");
+        const activeById = this.GetActiveCallingById(id);
+        return activeById.filter(calling => calling.level === "stake");
         }
         GetActiveStakeCallingByName(name) {
-            return this.GetActiveCallingById(name).filter(calling => calling.level === "stake");
+        const activeByName = this.GetActiveCallingById(name);
+        return activeByName.filter(calling => calling.level === "stake");
         }
         HasCallings() {
-            return this.GetCallings() !== null && this.GetCallings().length > 0;
+        const callings = this.GetCallings();
+        return callings !== null && callings.length > 0;
         }
         HasActiveCallings() {
-            return this.GetActiveCallings() !== null && this.GetActiveCallings().length > 0;
+        const active = this.GetActiveCallings();
+        return active !== null && active.length > 0;
         }
         HasWardCallings() {
-            return this.GetWardCallings() !== null && this.GetWardCallings().length > 0;
+        const ward = this.GetWardCallings();
+        return ward !== null && ward.length > 0;
         }
         HasStakeCallings() {
-            return this.GetStakeCallings() !== null && this.GetStakeCallings().length > 0;
+        const stake = this.GetStakeCallings();
+        return stake !== null && stake.length > 0;
         }
         HasActiveWardCallings() {
-            return this.GetActiveWardCallings() !== null && this.GetActiveWardCallings().length > 0;
+        const activeWard = this.GetActiveWardCallings();
+        return activeWard !== null && activeWard.length > 0;
         }
         HasActiveStakeCallings() {
             return this.GetActiveStakeCallings() !== null && this.GetActiveStakeCallings().length > 0;

@@ -46,9 +46,10 @@ export class Org {
     }
     GetAllUnits() {
         // Synchronous: use cached org data
-        if (!this.GetOrg() || !Array.isArray(this.GetOrg().stakes)) return [];
+        const org = this.GetOrg();
+        if (!org || !Array.isArray(org.stakes)) return [];
         const allUnits = [];
-        for (const stake of this.GetOrg().stakes) {
+        for (const stake of org.stakes) {
             if (Array.isArray(stake.units)) {
                 for (const unit of stake.units) {
                     allUnits.push({
@@ -63,14 +64,17 @@ export class Org {
         return allUnits;
     }
     GetAllWards() {
-        return this.GetAllUnits().filter(unit => unit.type === "ward");
+        const allUnits = this.GetAllUnits();
+        return allUnits.filter(unit => unit.type === "ward");
     }
     GetAllBranches() {
-        return this.GetAllUnits().filter(unit => unit.type === "branch");
+        const allUnits = this.GetAllUnits();
+        return allUnits.filter(unit => unit.type === "branch");
     }
     GetStake(unitNumber) {
-        if (!this.GetOrg() || !Array.isArray(this.GetOrg().stakes)) return undefined;
-        return this.GetOrg().stakes.find(stake => stake.unitNumber === unitNumber);
+        const org = this.GetOrg();
+        if (!org || !Array.isArray(org.stakes)) return undefined;
+        return org.stakes.find(stake => stake.unitNumber === unitNumber);
     }
     GetAllStakeUnits(stakeUnitNumber) {
         const stake = this.GetStake(stakeUnitNumber);
@@ -92,8 +96,9 @@ export class Org {
         return this.GetAllBranches().find(unit => unit.unitNumber === unitNumber);
     }
     GetStakeByName(stakeName) {
-        if (!this.GetOrg() || !Array.isArray(this.GetOrg().stakes)) return undefined;
-        return this.GetOrg().stakes.find(stake => stake.name === stakeName);
+        const org = this.GetOrg();
+        if (!org || !Array.isArray(org.stakes)) return undefined;
+        return org.stakes.find(stake => stake.name === stakeName);
     }
     GetUnitByName(unitName) {
         return this.GetAllUnits().find(unit => unit.name === unitName);

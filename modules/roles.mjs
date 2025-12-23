@@ -16,7 +16,7 @@ export class Roles{
         destination.callings = source.callings;
     }
     static async Factory(config) {
-        const roles = new Roles(await config);
+        const roles = new Roles(config);
         await roles.Fetch();
         roles.callings = await Callings.Factory(config);
         return roles;
@@ -47,13 +47,14 @@ export class Roles{
     }
 
     GetRoles(){
-        return this.GetRolesEntries().map(role => {
+        const entries = this.GetRolesEntries();
+        return entries.map(role => {
             const callingArr = this.callings ? this.callings.GetCallingById(role.calling) : [];
             const calling = callingArr && callingArr.length > 0 ? callingArr[0] : {};
             const subRoles = this.GetRawSubRolesById(role.id);
-            const subRoleNames = this.GetRolesEntries().filter(r => {return subRoles.includes(r.id);}).map(r => {return r.name;});
+            const subRoleNames = entries.filter(r => subRoles.includes(r.id)).map(r => r.name);
             const allSubRoles = this.GetSubRolesById(role.id);
-            const allSubRoleNames = this.GetRolesEntries().filter(r => {return allSubRoles.includes(r.id);}).map(r => {return r.name;});
+            const allSubRoleNames = entries.filter(r => allSubRoles.includes(r.id)).map(r => r.name);
             return {
                 id: role.id,
                 name: role.name,
@@ -104,19 +105,24 @@ export class Roles{
         return allSubRoles;
     }
     GetActiveRoles(){
-        return this.GetRoles().filter(role => {return (role.active === true);});
+        const roles = this.GetRoles();
+        return roles.filter(role => role.active === true);
     }
     GetRoleEntryById(id) {
-        return this.GetRolesEntries().filter(role => {return (role.id === id);});
+        const entries = this.GetRolesEntries();
+        return entries.filter(role => role.id === id);
     }
     GetRoleById(id) {
-        return this.GetRoles().filter(role => {return (role.id === id);});
+        const roles = this.GetRoles();
+        return roles.filter(role => role.id === id);
     }
     GetRoleByName(name) {
-        return this.GetRoles().filter(role => {return (role.name === name);});
+        const roles = this.GetRoles();
+        return roles.filter(role => role.name === name);
     }
     GetRolesByCalling(callingId) {
-        return this.GetRoles().filter(role => {return role.callingID === callingId;});
+        const roles = this.GetRoles();
+        return roles.filter(role => role.callingID === callingId);
     }
     GetActiveRoleById(id) {
         return this.GetRoleById(id).filter(role => {return (role.active === true);});

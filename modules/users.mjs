@@ -117,14 +117,17 @@ export class Users {
   }
 
   GetActiveUsers() {
-    return this.GetUsers().filter(user => user.active === true);
+    const users = this.GetUsers();
+    return users.filter(user => user.active === true);
   }
 
   HasUserById(id) {
-    return ((this.GetUserById(id) !== null) && (this.GetUserById(id).length > 0));
+    const userById = this.GetUserById(id);
+    return (userById !== null && userById.length > 0);
   }
 
   HasUserByEmail(email) {
-    return ((this.GetUserByEmail(email) !== null) && (this.GetUserByEmail(email).length > 0));
+    const userByEmail = this.GetUserByEmail(email);
+    return (userByEmail !== null && userByEmail.length > 0);
   }
 }

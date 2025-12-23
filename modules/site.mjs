@@ -77,7 +77,8 @@ function filterSchedule() {
     // Add schedule filtering logic here
 }
     updateToggleVisibility() {
-        if (window.innerWidth <= 600) {
+        const isMobile = window.innerWidth <= 600;
+        if (isMobile) {
             toggleBtn.style.display = 'block';
             navBar.classList.remove('show');
             if (icon) {

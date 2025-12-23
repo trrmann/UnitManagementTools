@@ -24,7 +24,7 @@ export class Members{
         destination.org = source.org;
     }
     static async Factory(config) {
-        const members = new Members(await config);
+        const members = new Members(config);
         await members.Fetch();
         members.roles = await Roles.Factory(config);
         members.callings = await members.roles.callings;
@@ -60,7 +60,8 @@ export class Members{
         const callings = await this.callings.GetCallings();
         const roles = await this.roles.GetRoles();
         const org = await this.org.GetOrg();
-        return this.GetMemberEntries().map(member => {
+        const memberEntries = this.GetMemberEntries();
+        return memberEntries.map(member => {
             // Allow members with no callings
             const memberCallings = Array.isArray(member.callings) ? member.callings : [];
             const callingsResolved = memberCallings.length > 0 ? memberCallings.map(callingid => this.callings.GetCallingById(callingid)) : [];
