@@ -112,41 +112,41 @@ export class Callings {
     }
 
     // ----- Lookup Methods -----
-    GetCallingById(id) {
+    CallingById(id) {
         return this.CallingsDetails.filter(calling => calling.id === id);
     }
-    GetCallingByName(name) {
+    CallingByName(name) {
         return this.CallingsDetails.filter(calling => calling.name === name);
     }
-    GetActiveCallingById(id) {
-        return this.GetCallingById(id).filter(calling => calling.active === true);
+    ActiveCallingById(id) {
+        return this.CallingById(id).filter(calling => calling.active === true);
     }
-    GetActiveCallingByName(name) {
-        return this.GetCallingByName(name).filter(calling => calling.active === true);
+    ActiveCallingByName(name) {
+        return this.CallingByName(name).filter(calling => calling.active === true);
     }
-    GetWardCallingById(id) {
-        return this.GetCallingById(id).filter(calling => calling.level === "ward");
+    WardCallingById(id) {
+        return this.CallingById(id).filter(calling => calling.level === "ward");
     }
-    GetWardCallingByName(name) {
-        return this.GetCallingByName(name).filter(calling => calling.level === "ward");
+    WardCallingByName(name) {
+        return this.CallingByName(name).filter(calling => calling.level === "ward");
     }
-    GetActiveWardCallingById(id) {
-        return this.GetActiveCallingById(id).filter(calling => calling.level === "ward");
+    ActiveWardCallingById(id) {
+        return this.ActiveCallingById(id).filter(calling => calling.level === "ward");
     }
-    GetActiveWardCallingByName(name) {
-        return this.GetActiveCallingById(name).filter(calling => calling.level === "ward");
+    ActiveWardCallingByName(name) {
+        return this.ActiveCallingById(name).filter(calling => calling.level === "ward");
     }
-    GetStakeCallingById(id) {
-        return this.GetCallingById(id).filter(calling => calling.level === "stake");
+    StakeCallingById(id) {
+        return this.CallingById(id).filter(calling => calling.level === "stake");
     }
-    GetStakeCallingByName(name) {
-        return this.GetCallingByName(name).filter(calling => calling.level === "stake");
+    StakeCallingByName(name) {
+        return this.CallingByName(name).filter(calling => calling.level === "stake");
     }
-    GetActiveStakeCallingById(id) {
-        return this.GetActiveCallingById(id).filter(calling => calling.level === "stake");
+    ActiveStakeCallingById(id) {
+        return this.ActiveCallingById(id).filter(calling => calling.level === "stake");
     }
-    GetActiveStakeCallingByName(name) {
-        return this.GetActiveCallingById(name).filter(calling => calling.level === "stake");
+    ActiveStakeCallingByName(name) {
+        return this.ActiveCallingById(name).filter(calling => calling.level === "stake");
     }
 
     // ----- Existence Checks -----
@@ -174,10 +174,10 @@ export class Callings {
         return this.ActiveStakeCallings !== null && this.ActiveStakeCallings.length > 0;
     }
     HasCallingById(id) {
-        return this.GetCallingById(id) !== null && this.GetCallingById(id).length > 0;
+        return this.CallingById(id) !== null && this.CallingById(id).length > 0;
     }
     HasCallingByName(name) {
-        return this.GetCallingByName(name) !== null && this.GetCallingByName(name).length > 0;
+        return this.CallingByName(name) !== null && this.CallingByName(name).length > 0;
     }
     HasActiveCallingById(id) {
         return this.GetActiveCallingById(id) !== null && this.GetActiveCallingById(id).length > 0;
