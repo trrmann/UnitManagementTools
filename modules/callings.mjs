@@ -1,4 +1,8 @@
 export class Callings {
+    // ----- Instance Accessors -----
+    get Callings() {
+        return this.callings;
+    }
 
     // ----- Constructor -----
     constructor(configuration) {
@@ -15,12 +19,12 @@ export class Callings {
     static CopyToJSON() {
         return {
             _storageObj: this.storage,
-            callings: this.callings
+            callings: this.Callings
         };
     }
     static CopyFromObject(destination, source) {
         destination.storage = source.storage;
-        destination.callings = source.callings;
+        destination.callings = source.Callings;
     }
     static async Factory(configuration) {
         const callings = new Callings(configuration);
@@ -72,7 +76,7 @@ export class Callings {
 
     // ----- Core Data Accessors -----
     GetCallingsEntries() {
-        return this.callings.callings;
+        return this.Callings.callings;
     }
     GetCallingsDetails() {
         return this.GetCallingsEntries().map(calling => ({
