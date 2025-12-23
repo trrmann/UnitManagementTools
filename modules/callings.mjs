@@ -149,30 +149,32 @@ export class Callings {
         return this.ActiveCallingById(name).filter(calling => calling.level === "stake");
     }
 
-    // ----- Existence Checks -----
-    HasCallings() {
+    // ----- Existence Accessors -----
+    get HasCallings() {
         const callings = this.CallingsDetails;
         return callings !== null && callings.length > 0;
     }
-    HasActiveCallings() {
+    get HasActiveCallings() {
         const active = this.ActiveCallings;
         return active !== null && active.length > 0;
     }
-    HasWardCallings() {
+    get HasWardCallings() {
         const ward = this.WardCallings;
         return ward !== null && ward.length > 0;
     }
-    HasStakeCallings() {
+    get HasStakeCallings() {
         const stake = this.StakeCallings;
         return stake !== null && stake.length > 0;
     }
-    HasActiveWardCallings() {
+    get HasActiveWardCallings() {
         const activeWard = this.ActiveWardCallings;
         return activeWard !== null && activeWard.length > 0;
     }
-    HasActiveStakeCallings() {
+    get HasActiveStakeCallings() {
         return this.ActiveStakeCallings !== null && this.ActiveStakeCallings.length > 0;
     }
+
+    // ----- Existence Lookups -----
     HasCallingById(id) {
         return this.CallingById(id) !== null && this.CallingById(id).length > 0;
     }
