@@ -1,67 +1,98 @@
+
 import { Roles } from "./roles.mjs";
 import { Org } from "./org.mjs";
-export class Members{
-    static local = true;
-    constructor(config) {
-        this._storageObj = config._storageObj;
-        this.members = null;
+
+export class Members {
+
+    // ===== Instance Accessors =====
+    get Storage() { return this.storage; }
+    get Members() { return this.members; }
+    get Roles() { return this.roles; }
+    get Callings() { return this.callings; }
+    get Org() { return this.org; }
+
+    // ===== Constructor =====
+    constructor(configuration) {
+        this.storage = configuration._storageObj;
+        this.members = undefined;
         this.roles = undefined;
         this.callings = undefined;
         this.org = undefined;
     }
+
+    // ===== Static Methods =====
     static CopyFromJSON(dataJSON) {
-        this._storageObj = dataJSON._storageObj;
-        this.members = dataJSON.members;
-        this.callings = dataJSON.callings;
-        this.roles = dataJSON.roles;
-        this.org = dataJSON.org;
-    }
-    static CopyFromObject(destination, source) {
-        destination._storageObj = source._storageObj;
-        destination.members = source.members;
-        destination.callings = source.callings;
-        destination.roles = source.roles;
-        destination.org = source.org;
-    }
-    static async Factory(config) {
-        const members = new Members(config);
-        await members.Fetch();
-        members.roles = await Roles.Factory(config);
-        members.callings = await members.roles.callings;
-        members.org = await Org.Factory(config);
+        const members = new Members(dataJSON._storageObj);
+        members.members = dataJSON.members;
+        members.roles = dataJSON.roles;
+        members.callings = dataJSON.callings;
+        members.org = dataJSON.org;
         return members;
     }
-    GetMembersFilename() {
-        const file = "members.json";
-        return file;
+
+    static CopyToJSON(instance) {
+        return {
+            _storageObj: instance.storage,
+            members: instance.members,
+            roles: instance.roles,
+            callings: instance.callings,
+            org: instance.org
+        };
     }
-    GetMembersExpireMS() {
-        return 1000 * 60 * 60 * 1;// 1 hour
+
+    static CopyFromObject(destination, source) {
+        destination.storage = source.storage;
+        destination.members = source.members;
+        destination.roles = source.roles;
+        destination.callings = source.callings;
+        destination.org = source.org;
     }
-    GetStorageConfig() {
-        return { cacheTtlMs: null, sessionTtlMs: null, localTtlMs: null, googleId: null, githubFilename: null, privateKey: null, publicKey: null, secure: false };
+
+    static async Factory(configuration) {
+        const members = new Members(configuration);
+        await members.Fetch();
+        members.roles = await Roles.Factory(configuration);
+        members.callings = members.roles.Callings;
+        members.org = await Org.Factory(configuration);
+        return members;
     }
+
+    // ===== File/Storage Accessors =====
+    static get MembersFileBasename() { return "members"; }
+    static get MembersFileExtension() { return "json"; }
+    static get MembersFilename() { return `${Members.MembersFileBasename}.${Members.MembersFileExtension}`; }
+    static get MembersCacheExpireMS() { return 1000 * 60 * 30; }
+    static get MembersSessionExpireMS() { return 1000 * 60 * 60; }
+    static get MembersLocalExpireMS() { return 1000 * 60 * 60 * 2; }
+    static get StorageConfig() {
+        return {
+            cacheTtlMs: Members.MembersCacheExpireMS,
+            sessionTtlMs: Members.MembersSessionExpireMS,
+            localTtlMs: Members.MembersLocalExpireMS,
+            googleId: null,
+            githubFilename: null,
+            privateKey: null,
+            publicKey: null,
+            secure: false
+        };
+    }
+
+    // ===== Data Fetching =====
     async Fetch() {
-        // Try to get from storage (cache/session/local/google/github)
-        let membersObj = await this._storageObj.Get(this.GetMembersFilename(), this.GetStorageConfig());
-        if (membersObj) {
-            this.members = membersObj;
-        } else {
-            // If not found, fallback to empty
-            this.members = undefined;
-        }
+        let membersObj = await this.Storage.Get(Members.MembersFilename, Members.StorageConfig);
+        this.members = membersObj ? membersObj : undefined;
     }
-    GetMemberEntries(){
-        // Ensure cache is built
-        return this.members.members;
-    }
+
+    // ===== Core Data Accessors =====
+    get MemberEntries() { return this.members?.members || []; }
+
     async GetMembers() {
-        // Use cached array and minimize repeated lookups
-        const callings = await this.callings.CallingsDetails;
+        const callings = this.callings.CallingsDetails;
         const roles = this.roles.RolesDetails;
         const org = this.org.Organization;
-        const memberEntries = this.GetMemberEntries();
+        const memberEntries = this.MemberEntries;
         return memberEntries.map(member => {
+            // ...existing code for mapping members...
             // Allow members with no callings
             const memberCallings = Array.isArray(member.callings) ? member.callings : [];
             const callingsResolved = memberCallings.length > 0 ? memberCallings.filter(callingid => this.callings.CallingIds.includes(callingid)).map(callingid => this.callings.CallingById(callingid)) : [];
@@ -176,13 +207,13 @@ export class Members{
         });
     }
 
-    // Get leadership for a stake by unitNumber using an Org instance
+    // ===== Leadership Lookups =====
     static GetStakeLeadership(orgInstance, stakeUnitNumber) {
         if (!orgInstance || typeof orgInstance.StakeByUnitNumber !== 'function') return null;
         const stake = orgInstance.StakeByUnitNumber(stakeUnitNumber);
         return stake && stake.leadership ? stake.leadership : null;
     }
-    // Get leadership for a ward by unitNumber using an Org instance
+
     static GetWardLeadership(orgInstance, wardUnitNumber) {
         if (!orgInstance || typeof orgInstance.WardByNumber !== 'function') return null;
         const ward = orgInstance.WardByNumber(wardUnitNumber);
