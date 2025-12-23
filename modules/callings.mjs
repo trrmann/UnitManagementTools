@@ -8,11 +8,12 @@ export class Callings {
     
     // ----- Static Methods -----
     static CopyFromJSON(dataJSON) {
-        this.storage = dataJSON._storageObj;
+        const callings = new Callings(dataJSON._storageObj);
         this.callings = dataJSON.callings;
+        return callings;
     }
     static CopyFromObject(destination, source) {
-        destination.storage = source._storageObj;
+        destination.storage = source.storage;
         destination.callings = source.callings;
     }
     static async Factory(configuration) {
