@@ -24,31 +24,14 @@ export class Auth {
         this.currentUser = null;
     }
     static async Factory(storageObject) {
-        //const callings = await Callings.Factory();
-        //console.log(callings);
-        //console.log(callings.CallingsDetails);
-        //const roles = await Roles.Factory();
-        //console.log(roles);
-        //console.log(roles.RolesDetails);
-        //const members = await Members.Factory();
-        //console.log(members);
-        //console.log(await members.MembersDetails());
-        //const users = await Users.Factory();
-        //console.log(users);
-        //console.log(await users.GetUsers());
-        //console.log('data ready');
-
         const configuration = await Configuration.Factory(storageObject);
-        //console.log(configuration);
         const auth = new Auth(configuration);
-        // Call this before any login modal logic        
         auth.CreateLoginModalWithSpecs();
-        // Module-level initialization (runs after DOM is parsed because modules are deferred)
         (async function() {
             try {
                 // Always reload users for login page
                 const usersObj = await Users.Factory(configuration);
-                auth.allUsers = await usersObj.GetUsers();
+                auth.allUsers = await usersObj.UsersDetails();
                 auth.PopulateEmailList(auth.emailListID);
             } catch (error) {
                 console.error('Error loading users:', error);

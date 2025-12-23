@@ -1,133 +1,157 @@
 import { Members } from "./members.mjs";
+
 export class Users {
-  static local = true;
-  constructor(config) {
-    this._storageObj = config._storageObj;
-    this.users = { users: [] };
-    this.members = undefined;
-  }
+    // ===== Instance Accessors =====
 
-  static CopyFromJSON(dataJSON) {
-    const users = new Users();
-    users._storageObj = dataJSON._storageObj;
-    users.users = dataJSON.users;
-    users.members = dataJSON.members;
-    users.lastFetched = dataJSON.lastFetched;
-    users._buildCache();
-    return users;
-  }
-
-  static CopyFromObject(destination, source) {
-    destination._storageObj = source._storageObj;
-    destination.users = source.users;
-    destination.members = source.members;
-    destination.lastFetched = source.lastFetched;
-    destination._buildCache();
-  }
-
-  static async Factory(config) {
-    const users = new Users(config);
-    await users.Fetch();
-    users.members = await Members.Factory(config);
-    return users;
-  }
-    GetUsersFilename() {
-        const file = "users.json";
-        return file;
+    get Members() { return this.members; }
+    get Org() {
+        return this.members && this.members.Org ? this.members.Org : undefined;
     }
-    GetUsersExpireMS() {
-        return 1000 * 60 * 60 * 1;// 1 hour
+    get Callings() {
+        return this.members && this.members.Roles && this.members.Roles.Callings ? this.members.Roles.Callings : undefined;
     }
-    GetStorageConfig() {
-        return { cacheTtlMs: null, sessionTtlMs: null, localTtlMs: null, googleId: null, githubFilename: null, privateKey: null, publicKey: null, secure: false };
-    }
-    async Fetch() {
-        // Try to get from storage (cache/session/local/google/github)
-        let usersObj = await this._storageObj.Get(this.GetUsersFilename(), this.GetStorageConfig());
-        if (usersObj) {
-            this.users = usersObj;
-        } else {
-            // If not found, fallback to empty
-            this.users = undefined;
+    get Storage() {
+        if (!this.Callings || !this.Callings.storage) {
+            throw new Error("Callings instance or its storage is not set on Users.");
         }
+        return this.Callings.storage;
     }
-  GetUserEntries() {
-    return this.users.users;
-  }
+    get Users() { return this.users; }
 
-  async GetUsers() {
-    // Dynamically import Members if not already imported
-    let membersData = await this.members.MembersDetails();
-    return this.GetUserEntries().map(user => {
-      // Only use memberNumber for matching
-      const member = membersData.find(member => member.memberNumber === user.memberNumber);
-      return {
-        memberNumber: member ? member.memberNumber : user.memberNumber,
-        fullname: member ? member.fullname : '',
-        titlelessFullname: member ? member.titlelessFullname : '',
-        firstName: member ? member.firstName : '',
-        middleName: member ? member.middleName : '',
-        maidenName: member ? member.maidenName : '',
-        maternalLastName: member ? member.maternalLastName : '',
-        paternalLastName: member ? member.paternalLastName : '',
-        maidenNameMaternal: member ? member.maidenNameMaternal : false,
-        genderMale: member ? member.genderMale : false,
-        gender: member ? member.gender : '',
-        password: user.password,
-        email: member ? member.email : user.email,
-        phone: member ? member.phone : '',
-        callingIDs: member ? member.callingIDs : [],
-        callingNames: member ? member.callingNames : [],
-        callingHaveTitles: member ? member.callingHaveTitles : [],
-        callingTitles: member ? member.callingTitles : [],
-        callingTitleOrdinals: member ? member.callingTitleOrdinals : [],
-        roleIDs: member ? member.callingRoleIDs : [],
-        roleNames: member ? member.callingRoleNames : [],
-        callingsActive: member ? member.callingsActive : [],
-        allSubRoles: member ? member.callingsAllSubRoles : [],
-        allSubRoleNames: member ? member.callingsAllSubRoleNames : [],
-        subRoles: member ? member.callingsSubRoles : [],
-        subRoleNames: member ? member.callingsSubRoleNames : [],
-        levels: member ? member.levels : [],
-        memberactive: member ? member.active : false,
-        active: user.active,
-        stakeUnitNumber: member ? member.stakeUnitNumber : undefined,
-        unitNumber: member ? member.unitNumber : undefined,
-        stakeName: member ? member.stakeName : '',
-        unitName: member ? member.unitName : '',
-        unitType: member ? member.unitType : ''
-      };
-    });
-  }
-
-  GetUserById(id) {
-    if (!this._idMap) this._buildCache();
-    // Only use memberNumber for lookup
-    let u = this._idMap.get(id);
-    if (!u) {
-      u = this._idMap.get(String(id)) || this._idMap.get(Number(id));
+    // ===== Constructor =====
+    constructor() {
+        this.users = undefined;
+        this.members = undefined;
     }
-    return u ? [u] : [];
-  }
 
-  GetUserByEmail(email) {
-    if (!this._emailMap) this._buildCache();
-    const u = this._emailMap.get(email);
-    return u ? [u] : [];
-  }
+    // ===== Static Methods =====
+    static CopyFromJSON(dataJSON) {
+        const users = new Users();
+        users.users = dataJSON.users;
+        users.members = dataJSON.members ? Members.CopyFromJSON(dataJSON.members) : undefined;
+        users.lastFetched = dataJSON.lastFetched;
+        return users;
+    }
 
-  GetActiveUsers() {
-    const users = this.GetUsers();
-    return users.filter(user => user.active === true);
-  }
+    static CopyToJSON(instance) {
+        return {
+            users: instance.users,
+            members: instance.members ? Members.CopyToJSON(instance.members) : undefined,
+            lastFetched: instance.lastFetched
+        };
+    }
 
-  HasUserById(id) {
-    const userById = this.GetUserById(id);
-    return (userById !== null && userById.length > 0);
-  }
+    static CopyFromObject(destination, source) {
+        destination.users = source.users;
+        destination.members = source.members;
+        destination.lastFetched = source.lastFetched;
+    }
 
-  HasUserByEmail(email) {
-    const userByEmail = this.GetUserByEmail(email);
-    return (userByEmail !== null && userByEmail.length > 0);
-  }
+    static async Factory(configuration) {
+        const users = new Users();
+        users.members = await Members.Factory(configuration);
+        await users.Fetch();
+        return users;
+    }
+
+    // ===== File/Storage Accessors =====
+    static get UsersFileBasename() { return "users"; }
+    static get UsersFileExtension() { return "json"; }
+    static get UsersFilename() { return `${Users.UsersFileBasename}.${Users.UsersFileExtension}`; }
+    static get UsersCacheExpireMS() { return 1000 * 60 * 30; }
+    static get UsersSessionExpireMS() { return 1000 * 60 * 60; }
+    static get UsersLocalExpireMS() { return 1000 * 60 * 60 * 2; }
+    static get StorageConfig() {
+        return {
+            cacheTtlMs: Users.UsersCacheExpireMS,
+            sessionTtlMs: Users.UsersSessionExpireMS,
+            localTtlMs: Users.UsersLocalExpireMS,
+            googleId: null,
+            githubFilename: null,
+            privateKey: null,
+            publicKey: null,
+            secure: false
+        };
+    }
+
+    // ===== Data Fetching =====
+    async Fetch() {
+        if (!this.Storage) {
+            throw new Error("Storage is not available in Users. Ensure Members, Roles, and Callings are properly initialized.");
+        }
+        let usersObj = await this.Storage.Get(Users.UsersFilename, Users.StorageConfig);
+        this.users = usersObj ? usersObj : undefined;
+    }
+
+    // ===== Core Data Accessors =====
+    get UserEntries() { return this.users?.users || []; }
+
+    async UsersDetails() {
+        const membersData = await this.members.MembersDetails();
+        return this.UserEntries.map(user => {
+            const member = membersData.find(member => member.memberNumber === user.memberNumber);
+            return {
+                memberNumber: member ? member.memberNumber : user.memberNumber,
+                fullname: member ? member.fullname : '',
+                titlelessFullname: member ? member.titlelessFullname : '',
+                firstName: member ? member.firstName : '',
+                middleName: member ? member.middleName : '',
+                maidenName: member ? member.maidenName : '',
+                maternalLastName: member ? member.maternalLastName : '',
+                paternalLastName: member ? member.paternalLastName : '',
+                maidenNameMaternal: member ? member.maidenNameMaternal : false,
+                genderMale: member ? member.genderMale : false,
+                gender: member ? member.gender : '',
+                password: user.password,
+                email: member ? member.email : user.email,
+                phone: member ? member.phone : '',
+                callingIDs: member ? member.callingIDs : [],
+                callingNames: member ? member.callingNames : [],
+                callingHaveTitles: member ? member.callingHaveTitles : [],
+                callingTitles: member ? member.callingTitles : [],
+                callingTitleOrdinals: member ? member.callingTitleOrdinals : [],
+                roleIDs: member ? member.callingRoleIDs : [],
+                roleNames: member ? member.callingRoleNames : [],
+                callingsActive: member ? member.callingsActive : [],
+                allSubRoles: member ? member.callingsAllSubRoles : [],
+                allSubRoleNames: member ? member.callingsAllSubRoleNames : [],
+                subRoles: member ? member.callingsSubRoles : [],
+                subRoleNames: member ? member.callingsSubRoleNames : [],
+                levels: member ? member.levels : [],
+                memberactive: member ? member.active : false,
+                active: user.active,
+                stakeUnitNumber: member ? member.stakeUnitNumber : undefined,
+                unitNumber: member ? member.unitNumber : undefined,
+                stakeName: member ? member.stakeName : '',
+                unitName: member ? member.unitName : '',
+                unitType: member ? member.unitType : ''
+            };
+        });
+    }
+
+    // ===== Filtering and Lookup Methods =====
+    async UserById(id) {
+        const users = await this.UsersDetails();
+        return users.filter(u => u.memberNumber === id || String(u.memberNumber) === String(id));
+    }
+
+    async UserByEmail(email) {
+        const users = await this.UsersDetails();
+        return users.filter(u => u.email === email);
+    }
+
+    get ActiveUsers() {
+        if (!this.users || !Array.isArray(this.users.users)) return [];
+        return this.users.users.filter(user => user.active === true);
+    }
+
+    async HasUserById(id) {
+        const userById = await this.UserById(id);
+        return (userById !== null && userById.length > 0);
+    }
+
+    async HasUserByEmail(email) {
+        const userByEmail = await this.UserByEmail(email);
+        return (userByEmail !== null && userByEmail.length > 0);
+    }
 }
