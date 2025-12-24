@@ -92,7 +92,7 @@ export class Callings {
         }
     get WardCallings() { return Callings._filterByProperty(this.CallingsDetails, 'level', 'ward'); }
     get StakeCallings() { return Callings._filterByProperty(this.CallingsDetails, 'level', 'stake'); }
-    get ActiveWardCallings() { return this.WardCallings.filter(calling => calling.active === true); }
+    get ActiveWardCallings() { return Callings._filterByProperty(this.WardCallings, 'active', true); }
     get ActiveStakeCallings() { return this.StakeCallings.filter(calling => calling.active === true); }
 
     // ===== ID/Name Accessors =====
