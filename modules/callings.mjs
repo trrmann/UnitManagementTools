@@ -107,7 +107,7 @@ export class Callings {
         }
     CallingByName(name) { return Callings._filterBy(this.CallingsDetails, 'name', name); }
     ActiveCallingById(id) { return Callings._filterBy(this.CallingById(id), 'active', true); }
-    ActiveCallingByName(name) { return this.CallingByName(name).filter(calling => calling.active === true); }
+    ActiveCallingByName(name) { return Callings._filterBy(this.CallingByName(name), 'active', true); }
     WardCallingById(id) { return this.CallingById(id).filter(calling => calling.level === "ward"); }
     WardCallingByName(name) { return this.CallingByName(name).filter(calling => calling.level === "ward"); }
     ActiveWardCallingById(id) { return this.ActiveCallingById(id).filter(calling => calling.level === "ward"); }
