@@ -85,7 +85,11 @@ export class Callings {
     }
 
     // ===== Filtering Methods =====
-    get ActiveCallings() { return this.CallingsDetails.filter(calling => calling.active === true); }
+    get ActiveCallings() { return Callings._filterByProperty(this.CallingsDetails, 'active', true); }
+        // ===== Filtering Utility =====
+        static _filterByProperty(array, property, value) {
+            return Array.isArray(array) ? array.filter(item => item && item[property] === value) : [];
+        }
     get WardCallings() { return this.CallingsDetails.filter(calling => calling.level === "ward"); }
     get StakeCallings() { return this.CallingsDetails.filter(calling => calling.level === "stake"); }
     get ActiveWardCallings() { return this.WardCallings.filter(calling => calling.active === true); }
