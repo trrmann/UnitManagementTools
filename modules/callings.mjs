@@ -90,7 +90,7 @@ export class Callings {
         static _filterByProperty(array, property, value) {
             return Array.isArray(array) ? array.filter(item => item && item[property] === value) : [];
         }
-    get WardCallings() { return this.CallingsDetails.filter(calling => calling.level === "ward"); }
+    get WardCallings() { return Callings._filterByProperty(this.CallingsDetails, 'level', 'ward'); }
     get StakeCallings() { return this.CallingsDetails.filter(calling => calling.level === "stake"); }
     get ActiveWardCallings() { return this.WardCallings.filter(calling => calling.active === true); }
     get ActiveStakeCallings() { return this.StakeCallings.filter(calling => calling.active === true); }
