@@ -26,7 +26,7 @@ export class Callings {
     }
     static CopyFromObject(destination, source) {
         destination.storage = source.storage;
-        destination.callings = source.Callings;
+        destination.callings = source.callings;
     }
     static async Factory(configuration) {
         const callings = new Callings(configuration);
