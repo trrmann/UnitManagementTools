@@ -16,12 +16,10 @@ export class Callings {
         callings.callings = dataJSON.callings;
         return callings;
     }
-    static CopyToJSON() {
-        return function(instance) {
-            return {
-                _storageObj: instance.storage,
-                callings: instance.callings
-            };
+    static CopyToJSON(instance) {
+        return {
+            _storageObj: instance.storage,
+            callings: instance.callings
         };
     }
     static CopyFromObject(destination, source) {
