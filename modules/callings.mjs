@@ -59,7 +59,15 @@ export class Callings {
     }
 
     // ===== Core Data Accessors =====
-    get CallingsEntries() { return this.Callings.callings; }
+    get CallingsEntries() {
+        if (Array.isArray(this.callings)) {
+            return this.callings;
+        } else if (this.callings && Array.isArray(this.callings.callings)) {
+            return this.callings.callings;
+        } else {
+            return [];
+        }
+    }
     get CallingsDetails() {
         return this.CallingsEntries.map(calling => ({
             id: calling.id,
