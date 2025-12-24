@@ -13,7 +13,7 @@ export class Callings {
     // ===== Static Methods =====
     static CopyFromJSON(dataJSON) {
         const callings = new Callings(dataJSON._storageObj);
-        this.callings = dataJSON.callings;
+        callings.callings = dataJSON.callings;
         return callings;
     }
     static CopyToJSON() {
