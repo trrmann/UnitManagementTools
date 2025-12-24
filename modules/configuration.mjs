@@ -1,86 +1,99 @@
-import { Storage } from "./storage.mjs";
 
 export class Configuration {
-    static local = true;
+    // ===== Instance Accessors =====
+    get Storage() { return this._storageObj; }
+    get Config() { return this.configuration; }
+
+    // ===== Constructor =====
     constructor(storageObject) {
         this._storageObj = storageObject;
-        this.configuration = null;
+        this.configuration = undefined;
     }
+
+    // ===== Static Methods =====
     static CopyFromJSON(dataJSON) {
-        const configuration = new Configuration();
-        configuration.configuration = dataJSON.configuration;
-        configuration._storageObj = dataJSON._storageObj;
-        return configuration;
+        const config = new Configuration(dataJSON._storageObj);
+        config.configuration = dataJSON.configuration;
+        return config;
     }
+
+    static CopyToJSON(instance) {
+        return {
+            _storageObj: instance._storageObj,
+            configuration: instance.configuration
+        };
+    }
+
     static CopyFromObject(destination, source) {
-        destination.configuration = source.configuration;
         destination._storageObj = source._storageObj;
+        destination.configuration = source.configuration;
     }
+
     static async Factory(storageObject) {
-        const configuration = new Configuration(storageObject);
-        await configuration.Fetch();
-        return configuration;
+        const config = new Configuration(storageObject);
+        await config.Fetch();
+        return config;
     }
-    GetConfigurationFilename() {
-        const file = "configuration.json";
-        return file;
+
+    // ===== File/Storage Accessors =====
+    static get ConfigFileBasename() { return "configuration"; }
+    static get ConfigFileExtension() { return "json"; }
+    static get ConfigFilename() { return `${Configuration.ConfigFileBasename}.${Configuration.ConfigFileExtension}`; }
+    static get ConfigCacheExpireMS() { return 1000 * 60 * 30; }
+    static get ConfigSessionExpireMS() { return 1000 * 60 * 60; }
+    static get ConfigLocalExpireMS() { return 1000 * 60 * 60 * 2; }
+    static get StorageConfig() {
+        return {
+            cacheTtlMs: Configuration.ConfigCacheExpireMS,
+            sessionTtlMs: Configuration.ConfigSessionExpireMS,
+            localTtlMs: Configuration.ConfigLocalExpireMS,
+            googleId: null,
+            githubFilename: null,
+            privateKey: null,
+            publicKey: null,
+            secure: false
+        };
     }
-    GetConfigurationExpireMS() {
-        return 1000 * 60 * 60 * 1;// 1 hour
-    }
-    GetStorageConfig() {
-        return { cacheTtlMs: null, sessionTtlMs: null, localTtlMs: null, googleId: null, githubFilename: null, privateKey: null, publicKey: null, secure: false };
-    }
+
+    // ===== Data Fetching =====
     async Fetch() {
-        // Try to get from storage (cache/session/local/google/github)
-        let configObj = await this._storageObj.Get(this.GetConfigurationFilename(), this.GetStorageConfig());
-        if (configObj) {
-            this.configuration = configObj;
-        } else {
-            // If not found, fallback to empty
-            this.configuration = null;
-        }
+        let configObj = await this._storageObj.Get(Configuration.ConfigFilename, Configuration.StorageConfig);
+        this.configuration = configObj ? configObj : undefined;
     }
-    GetConfiguration() {
-        if (!this._configurationObject) {
-            this._buildCache();
-        }
-        return this._configurationObject;
-    }
+
+    // ===== Utility Methods =====
     FlattenObject(obj, parentKey = '', separator = '.') {
         const result = {};
         for (const key in obj) {
             if (Object.prototype.hasOwnProperty.call(obj, key)) {
                 const newKey = parentKey ? `${parentKey}${separator}${key}` : key;
                 const value = obj[key];
-                // Check if the value is an object and not an array, and if so, recurse
                 if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-                    // Recursively call the function and merge the results
                     Object.assign(result, this.FlattenObject(value, newKey, separator));
                 } else {
-                    // Otherwise, add the key-value pair to the result
                     result[newKey] = value;
                 }
             }
         }
         return result;
     }
-    GetConfigurationByKey(key) {
-        // Fast lookup by name
+
+    GetConfigByKey(key) {
         if (!this._keyMap) this._buildCache();
         const c = this._keyMap.get(key);
         return c ? [c] : [];
     }
-    HasConfiguration() {
-        const config = this.GetConfiguration();
-        return config !== null && config.length > 0;
+
+    HasConfig() {
+        return !!this.configuration && Object.keys(this.configuration).length > 0;
     }
-    HasConfigurationByKey(key) {
-        const configByKey = this.GetConfigurationByKey(key);
+
+    HasConfigByKey(key) {
+        const configByKey = this.GetConfigByKey(key);
         return configByKey !== null && configByKey.length > 0;
     }
-    GetConfigurationKeys() {
-        const config = this.GetConfiguration();
-        return Object.keys(config);
+
+    GetConfigKeys() {
+        return this.configuration ? Object.keys(this.configuration) : [];
     }
 }
