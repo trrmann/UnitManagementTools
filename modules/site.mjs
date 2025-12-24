@@ -1,171 +1,213 @@
 
-import { Configuration } from "./configuration.mjs";
-import { Auth } from "../modules/auth.mjs";
+    import { Configuration } from "./configuration.mjs";
+    import { Auth } from "../modules/auth.mjs";
 
 export class Site {
     constructor() {
         this._siteConfig = null;
+        this._toggleBtn = null;
+        this._navBar = null;
+        this._icon = null;
     }
-    /*static async Factory() {
+        _createModalDiv() {
+            if (document.getElementById('modal')) return;
+            const modal = document.createElement('div');
+            modal.id = 'modal';
+            modal.className = 'modal';
+            const modalContent = document.createElement('div');
+            modalContent.className = 'modal-content';
+            const closeSpan = document.createElement('span');
+            closeSpan.className = 'close';
+            closeSpan.innerHTML = '&times;';
+            closeSpan.onclick = () => { window.closeModal(); };
+            const modalTitle = document.createElement('h3');
+            modalTitle.id = 'modalTitle';
+            modalTitle.textContent = 'Modal Title';
+            const modalForm = document.createElement('form');
+            modalForm.id = 'modalForm';
+            const modalBody = document.createElement('div');
+            modalBody.id = 'modalBody';
+            const modalActions = document.createElement('div');
+            modalActions.className = 'modal-actions';
+            const saveBtn = document.createElement('button');
+            saveBtn.type = 'submit';
+            saveBtn.className = 'btn-primary';
+            saveBtn.textContent = 'Save';
+            const cancelBtn = document.createElement('button');
+            cancelBtn.type = 'button';
+            cancelBtn.className = 'btn-secondary';
+            cancelBtn.textContent = 'Cancel';
+            cancelBtn.onclick = () => { window.closeModal(); };
+            modalActions.appendChild(saveBtn);
+            modalActions.appendChild(cancelBtn);
+            modalForm.appendChild(modalBody);
+            modalForm.appendChild(modalActions);
+            modalContent.appendChild(closeSpan);
+            modalContent.appendChild(modalTitle);
+            modalContent.appendChild(modalForm);
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+        }
+
+    static async Factory(storageObject) {
         const site = new Site();
-        await site._buildConfigFromConfiguration();
-        site._createModalDiv();
+        await site._buildConfigFromConfiguration(storageObject);
+            // site._createModalDiv(); // This line should be commented out or removed
+        site._setupEventListeners();
         return site;
-    }/**/
-    /*async _buildConfigFromConfiguration() {
-        const configInstance = await Configuration.Factory();
-        this._siteConfig = configInstance.configuration;
-    }/**/
-    static async Factory() {
-        const site = new Site();
-        await site._buildConfigFromConfiguration();
-        site._createModalDiv();
-        // Hamburger toggle for user menu in mobile
-        document.addEventListener('DOMContentLoaded', function() {
-        const toggleBtn = document.getElementById('userMenuToggle');
-        const navBar = document.querySelector('.navbar');
-        if (toggleBtn && navBar) {
-            const icon = document.getElementById('userMenuToggleIcon');
-            // Show toggle only in mobile
+    }
+
+    _setupEventListeners() {
+        document.addEventListener('DOMContentLoaded', () => {
+            this._toggleBtn = document.getElementById('userMenuToggle');
+            this._navBar = document.querySelector('.navbar');
+            this._icon = document.getElementById('userMenuToggleIcon');
+            if (this._toggleBtn && this._navBar) {
+                this._updateToggleVisibility();
+                window.addEventListener('resize', () => this._updateToggleVisibility());
+                this._toggleBtn.addEventListener('click', () => this._toggleMenu());
+            }
+        });
+        // Section navigation
+        window.showSection = this.showSection.bind(this);
+        // Pagination
+        window.changeMembersPage = (page) => {
+            window.membersCurrentPage = page;
+            this.renderMembersTable();
+        };
+        // Filters
+        window.filterMembers = this.filterMembers.bind(this);
+        window.filterAssignments = this.filterAssignments.bind(this);
+        window.filterSchedule = this.filterSchedule.bind(this);
+        // Quick actions
+        window.quickAction = this.quickAction.bind(this);
+        // Modal and edit functions
+        window.openModal = this.openModal.bind(this);
+        window.closeModal = this.closeModal.bind(this);
+        window.onclick = (event) => {
+            const modal = document.getElementById('modal');
+            if (event.target === modal) {
+                modal.classList.remove('show');
+            }
+        };
+        // Edit and CRUD
+        window.editMember = this.editMember.bind(this);
+        window.deleteMember = this.deleteMember.bind(this);
+        window.editAssignment = this.editAssignment.bind(this);
+        window.markComplete = this.markComplete.bind(this);
+        window.viewAssignment = this.viewAssignment.bind(this);
+        window.openAddMember = this.openAddMember.bind(this);
+        window.openNewAssignment = this.openNewAssignment.bind(this);
+        window.openScheduleEvent = this.openScheduleEvent.bind(this);
+        window.openForm = this.openForm.bind(this);
+        window.generateReport = this.generateReport.bind(this);
+        window.exportReport = this.exportReport.bind(this);
+        window.editEvent = this.editEvent.bind(this);
+        window.previousMonth = this.previousMonth.bind(this);
+        window.nextMonth = this.nextMonth.bind(this);
+    }
+
+    _toggleMenu() {
+        this._navBar.classList.toggle('show');
+        if (this._icon) {
+            if (this._navBar.classList.contains('show')) {
+                this._icon.classList.remove('fa-bars');
+                this._icon.classList.add('fa-xmark');
+            } else {
+                this._icon.classList.remove('fa-xmark');
+                this._icon.classList.add('fa-bars');
+            }
         }
-        selectedSection.classList.add('active');
-    // Update active nav button
-    // Use document.activeElement to find the button if event is not available
-    let navBtn = null;
-    if (window.event && window.event.target) {
-        navBtn = window.event.target.closest('.nav-btn');
-    } else if (document.activeElement && document.activeElement.classList.contains('nav-btn')) {
-        navBtn = document.activeElement;
-    }
-    if (navBtn) {
-        const navButtons = document.querySelectorAll('.nav-btn');
-        navButtons.forEach(btn => btn.classList.remove('active'));
-        navBtn.classList.add('active');
-    }
-// Expose showSection to global scope for HTML inline event handler
-window.showSection = showSection;
-
     }
 
-// Quick action handler
-function quickAction(action) {
-    alert(`Action: ${action}`);
-    // Add quick action logic here
-}
-
-// Member search filter
-function filterMembers() {
-    const searchInput = document.getElementById('memberSearch');
-    const searchTerm = searchInput.value.toLowerCase();
-    const tableRows = document.querySelectorAll('#membersBody tr');
-    
-    tableRows.forEach(row => {
-        const text = row.textContent.toLowerCase();
-        row.style.display = text.includes(searchTerm) ? '' : 'none';
-    });
-}
-
-// Assignment filter
-function filterAssignments() {
-    const filterValue = document.getElementById('filterAssignments').value;
-    // Add assignment filtering logic here
-}
-
-// Schedule filter
-function filterSchedule() {
-    const filterValue = document.getElementById('scheduleFilter').value;
-    // Add schedule filtering logic here
-}
-    updateToggleVisibility() {
+    _updateToggleVisibility() {
         const isMobile = window.innerWidth <= 600;
-        if (isMobile) {
-            toggleBtn.style.display = 'block';
-            navBar.classList.remove('show');
-            if (icon) {
-                icon.classList.remove('fa-xmark', 'fa-times');
-                icon.classList.add('fa-bars');
-            }
-        } else {
-            toggleBtn.style.display = 'none';
-            navBar.classList.add('show');
-            if (icon) {
-                icon.classList.remove('fa-xmark', 'fa-times');
-                icon.classList.add('fa-bars');
+        if (this._toggleBtn && this._navBar) {
+            if (isMobile) {
+                this._toggleBtn.style.display = 'block';
+                this._navBar.classList.remove('show');
+                if (this._icon) {
+                    this._icon.classList.remove('fa-xmark', 'fa-times');
+                    this._icon.classList.add('fa-bars');
+                }
+            } else {
+                this._toggleBtn.style.display = 'none';
+                this._navBar.classList.add('show');
+                if (this._icon) {
+                    this._icon.classList.remove('fa-xmark', 'fa-times');
+                    this._icon.classList.add('fa-bars');
+                }
             }
         }
     }
-    _createModalDiv() {
-        if (document.getElementById('modal')) return;
-        const modal = document.createElement('div');
-        modal.id = 'modal';
-        modal.className = 'modal';
-        const modalContent = document.createElement('div');
-        modalContent.className = 'modal-content';
-        const closeSpan = document.createElement('span');
-        closeSpan.className = 'close';
-        closeSpan.innerHTML = '&times;';
-        closeSpan.onclick = function() { window.closeModal(); };
-        const modalTitle = document.createElement('h3');
-        modalTitle.id = 'modalTitle';
-        modalTitle.textContent = 'Modal Title';
-        const modalForm = document.createElement('form');
-        modalForm.id = 'modalForm';
-        const modalBody = document.createElement('div');
-        modalBody.id = 'modalBody';
-        const modalActions = document.createElement('div');
-        modalActions.className = 'modal-actions';
-        const saveBtn = document.createElement('button');
-        saveBtn.type = 'submit';
-        saveBtn.className = 'btn-primary';
-        saveBtn.textContent = 'Save';
-        const cancelBtn = document.createElement('button');
-        cancelBtn.type = 'button';
-        cancelBtn.className = 'btn-secondary';
-        cancelBtn.textContent = 'Cancel';
-        cancelBtn.onclick = function() { window.closeModal(); };
-        modalActions.appendChild(saveBtn);
-        modalActions.appendChild(cancelBtn);
-        modalForm.appendChild(modalBody);
-        modalForm.appendChild(modalActions);
-        modalContent.appendChild(closeSpan);
-        modalContent.appendChild(modalTitle);
-        modalContent.appendChild(modalForm);
-        modal.appendChild(modalContent);
-        document.body.appendChild(modal);
+
+    showSection(sectionId) {
+        const sections = document.querySelectorAll('.section');
+        sections.forEach(section => section.classList.remove('active'));
+        const selectedSection = document.getElementById(sectionId);
+        if (selectedSection) {
+            selectedSection.classList.add('active');
+        }
+        let navBtn = null;
+        if (window.event && window.event.target) {
+            navBtn = window.event.target.closest('.nav-btn');
+        } else if (document.activeElement && document.activeElement.classList.contains('nav-btn')) {
+            navBtn = document.activeElement;
+        }
+        if (navBtn) {
+            const navButtons = document.querySelectorAll('.nav-btn');
+            navButtons.forEach(btn => btn.classList.remove('active'));
+            navBtn.classList.add('active');
+        }
     }
-    GetSiteConfig() {
-        return this._siteConfig;
+
+    quickAction(action) {
+        alert(`Action: ${action}`);
     }
-}
 
-
-
-// Edit functions
-
-window.editMember = function(id) {
-    alert(`Edit member ${id}`);
-};
-
-window.deleteMember = function(id) {
-    if (confirm('Are you sure you want to delete this member?')) {
-        alert(`Member ${id} deleted`);
+    filterMembers() {
+        const searchInput = document.getElementById('memberSearch');
+        const searchTerm = searchInput.value.toLowerCase();
+        const tableRows = document.querySelectorAll('#membersBody tr');
+        tableRows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(searchTerm) ? '' : 'none';
+        });
     }
-};
 
-window.editAssignment = function(id) {
-    alert(`Edit assignment ${id}`);
-};
+    filterAssignments() {
+        // Add assignment filtering logic here
+    }
 
-window.markComplete = function(id) {
-    alert(`Assignment ${id} marked complete`);
-};
+    filterSchedule() {
+        // Add schedule filtering logic here
+    }
 
-window.viewAssignment = function(id) {
-    alert(`View assignment ${id}`);
-};
+    renderMembersTable() {
+        if (window.authInstance && typeof window.authInstance.renderMembersTable === 'function') {
+            window.authInstance.renderMembersTable();
+        }
+    }
 
-window.openAddMember = function() {
-    window.openModal('Add Member', `
+    // --- Modal and CRUD methods ---
+    openModal(title, content) {
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+        modalTitle.textContent = title;
+        modalBody.innerHTML = content;
+        modal.classList.add('show');
+    }
+    closeModal() {
+        const modal = document.getElementById('modal');
+        modal.classList.remove('show');
+    }
+    editMember(id) { alert(`Edit member ${id}`); }
+    deleteMember(id) { if (confirm('Are you sure you want to delete this member?')) { alert(`Member ${id} deleted`); } }
+    editAssignment(id) { alert(`Edit assignment ${id}`); }
+    markComplete(id) { alert(`Assignment ${id} marked complete`); }
+    viewAssignment(id) { alert(`View assignment ${id}`); }
+    openAddMember() { this.openModal('Add Member', `
         <div class="form-group">
             <label>First Name</label>
             <input type="text" placeholder="Enter first name" required>
@@ -192,11 +234,8 @@ window.openAddMember = function() {
                 <option value="elders-quorum">Elders Quorum</option>
             </select>
         </div>
-    `);
-};
-
-window.openNewAssignment = function() {
-    window.openModal('New Assignment', `
+    `); }
+    openNewAssignment() { this.openModal('New Assignment', `
         <div class="form-group">
             <label>Assignment Title</label>
             <input type="text" placeholder="Enter assignment title" required>
@@ -218,11 +257,8 @@ window.openNewAssignment = function() {
             <label>Due Date</label>
             <input type="date" required>
         </div>
-    `);
-};
-
-window.openScheduleEvent = function() {
-    window.openModal('Schedule Event', `
+    `); }
+    openScheduleEvent() { this.openModal('Schedule Event', `
         <div class="form-group">
             <label>Event Name</label>
             <input type="text" placeholder="Enter event name" required>
@@ -243,131 +279,49 @@ window.openScheduleEvent = function() {
             <label>Location</label>
             <input type="text" placeholder="Enter location" required>
         </div>
-    `);
-};
-
-window.openForm = function(formType) {
-    const formTitles = {
-        referral: 'Member Referral Form',
-        homeTeaching: 'Home Teaching Report',
-        welfare: 'Welfare Assistance Request',
-        missionary: 'Missionary Recommendation',
-        activity: 'Activity Planning Form',
-        service: 'Service Project Log'
-    };
-    window.openModal(formTitles[formType] || 'Form', `
-        <div class="form-group">
-            <label>Form Type: ${formTitles[formType]}</label>
-            <textarea placeholder="Enter form details..." rows="6"></textarea>
-        </div>
-        <div class="form-group">
-            <label>Additional Notes</label>
-            <textarea placeholder="Additional notes..." rows="3"></textarea>
-        </div>
-    `);
-};
-
-window.generateReport = function(reportType) {
-    alert(`Generating ${reportType} report...`);
-};
-
-window.exportReport = function(reportType) {
-    alert(`Exporting ${reportType} report...`);
-};
-
-window.editEvent = function(eventId) {
-    alert(`Edit event ${eventId}`);
-};
-
-window.previousMonth = function() {
-    alert('Previous month');
-};
-
-window.nextMonth = function() {
-    alert('Next month');
-};
-
-window.openModal = function(title, content) {
-    const modal = document.getElementById('modal');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalBody = document.getElementById('modalBody');
-    modalTitle.textContent = title;
-    modalBody.innerHTML = content;
-    modal.classList.add('show');
-};
-
-window.closeModal = function() {
-    const modal = document.getElementById('modal');
-    modal.classList.remove('show');
-};
-
-// Close modal when clicking outside of it
-window.onclick = function(event) {
-    const modal = document.getElementById('modal');
-    if (event.target === modal) {
-        modal.classList.remove('show');
+    `); }
+    openForm(formType) {
+        const formTitles = {
+            referral: 'Member Referral Form',
+            homeTeaching: 'Home Teaching Report',
+            welfare: 'Welfare Assistance Request',
+            missionary: 'Missionary Recommendation',
+            activity: 'Activity Planning Form',
+            service: 'Service Project Log'
+        };
+        this.openModal(formTitles[formType] || 'Form', `
+            <div class="form-group">
+                <label>Form Type: ${formTitles[formType]}</label>
+                <textarea placeholder="Enter form details..." rows="6"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Additional Notes</label>
+                <textarea placeholder="Additional notes..." rows="3"></textarea>
+            </div>
+        `);
     }
-};
+    generateReport(reportType) { alert(`Generating ${reportType} report...`); }
+    exportReport(reportType) { alert(`Exporting ${reportType} report...`); }
+    editEvent(eventId) { alert(`Edit event ${eventId}`); }
+    previousMonth() { alert('Previous month'); }
+    nextMonth() { alert('Next month'); }
 
-        return site;
-    }
-
-    async _buildConfigFromConfiguration() {
-        const configInstance = await Configuration.Factory();
+    async _buildConfigFromConfiguration(storageObject) {
+        const configInstance = await Configuration.Factory(storageObject);
         this._siteConfig = configInstance.configuration;
     }
-
-    GetSiteConfig() {
-        return this._siteConfig;
-    }
+}
 
 
-    _createModalDiv() {
-        if (document.getElementById('modal')) return;
-        const modal = document.createElement('div');
-        modal.id = 'modal';
-        modal.className = 'modal';
 
-        const modalContent = document.createElement('div');
-        modalContent.className = 'modal-content';
+// Edit functions
 
-        const closeSpan = document.createElement('span');
-        closeSpan.className = 'close';
-        closeSpan.innerHTML = '&times;';
-        closeSpan.onclick = function() { window.closeModal(); };
+window.editMember = function(id) {
+    alert(`Edit member ${id}`);
+};
 
-        const modalTitle = document.createElement('h3');
-        modalTitle.id = 'modalTitle';
-        modalTitle.textContent = 'Modal Title';
-
-        const modalForm = document.createElement('form');
-        modalForm.id = 'modalForm';
-
-        const modalBody = document.createElement('div');
-        modalBody.id = 'modalBody';
-
-        const modalActions = document.createElement('div');
-        modalActions.className = 'modal-actions';
-
-        const saveBtn = document.createElement('button');
-        saveBtn.type = 'submit';
-        saveBtn.className = 'btn-primary';
-        saveBtn.textContent = 'Save';
-
-        const cancelBtn = document.createElement('button');
-        cancelBtn.type = 'button';
-        cancelBtn.className = 'btn-secondary';
-        cancelBtn.textContent = 'Cancel';
-        cancelBtn.onclick = function() { window.closeModal(); };
-
-        modalActions.appendChild(saveBtn);
-        modalActions.appendChild(cancelBtn);
-        modalForm.appendChild(modalBody);
-        modalForm.appendChild(modalActions);
-        modalContent.appendChild(closeSpan);
-        modalContent.appendChild(modalTitle);
-        modalContent.appendChild(modalForm);
-        modal.appendChild(modalContent);
-        document.body.appendChild(modal);
+window.deleteMember = function(id) {
+    if (confirm('Are you sure you want to delete this member?')) {
+        alert(`Member ${id} deleted`);
     }
 }

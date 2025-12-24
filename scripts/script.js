@@ -2,6 +2,7 @@
 import { Storage } from "../modules/storage.mjs";
 import { Auth } from "../modules/auth.mjs";
 import { PublicKeyCrypto } from "../modules/crypto.mjs";
+import { Site } from "../modules/site.mjs";
 
 // --- Public/Private Key Encryption Usage Example ---
 (async () => {
@@ -30,87 +31,19 @@ import { PublicKeyCrypto } from "../modules/crypto.mjs";
 })();
 // --- End Encryption Example ---
 
-// Hamburger toggle for user menu in mobile
-document.addEventListener('DOMContentLoaded', function() {
-    const toggleBtn = document.getElementById('userMenuToggle');
-    const navBar = document.querySelector('.navbar');
-    if (toggleBtn && navBar) {
-        const icon = document.getElementById('userMenuToggleIcon');
-        // Show toggle only in mobile
-        function updateToggleVisibility() {
-            if (window.innerWidth <= 600) {
-                toggleBtn.style.display = 'block';
-                navBar.classList.remove('show');
-                if (icon) {
-                    icon.classList.remove('fa-xmark', 'fa-times');
-                    icon.classList.add('fa-bars');
-                }
-            } else {
-                toggleBtn.style.display = 'none';
-                navBar.classList.add('show');
-                if (icon) {
-                    icon.classList.remove('fa-xmark', 'fa-times');
-                    icon.classList.add('fa-bars');
-                }
-            }
-        }
-        updateToggleVisibility();
-        window.addEventListener('resize', updateToggleVisibility);
-        toggleBtn.addEventListener('click', function() {
-            navBar.classList.toggle('show');
-            if (icon) {
-                if (navBar.classList.contains('show')) {
-                    icon.classList.remove('fa-bars');
-                    icon.classList.add('fa-xmark');
-                } else {
-                    icon.classList.remove('fa-xmark');
-                    icon.classList.add('fa-bars');
-                }
-            }
-        });
-    }
-});
-
-// Pagination state
-window.membersCurrentPage = 1;
-window.membersPerPage = 10;
-
-// Expose renderMembersTable globally for legacy calls, but delegate to authInstance
-window.renderMembersTable = async function() {
-    if (window.authInstance && typeof window.authInstance.renderMembersTable === 'function') {
-        await window.authInstance.renderMembersTable();
-    }
-};
-
-// Render pagination controls for members view
-function renderMembersPagination(currentPage, totalPages) {
-    const paginationDiv = document.getElementById('membersPagination');
-    if (!paginationDiv) return;
-    if (totalPages <= 1) {
-        paginationDiv.innerHTML = '';
-        return;
-    }
-    let html = '';
-    html += `<button ${currentPage === 1 ? 'disabled' : ''} onclick="changeMembersPage(${currentPage - 1})">&laquo; Prev</button>`;
-    for (let i = 1; i <= totalPages; i++) {
-        html += `<button ${i === currentPage ? 'class=\'active\'' : ''} onclick="changeMembersPage(${i})">${i}</button>`;
-    }
-    html += `<button ${currentPage === totalPages ? 'disabled' : ''} onclick="changeMembersPage(${currentPage + 1})">Next &raquo;</button>`;
-    paginationDiv.innerHTML = html;
-}
-
-// Change page and re-render members table
-window.changeMembersPage = function(page) {
-    membersCurrentPage = page;
-    renderMembersTable();
-};
-    // Render members table on page load
-    renderMembersTable();
-    let authInstance = null;
-
+// Initialize Site and Auth logic
+(async () => {
+    window.membersCurrentPage = 1;
+    window.membersPerPage = 10;
+    // Instantiate Site (handles all UI logic)
     const store = await Storage.Factory();
+    window.siteInstance = await Site.Factory(store);
+    // Render members table on page load
+    window.siteInstance.renderMembersTable();
+    let authInstance = null;
     Auth.Factory(store).then(auth => {
         authInstance = auth;
+        window.authInstance = auth;
         // Ensure role selector is correct on resize
         window.addEventListener('resize', () => {
             if (authInstance && typeof authInstance.LoadRoleSelector === 'function') {
@@ -118,6 +51,9 @@ window.changeMembersPage = function(page) {
             }
         });
     });
+})();
+
+// Pagination rendering is now handled by Site class and Auth class as needed
 
 
 // Section navigation
