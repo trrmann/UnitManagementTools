@@ -42,8 +42,16 @@ export class Members {
 
     static CopyFromObject(destination, source) {
         destination.members = source.members;
-        destination.roles = source.roles;
-        destination.org = source.org;
+        if (destination.roles && source.roles) {
+            Roles.CopyFromObject(destination.roles, source.roles);
+        } else {
+            destination.roles = source.roles;
+        }
+        if (destination.org && source.org) {
+            Org.CopyFromObject(destination.org, source.org);
+        } else {
+            destination.org = source.org;
+        }
     }
 
     static async Factory(configuration) {

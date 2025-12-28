@@ -53,6 +53,9 @@ export class Callings {
 
     // ===== Data Fetching =====
     async Fetch() {
+        if (!this.Storage) {
+            throw new Error("Storage is not available in Callings. Ensure configuration is properly initialized.");
+        }
         let callingsObj = await this.Storage.Get(Callings.CallingsFilename, Callings.StorageConfig);
         this.callings = callingsObj ? callingsObj : undefined;
     }
