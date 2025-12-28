@@ -1,6 +1,7 @@
 
 import { Roles } from "./roles.mjs";
 import { Org } from "./org.mjs";
+import { createStorageConfig } from "./objectUtils.mjs";
 
 export class Members {
     // ===== Instance Accessors =====
@@ -70,16 +71,11 @@ export class Members {
     static get MembersSessionExpireMS() { return 1000 * 60 * 60; }
     static get MembersLocalExpireMS() { return 1000 * 60 * 60 * 2; }
     static get StorageConfig() {
-        return {
+        return createStorageConfig({
             cacheTtlMs: Members.MembersCacheExpireMS,
             sessionTtlMs: Members.MembersSessionExpireMS,
-            localTtlMs: Members.MembersLocalExpireMS,
-            googleId: null,
-            githubFilename: null,
-            privateKey: null,
-            publicKey: null,
-            secure: false
-        };
+            localTtlMs: Members.MembersLocalExpireMS
+        });
     }
 
     // ===== Data Fetching =====

@@ -1,6 +1,41 @@
 // modules/objectUtils.mjs
 // Shared object utility functions
 
+/**
+ * Creates a standard storage config object for modules.
+ * @param {Object} options - TTLs and any overrides.
+ * @param {number} options.cacheTtlMs
+ * @param {number} options.sessionTtlMs
+ * @param {number} options.localTtlMs
+ * @param {string|null} [options.googleId]
+ * @param {string|null} [options.githubFilename]
+ * @param {string|null} [options.privateKey]
+ * @param {string|null} [options.publicKey]
+ * @param {boolean} [options.secure]
+ * @returns {Object}
+ */
+export function createStorageConfig({
+    cacheTtlMs,
+    sessionTtlMs,
+    localTtlMs,
+    googleId = null,
+    githubFilename = null,
+    privateKey = null,
+    publicKey = null,
+    secure = false
+}) {
+    return {
+        cacheTtlMs,
+        sessionTtlMs,
+        localTtlMs,
+        googleId,
+        githubFilename,
+        privateKey,
+        publicKey,
+        secure
+    };
+}
+
 export class ObjectUtils {
     /**
      * Flattens a nested object into a single-level object with dot-separated keys.
