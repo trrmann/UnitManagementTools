@@ -1,3 +1,5 @@
+import { TimerUtils } from "./objectUtils.mjs";
+
 export class LocalStorage {
     // ===== Instance Accessors =====
     get KeyRegistry() { return this._keyRegistry; }
@@ -101,31 +103,15 @@ export class LocalStorage {
         });
     }
     StartLocalStoragePruneTimer(intervalMs = null) {
-        this._localStoragePruneIntervalMs = intervalMs || LocalStorage.DefaultLocalStoragePruneIntervalMS;
-        if (this._localStoragePruneTimer) {
-            clearInterval(this._localStoragePruneTimer);
-        }
-        this._localStoragePruneTimer = setInterval(() => this.LocalStoragePrune(), this._localStoragePruneIntervalMs);
+        TimerUtils.start(this, '_localStoragePruneTimer', '_localStoragePruneIntervalMs', () => this.LocalStoragePrune(), intervalMs || LocalStorage.DefaultLocalStoragePruneIntervalMS);
     }
     PauseLocalStoragePruneTimer() {
-        if(this._localStoragePruneTimer) {
-            clearInterval(this._localStoragePruneTimer);
-            this._localStoragePruneTimer = null;
-        }
+        TimerUtils.pause(this, '_localStoragePruneTimer');
     }
     ResumeLocalStoragePruneTimer() {
-        if(this._localStoragePruneIntervalMs) {
-            if (this._localStoragePruneTimer) {
-                clearInterval(this._localStoragePruneTimer);
-            }
-            this._localStoragePruneTimer = setInterval(() => this.LocalStoragePrune(), this._localStoragePruneIntervalMs);
-        }
+        TimerUtils.resume(this, '_localStoragePruneTimer', '_localStoragePruneIntervalMs', () => this.LocalStoragePrune());
     }
     StopLocalStoragePruneTimer() {
-        if (this._localStoragePruneTimer) {
-            clearInterval(this._localStoragePruneTimer);
-            this._localStoragePruneTimer = null;
-            this._localStoragePruneIntervalMs = null;
-        }
+        TimerUtils.stop(this, '_localStoragePruneTimer', '_localStoragePruneIntervalMs');
     }
 }
