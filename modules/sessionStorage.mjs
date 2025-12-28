@@ -1,3 +1,5 @@
+import { TimerUtils } from "./objectUtils.mjs";
+
 export class SessionStorage {
     // ===== Instance Accessors =====
     get KeyRegistry() { return this._keyRegistry; }
@@ -101,31 +103,15 @@ export class SessionStorage {
         });
     }
     StartSessionStoragePruneTimer(intervalMs = null) {
-        this._sessionStoragePruneIntervalMs = intervalMs || SessionStorage.DefaultSessionStoragePruneIntervalMS;
-        if (this._sessionStoragePruneTimer) {
-            clearInterval(this._sessionStoragePruneTimer);
-        }
-        this._sessionStoragePruneTimer = setInterval(() => this.SessionStoragePrune(), this._sessionStoragePruneIntervalMs);
+        TimerUtils.start(this, '_sessionStoragePruneTimer', '_sessionStoragePruneIntervalMs', () => this.SessionStoragePrune(), intervalMs || SessionStorage.DefaultSessionStoragePruneIntervalMS);
     }
     PauseSessionStoragePruneTimer() {
-        if(this._sessionStoragePruneTimer) {
-            clearInterval(this._sessionStoragePruneTimer);
-            this._sessionStoragePruneTimer = null;
-        }
+        TimerUtils.pause(this, '_sessionStoragePruneTimer');
     }
     ResumeSessionStoragePruneTimer() {
-        if(this._sessionStoragePruneIntervalMs) {
-            if (this._sessionStoragePruneTimer) {
-                clearInterval(this._sessionStoragePruneTimer);
-            }
-            this._sessionStoragePruneTimer = setInterval(() => this.SessionStoragePrune(), this._sessionStoragePruneIntervalMs);
-        }
+        TimerUtils.resume(this, '_sessionStoragePruneTimer', '_sessionStoragePruneIntervalMs', () => this.SessionStoragePrune());
     }
     StopSessionStoragePruneTimer() {
-        if (this._sessionStoragePruneTimer) {
-            clearInterval(this._sessionStoragePruneTimer);
-            this._sessionStoragePruneTimer = null;
-            this._sessionStoragePruneIntervalMs = null;
-        }
+        TimerUtils.stop(this, '_sessionStoragePruneTimer', '_sessionStoragePruneIntervalMs');
     }
 }
