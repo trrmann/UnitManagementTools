@@ -4,6 +4,7 @@ import { LocalStorage } from "./localStorage.mjs";
 import { GoogleDrive } from "./googleDrive.mjs";
 import { GitHubData } from "./gitHubData.mjs";
 import { PublicKeyCrypto } from "./crypto.mjs";
+import { TimerUtils } from "./objectUtils.mjs";
 export class Storage {
     // ===== Instance Accessors =====
     get KeyRegistry() { return this._keyRegistry; }
@@ -165,33 +166,16 @@ export class Storage {
         }
     }
     StartRegistryPruneTimer(intervalMs = null) {
-        this._registryPruneIntervalMs = intervalMs || 60000;
-        if (this._registryPruneTimer) {
-            clearInterval(this._registryPruneTimer);
-        }
-        this._registryPruneIntervalMs = this._registryPruneIntervalMs;
-        this._registryPruneTimer = setInterval(() => this.RegistryPrune(), this._registryPruneIntervalMs);
+        TimerUtils.start(this, '_registryPruneTimer', '_registryPruneIntervalMs', () => this.RegistryPrune(), intervalMs || 60000);
     }
     PauseRegistryPruneTimer() {
-        if(this._registryPruneTimer) {
-            clearInterval(this._registryPruneTimer);
-            this._registryPruneTimer = null;
-        }
+        TimerUtils.pause(this, '_registryPruneTimer');
     }
     ResumeRegistryPruneTimer() {
-        if(this._registryPruneIntervalMs) {
-            if (this._registryPruneTimer) {
-                clearInterval(this._registryPruneTimer);
-            }
-            this._registryPruneTimer = setInterval(() => this.RegistryPrune(), this._registryPruneIntervalMs);
-        }
+        TimerUtils.resume(this, '_registryPruneTimer', '_registryPruneIntervalMs', () => this.RegistryPrune());
     }
     StopRegistryPruneTimer() {
-        if (this._registryPruneTimer) {
-            clearInterval(this._registryPruneTimer);
-            this._registryPruneTimer = null;
-            this._registryPruneIntervalMs = null;
-        }
+        TimerUtils.stop(this, '_registryPruneTimer', '_registryPruneIntervalMs');
     }
 
     // Central get: cache → session → local → google → github
