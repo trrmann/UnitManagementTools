@@ -1,4 +1,5 @@
 import { Callings } from "./callings.mjs";
+import { createStorageConfig } from "./objectUtils.mjs";
 export class Roles {
 
     // ===== Instance Accessors =====
@@ -53,16 +54,11 @@ export class Roles {
     static get RolesSessionExpireMS() { return 1000 * 60 * 60; }
     static get RolesLocalExpireMS() { return 1000 * 60 * 60 * 2; }
     static get StorageConfig() {
-        return {
+        return createStorageConfig({
             cacheTtlMs: Roles.RolesCacheExpireMS,
             sessionTtlMs: Roles.RolesSessionExpireMS,
-            localTtlMs: Roles.RolesLocalExpireMS,
-            googleId: null,
-            githubFilename: null,
-            privateKey: null,
-            publicKey: null,
-            secure: false
-        };
+            localTtlMs: Roles.RolesLocalExpireMS
+        });
     }
 
     // ===== Data Fetching =====
