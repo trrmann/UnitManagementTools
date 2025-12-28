@@ -1,3 +1,5 @@
+import { createStorageConfig } from "./objectUtils.mjs";
+
 export class Org {
 
     // ===== Instance Accessors =====
@@ -40,16 +42,11 @@ export class Org {
     static get OrgSessionExpireMS() { return 1000 * 60 * 60; }
     static get OrgLocalExpireMS() { return 1000 * 60 * 60 * 2; }
     static get StorageConfig() {
-        return {
+        return createStorageConfig({
             cacheTtlMs: Org.OrgCacheExpireMS,
             sessionTtlMs: Org.OrgSessionExpireMS,
-            localTtlMs: Org.OrgLocalExpireMS,
-            googleId: null,
-            githubFilename: null,
-            privateKey: null,
-            publicKey: null,
-            secure: false
-        };
+            localTtlMs: Org.OrgLocalExpireMS
+        });
     }
 
     // ===== Data Fetching =====
