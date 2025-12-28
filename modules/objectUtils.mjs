@@ -111,4 +111,35 @@ export class ObjectUtils {
         }
         return result;
     }
+
+    /**
+     * Filters an array of objects by a property and value.
+     * @param {Array} array
+     * @param {string} property
+     * @param {*} value
+     * @returns {Array}
+     */
+    static filterByProperty(array, property, value) {
+        return Array.isArray(array) ? array.filter(item => item && item[property] === value) : [];
+    }
+
+    /**
+     * Filters an array of objects by a property and value (alias for filterByProperty).
+     * @param {Array} array
+     * @param {string} property
+     * @param {*} value
+     * @returns {Array}
+     */
+    static filterBy(array, property, value) {
+        return ObjectUtils.filterByProperty(array, property, value);
+    }
+
+    /**
+     * Checks if an array has any elements.
+     * @param {Array} array
+     * @returns {boolean}
+     */
+    static hasAny(array) {
+        return Array.isArray(array) && array.length > 0;
+    }
 }

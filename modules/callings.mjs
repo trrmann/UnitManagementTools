@@ -1,4 +1,4 @@
-import { createStorageConfig } from "./objectUtils.mjs";
+import { createStorageConfig, ObjectUtils } from "./objectUtils.mjs";
 
 export class Callings {
 
@@ -85,49 +85,37 @@ export class Callings {
     }
 
     // ===== Filtering Methods =====
-    get ActiveCallings() { return Callings._filterByProperty(this.CallingsDetails, 'active', true); }
-        // ===== Filtering Utility =====
-        static _filterByProperty(array, property, value) {
-            return Array.isArray(array) ? array.filter(item => item && item[property] === value) : [];
-        }
-    get WardCallings() { return Callings._filterByProperty(this.CallingsDetails, 'level', 'ward'); }
-    get StakeCallings() { return Callings._filterByProperty(this.CallingsDetails, 'level', 'stake'); }
-    get ActiveWardCallings() { return Callings._filterByProperty(this.WardCallings, 'active', true); }
-    get ActiveStakeCallings() { return Callings._filterByProperty(this.StakeCallings, 'active', true); }
+    get ActiveCallings() { return ObjectUtils.filterByProperty(this.CallingsDetails, 'active', true); }
+    get WardCallings() { return ObjectUtils.filterByProperty(this.CallingsDetails, 'level', 'ward'); }
+    get StakeCallings() { return ObjectUtils.filterByProperty(this.CallingsDetails, 'level', 'stake'); }
+    get ActiveWardCallings() { return ObjectUtils.filterByProperty(this.WardCallings, 'active', true); }
+    get ActiveStakeCallings() { return ObjectUtils.filterByProperty(this.StakeCallings, 'active', true); }
 
     // ===== ID/Name Accessors =====
     get CallingIds() { return this.CallingsDetails.map(calling => calling.id); }
     get CallingNames() { return this.CallingsDetails.map(calling => calling.name); }
 
     // ===== ID/Name Lookups =====
-    CallingById(id) { return Callings._filterBy(this.CallingsDetails, 'id', id); }
-        // ===== Lookup Utility =====
-        static _filterBy(array, property, value) {
-            return Array.isArray(array) ? array.filter(item => item && item[property] === value) : [];
-        }
-    CallingByName(name) { return Callings._filterBy(this.CallingsDetails, 'name', name); }
-    ActiveCallingById(id) { return Callings._filterBy(this.CallingById(id), 'active', true); }
-    ActiveCallingByName(name) { return Callings._filterBy(this.CallingByName(name), 'active', true); }
+    CallingById(id) { return ObjectUtils.filterBy(this.CallingsDetails, 'id', id); }
+    CallingByName(name) { return ObjectUtils.filterBy(this.CallingsDetails, 'name', name); }
+    ActiveCallingById(id) { return ObjectUtils.filterBy(this.CallingById(id), 'active', true); }
+    ActiveCallingByName(name) { return ObjectUtils.filterBy(this.CallingByName(name), 'active', true); }
     WardCallingById(id) { return this.CallingById(id).filter(calling => calling.level === "ward"); }
     WardCallingByName(name) { return this.CallingByName(name).filter(calling => calling.level === "ward"); }
     ActiveWardCallingById(id) { return this.ActiveCallingById(id).filter(calling => calling.level === "ward"); }
     ActiveWardCallingByName(name) { return this.ActiveCallingById(name).filter(calling => calling.level === "ward"); }
     StakeCallingById(id) { return this.CallingById(id).filter(calling => calling.level === "stake"); }
     StakeCallingByName(name) { return this.CallingByName(name).filter(calling => calling.level === "stake"); }
-    ActiveStakeCallingById(id) { return this.ActiveCallingById(id).filter(calling => calling.level === "stake"); }
-    ActiveStakeCallingByName(name) { return this.ActiveCallingById(name).filter(calling => calling.level === "stake"); }
+    ActiveStakeCallingById(id) { return this.ActiveStakeCallingById(id).filter(calling => calling.level === "stake"); }
+    ActiveStakeCallingByName(name) { return this.ActiveStakeCallingById(name).filter(calling => calling.level === "stake"); }
 
     // ===== Existence Accessors =====
     get HasCallings() { return this.CallingsDetails?.length > 0; }
-    get HasActiveCallings() { return Callings._hasAny(this.ActiveCallings); }
-        // ===== Existence Utility =====
-        static _hasAny(array) {
-            return Array.isArray(array) && array.length > 0;
-        }
-    get HasWardCallings() { return Callings._hasAny(this.WardCallings); }
-    get HasStakeCallings() { return Callings._hasAny(this.StakeCallings); }
-    get HasActiveWardCallings() { return Callings._hasAny(this.ActiveWardCallings); }
-    get HasActiveStakeCallings() { return Callings._hasAny(this.ActiveStakeCallings); }
+    get HasActiveCallings() { return ObjectUtils.hasAny(this.ActiveCallings); }
+    get HasWardCallings() { return ObjectUtils.hasAny(this.WardCallings); }
+    get HasStakeCallings() { return ObjectUtils.hasAny(this.StakeCallings); }
+    get HasActiveWardCallings() { return ObjectUtils.hasAny(this.ActiveWardCallings); }
+    get HasActiveStakeCallings() { return ObjectUtils.hasAny(this.ActiveStakeCallings); }
 
     // ===== Existence Lookups =====
     HasCallingById(id) { return this.CallingById(id)?.length > 0; }
