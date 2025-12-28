@@ -1,5 +1,7 @@
 // cacheStore.mjs
 // Simple in-memory cache variable store with get/set/delete/clear and optional expiration
+import { TimerUtils } from "./objectUtils.mjs";
+
 export class CacheStore {
     // ===== Instance Accessors =====
     get Store() { return this._store; }
@@ -92,32 +94,16 @@ export class CacheStore {
         }
     }
     StartCachePruneTimer(intervalMs = null) {
-        this._cachePruneIntervalMs = intervalMs || CacheStore.DefaultCachePruneIntervalMS;
-        if (this._cachePruneTimer) {
-            clearInterval(this._cachePruneTimer);
-        }
-        this._cachePruneTimer = setInterval(() => this.CachePrune(), this._cachePruneIntervalMs);
+        TimerUtils.start(this, '_cachePruneTimer', '_cachePruneIntervalMs', () => this.CachePrune(), intervalMs || CacheStore.DefaultCachePruneIntervalMS);
     }
     PauseCachePruneTimer() {
-        if(this._cachePruneTimer) {
-            clearInterval(this._cachePruneTimer);
-            this._cachePruneTimer = null;
-        }
+        TimerUtils.pause(this, '_cachePruneTimer');
     }
     ResumeCachePruneTimer() {
-        if(this._cachePruneIntervalMs) {
-            if (this._cachePruneTimer) {
-                clearInterval(this._cachePruneTimer);
-            }
-            this._cachePruneTimer = setInterval(() => this.CachePrune(), this._cachePruneIntervalMs);
-        }
+        TimerUtils.resume(this, '_cachePruneTimer', '_cachePruneIntervalMs', () => this.CachePrune());
     }
     StopCachePruneTimer() {
-        if (this._cachePruneTimer) {
-            clearInterval(this._cachePruneTimer);
-            this._cachePruneTimer = null;
-            this._cachePruneIntervalMs = null;
-        }
+        TimerUtils.stop(this, '_cachePruneTimer', '_cachePruneIntervalMs');
     }
 }
 // Example usage:

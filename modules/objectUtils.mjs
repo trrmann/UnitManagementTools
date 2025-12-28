@@ -1,3 +1,55 @@
+// Timer management utilities for prune/cleanup intervals
+export const TimerUtils = {
+    /**
+     * Starts an interval timer for a given callback and interval.
+     * If an existing timer is running, it is cleared first.
+     * @param {object} obj - The object holding the timer property.
+     * @param {string} timerProp - The property name for the timer (e.g., '_cachePruneTimer').
+     * @param {string} intervalProp - The property name for the interval ms (e.g., '_cachePruneIntervalMs').
+     * @param {function} callback - The function to call on each interval.
+     * @param {number} intervalMs - The interval in ms.
+     */
+    start(obj, timerProp, intervalProp, callback, intervalMs) {
+        obj[intervalProp] = intervalMs;
+        if (obj[timerProp]) {
+            clearInterval(obj[timerProp]);
+        }
+        obj[timerProp] = setInterval(callback, intervalMs);
+    },
+
+    /**
+     * Pauses (clears) the interval timer.
+     */
+    pause(obj, timerProp) {
+        if (obj[timerProp]) {
+            clearInterval(obj[timerProp]);
+            obj[timerProp] = null;
+        }
+    },
+
+    /**
+     * Resumes the interval timer if interval ms is set.
+     */
+    resume(obj, timerProp, intervalProp, callback) {
+        if (obj[intervalProp]) {
+            if (obj[timerProp]) {
+                clearInterval(obj[timerProp]);
+            }
+            obj[timerProp] = setInterval(callback, obj[intervalProp]);
+        }
+    },
+
+    /**
+     * Stops the interval timer and clears the interval ms.
+     */
+    stop(obj, timerProp, intervalProp) {
+        if (obj[timerProp]) {
+            clearInterval(obj[timerProp]);
+            obj[timerProp] = null;
+            obj[intervalProp] = null;
+        }
+    }
+};
 // modules/objectUtils.mjs
 // Shared object utility functions
 
