@@ -4,3 +4,12 @@ data/secrets.json
 
 # Node modules
 node_modules/
+node_modules/
+package-lock.json
+package-lock.json
+# Dependencies
+node_modules/
+
+# Build artifacts
+package-lock.json
+node_modules/

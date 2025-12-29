@@ -63,15 +63,53 @@ describe('Users Class', () => {
       expect(details[1].fullname).toBe('Jane Smith');
       expect(details[2].fullname).toBe(''); // No member match
     });
+    test('UsersDetails caches results and reuses them', async () => {
+      // First call
+      const details1 = await users.UsersDetails();
+      expect(mockMembers.MembersDetails).toHaveBeenCalledTimes(1);
+      
+      // Second call - should use cache
+      const details2 = await users.UsersDetails();
+      expect(mockMembers.MembersDetails).toHaveBeenCalledTimes(1); // Still 1, not 2
+      
+      // Results should be the same
+      expect(details1).toBe(details2);
+    });
+    test('UsersDetails cache invalidates when users data changes', async () => {
+      // First call
+      await users.UsersDetails();
+      expect(mockMembers.MembersDetails).toHaveBeenCalledTimes(1);
+      
+      // Change users data
+      users.users = {
+        users: [
+          { memberNumber: '1', password: 'pass1', email: 'john@example.com', active: true }
+        ]
+      };
+      
+      // Second call - should recalculate
+      await users.UsersDetails();
+      expect(mockMembers.MembersDetails).toHaveBeenCalledTimes(2);
+    });
     test('UserById returns correct user', async () => {
       const result = await users.UserById('1');
       expect(result.length).toBe(1);
       expect(result[0].fullname).toBe('John Doe');
     });
+    test('UserById returns empty array for empty users list', async () => {
+      users.users = { users: [] };
+      const result = await users.UserById('1');
+      expect(result).toEqual([]);
+    });
     test('UserByEmail returns correct user', async () => {
       const result = await users.UserByEmail('jane@example.com');
       expect(result.length).toBe(1);
       expect(result[0].fullname).toBe('Jane Smith');
+    });
+    test('UserByEmail returns empty array for empty users list', async () => {
+      users.users = { users: [] };
+      const result = await users.UserByEmail('test@example.com');
+      expect(result).toEqual([]);
     });
     test('HasUserById returns true for existing user', async () => {
       const exists = await users.HasUserById('1');
@@ -202,6 +240,21 @@ describe('Users Class', () => {
       const details = await users.UsersDetails();
       expect(details.length).toBe(1);
       expect(mockRoles.RoleEntryById).toHaveBeenCalledWith(999);
+    test('HasUserById returns false for empty users list', async () => {
+      users.users = { users: [] };
+      const exists = await users.HasUserById('1');
+      expect(exists).toBe(false);
+    });
+    test('HasUserByEmail returns true for existing user', async () => {
+      const exists = await users.HasUserByEmail('john@example.com');
+      expect(exists).toBe(true);
+      const notExists = await users.HasUserByEmail('nonexistent@example.com');
+      expect(notExists).toBe(false);
+    });
+    test('HasUserByEmail returns false for empty users list', async () => {
+      users.users = { users: [] };
+      const exists = await users.HasUserByEmail('john@example.com');
+      expect(exists).toBe(false);
     });
   });
 });
