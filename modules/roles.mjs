@@ -1,6 +1,8 @@
 import { Callings } from "./callings.mjs";
 import { createStorageConfig, ObjectUtils } from "./objectUtils.mjs";
 export class Roles {
+    // ===== Private Fast Lookup Maps =====
+    #_idMap = null;
 
     // ===== Instance Accessors =====
     get Callings() { return this.callings; }
@@ -16,6 +18,7 @@ export class Roles {
     constructor() {
         this.callings = undefined;
         this.roles = undefined;
+        this.#_idMap = null;
     }
 
     // ===== Static Methods =====
@@ -62,6 +65,30 @@ export class Roles {
     }
 
     // ===== Data Fetching =====
+    // ===== Internal Map Management =====
+    _invalidateMaps() {
+        this.#_idMap = null;
+    }
+
+    _buildIdMap() {
+        if (!this.#_idMap) {
+            this.#_idMap = new Map();
+            for (const role of this.RolesEntries) {
+                if (role && role.id !== undefined && role.id !== null) {
+                    this.#_idMap.set(role.id, role);
+                }
+            }
+        }
+    }
+
+    set roles(val) {
+        this._roles = val;
+        this._invalidateMaps();
+    }
+    get roles() {
+        return this._roles;
+    }
+
     async Fetch() {
         // Always use storage from Callings accessor
         if (!this.Callings || !this.Callings.storage) {
@@ -154,8 +181,15 @@ export class Roles {
 
     // ===== Filtering Methods =====
     get ActiveRoles() { return this.RolesDetails.filter(role => role.active === true); }
-    RoleEntryById(id) { return this.RolesEntries.filter(role => role.id === id); }
-    RoleById(id) { return this.RolesDetails.filter(role => role.id === id); }
+    RoleEntryById(id) {
+        this._buildIdMap();
+        return this.#_idMap.has(id) ? [this.#_idMap.get(id)] : [];
+    }
+    RoleById(id) {
+        this._buildIdMap();
+        // RolesDetails is a mapped version, so we need to find the mapped role by id
+        return this.RolesDetails.filter(role => role.id === id);
+    }
     RoleByName(name) { return this.RolesDetails.filter(role => role.name === name); }
     RolesByCalling(callingId) { return this.RolesDetails.filter(role => role.callingID === callingId); }
     ActiveRoleById(id) { return this.RoleById(id).filter(role => role.active === true); }
@@ -167,7 +201,10 @@ export class Roles {
     get HasActiveRoles() { return this.ActiveRoles.length > 0; }
 
     // ===== Existence Lookups =====
-    HasRoleById(id) { return this.RoleById(id).length > 0; }
+    HasRoleById(id) {
+        this._buildIdMap();
+        return this.#_idMap.has(id);
+    }
     HasRoleByName(name) { return this.RoleByName(name).length > 0; }
     HasRolesByCalling(callingId) { return this.RolesByCalling(callingId).length > 0; }
     HasActiveRoleById(id) { return this.ActiveRoleById(id).length > 0; }
