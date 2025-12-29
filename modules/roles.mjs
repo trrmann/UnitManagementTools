@@ -208,16 +208,14 @@ export class Roles {
         if (visited.has(roleId)) return [];
         visited.add(roleId);
         const subRoleIds = this.RawSubRolesById(roleId);
-        let allSubRoles = [...subRoleIds];
+        const allSubRolesSet = new Set(subRoleIds);
         for (const subId of subRoleIds) {
             const descendants = this.SubRolesById(subId, visited);
             for (const descId of descendants) {
-                if (!allSubRoles.includes(descId)) {
-                    allSubRoles.push(descId);
-                }
+                allSubRolesSet.add(descId);
             }
         }
-        return allSubRoles;
+        return Array.from(allSubRolesSet);
     }
 
     // ===== Filtering Methods =====

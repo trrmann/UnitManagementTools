@@ -53,6 +53,28 @@ describe('Roles Class', () => {
       expect(roles.SubRolesById('1')).toContain('2');
       expect(roles.SubRolesById('2')).toEqual([]);
     });
+    test('SubRolesById handles complex hierarchies efficiently', () => {
+      // Test with a more complex hierarchy to ensure Set-based deduplication works
+      roles.roles = {
+        roles: [
+          { id: '100', name: 'Top', calling: 'c1', active: true, subRoles: ['101', '102'] },
+          { id: '101', name: 'Mid1', calling: 'c2', active: true, subRoles: ['103'] },
+          { id: '102', name: 'Mid2', calling: 'c2', active: true, subRoles: ['103', '104'] },
+          { id: '103', name: 'Bottom1', calling: 'c3', active: true, subRoles: [] },
+          { id: '104', name: 'Bottom2', calling: 'c3', active: true, subRoles: [] }
+        ]
+      };
+      const subRoles = roles.SubRolesById('100');
+      // Should include all descendants: 101, 102, 103, 104
+      expect(subRoles).toHaveLength(4);
+      expect(subRoles).toContain('101');
+      expect(subRoles).toContain('102');
+      expect(subRoles).toContain('103');
+      expect(subRoles).toContain('104');
+      // 103 appears twice in the tree but should only be in result once (Set deduplication)
+      const roleId103Count = subRoles.filter(id => id === '103').length;
+      expect(roleId103Count).toBe(1);
+    });
     test('HasRoleById and HasRoleByName', () => {
       expect(roles.HasRoleById('1')).toBe(true);
       expect(roles.HasRoleByName('Leader')).toBe(true);
