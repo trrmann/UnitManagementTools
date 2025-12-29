@@ -296,3 +296,62 @@ describe('Auth - PopulateEmailList Optimization', () => {
     expect(() => auth.PopulateEmailList('nonexistent')).not.toThrow();
   });
 });
+
+describe('Auth - ShowDashboard Role ID Computation', () => {
+  let auth, dom;
+
+  beforeEach(() => {
+    dom = new JSDOM('<!DOCTYPE html><html><body></body></html>');
+    global.document = dom.window.document;
+    global.window = dom.window;
+    
+    const targetDiv = document.createElement('div');
+    targetDiv.id = mockConfig.configuration.login.target;
+    document.body.appendChild(targetDiv);
+    
+    // Mock configuration
+    const mockConfiguration = {
+      configuration: {
+        access: {
+          dashboard: { page: [1, 2] },
+          members: { 
+            page: [1, 2],
+            parts: { EditMember: [1], RemoveMember: [1, 2] }
+          }
+        }
+      }
+    };
+    
+    auth = new Auth(mockConfig);
+    auth.configuration = mockConfiguration.configuration;
+    
+    // Create menu items for testing
+    const dashboardMenuItem = document.createElement('div');
+    dashboardMenuItem.className = 'dashboardmenuitem';
+    document.body.appendChild(dashboardMenuItem);
+    
+    const membersMenuItem = document.createElement('div');
+    membersMenuItem.className = 'membersmenuitem';
+    document.body.appendChild(membersMenuItem);
+  });
+
+  test('ShowDashboard computes role IDs efficiently', async () => {
+    auth.currentUser = {
+      roleNames: ['Bishop', 'Ward Council'],
+      roleIDs: [1, 2],
+      activeRole: 'Bishop'
+    };
+    
+    // Mock the InitializeDashboard to avoid dependencies
+    auth.InitializeDashboard = jest.fn();
+    
+    await auth.ShowDashboard();
+    
+    // Verify menu items have correct visibility
+    const dashboardMenuItem = document.querySelector('.dashboardmenuitem');
+    const membersMenuItem = document.querySelector('.membersmenuitem');
+    
+    expect(dashboardMenuItem.classList.contains('hide')).toBe(false);
+    expect(membersMenuItem.classList.contains('hide')).toBe(false);
+  });
+});
