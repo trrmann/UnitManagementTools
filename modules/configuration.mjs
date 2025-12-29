@@ -144,4 +144,19 @@ export class Configuration {
     GetConfigKeys() {
         return this.configuration ? Object.keys(this.configuration) : [];
     }
+
+    /**
+     * Builds the internal key map cache for configuration lookups.
+     * @private
+     */
+    _buildCache() {
+        if (!this._keyMap) {
+            this._keyMap = new Map();
+            if (this.configuration) {
+                for (const key of Object.keys(this.configuration)) {
+                    this._keyMap.set(key, this.configuration[key]);
+                }
+            }
+        }
+    }
 }
