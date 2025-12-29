@@ -61,11 +61,27 @@ export class Org {
                 this.Storage.Cache.Set(Org.OrgFilename, orgObj, Org.OrgCacheExpireMS);
             }
         }
-        // 3. If still not found, fetch from persistent storage (simulate by re-calling Get with no TTLs)
+        // 3. If still not found, try local storage
         if (!orgObj) {
-            orgObj = await this.Storage.Get(Org.OrgFilename, { ...Org.StorageConfig, cacheTtlMs: null, sessionTtlMs: null });
-            // If found, set in session storage and cache for future use
+            orgObj = await this.Storage.Get(Org.OrgFilename, { ...Org.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: Org.OrgLocalExpireMS });
+            // If found in local, set in session and cache for faster access next time
             if (orgObj) {
+                if (this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
+                    this.Storage.SessionStorage.Set(Org.OrgFilename, orgObj, Org.OrgSessionExpireMS);
+                }
+                if (this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
+                    this.Storage.Cache.Set(Org.OrgFilename, orgObj, Org.OrgCacheExpireMS);
+                }
+            }
+        }
+        // 4. If still not found, fetch from persistent storage (simulate by re-calling Get with no TTLs)
+        if (!orgObj) {
+            orgObj = await this.Storage.Get(Org.OrgFilename, { ...Org.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: null });
+            // If found, set in local, session, and cache for future use
+            if (orgObj) {
+                if (this.Storage.LocalStorage && typeof this.Storage.LocalStorage.Set === 'function') {
+                    this.Storage.LocalStorage.Set(Org.OrgFilename, orgObj, Org.OrgLocalExpireMS);
+                }
                 if (this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
                     this.Storage.SessionStorage.Set(Org.OrgFilename, orgObj, Org.OrgSessionExpireMS);
                 }
