@@ -81,12 +81,25 @@ export class Users {
         }
         // 1. Try to get from cache
         let usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig, cacheTtlMs: Users.UsersCacheExpireMS });
-        // 2. If not found, fetch from persistent storage (simulate by re-calling Get with no cacheTtlMs)
+        // 2. If not found, try session storage
         if (!usersObj) {
-            usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig, cacheTtlMs: null });
-            // If found, set in cache for future use
+            usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig, cacheTtlMs: null, sessionTtlMs: Users.UsersSessionExpireMS });
+            // If found in session, set in cache for faster access next time
             if (usersObj && this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
                 this.Storage.Cache.Set(Users.UsersFilename, usersObj, Users.UsersCacheExpireMS);
+            }
+        }
+        // 3. If still not found, fetch from persistent storage (simulate by re-calling Get with no TTLs)
+        if (!usersObj) {
+            usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig, cacheTtlMs: null, sessionTtlMs: null });
+            // If found, set in session storage and cache for future use
+            if (usersObj) {
+                if (this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
+                    this.Storage.SessionStorage.Set(Users.UsersFilename, usersObj, Users.UsersSessionExpireMS);
+                }
+                if (this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
+                    this.Storage.Cache.Set(Users.UsersFilename, usersObj, Users.UsersCacheExpireMS);
+                }
             }
         }
         this.users = usersObj ? usersObj : undefined;
