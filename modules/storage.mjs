@@ -154,12 +154,12 @@ export class Storage {
     }
     RegistryPrune() {
         const now = Date.now();
-        for (const [key, entry] of this._secureKeyRegistry()) {
+        for (const [key, entry] of this._secureKeyRegistry) {
             if (entry && now > entry) {
                 this.UnregisterSecureKey(key);
             }
         }
-        for (const [key, entry] of this._keyRegistry()) {
+        for (const [key, entry] of this._keyRegistry) {
             if (entry && now > entry) {
                 this.UnregisterKey(key);
             }
