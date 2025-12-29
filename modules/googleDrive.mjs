@@ -8,7 +8,10 @@ export class GoogleDrive {
     get IsLoaded() { return this._isLoaded; }
     get UnitManagementToolsKey() { return this._unitManagementToolsKey; }
     get ClientId() { return this.CLIENT_ID; }
-    get ApiKey() { return this.API_KEY; }
+    // Use SecretValue as the primary client secret, fallback to API_KEY
+    get ApiKey() {
+        return this._secretValue || this.API_KEY;
+    }
     get DiscoveryDocs() { return this.DISCOVERY_DOCS; }
     get Scopes() { return this.SCOPES; }
     get IsInitialized() { return this.isInitialized; }
