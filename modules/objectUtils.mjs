@@ -9,18 +9,30 @@ export const TimerUtils = {
      * @param {function} callback - The function to call on each interval.
      * @param {number} intervalMs - The interval in ms.
      */
+    /**
+     * Starts an interval timer for a given callback and interval.
+     * If an existing timer is running, it is cleared first.
+     * Robust against invalid input and prevents memory leaks.
+     */
     start(obj, timerProp, intervalProp, callback, intervalMs) {
-        obj[intervalProp] = intervalMs;
+        if (!obj || typeof callback !== 'function' || typeof intervalMs !== 'number' || intervalMs <= 0) {
+            throw new Error('TimerUtils.start: Invalid arguments');
+        }
         if (obj[timerProp]) {
             clearInterval(obj[timerProp]);
         }
+        obj[intervalProp] = intervalMs;
         obj[timerProp] = setInterval(callback, intervalMs);
     },
 
     /**
      * Pauses (clears) the interval timer.
      */
+    /**
+     * Pauses (clears) the interval timer. Safe to call multiple times.
+     */
     pause(obj, timerProp) {
+        if (!obj) return;
         if (obj[timerProp]) {
             clearInterval(obj[timerProp]);
             obj[timerProp] = null;
@@ -30,11 +42,12 @@ export const TimerUtils = {
     /**
      * Resumes the interval timer if interval ms is set.
      */
+    /**
+     * Resumes the interval timer if interval ms is set and timer is not running.
+     */
     resume(obj, timerProp, intervalProp, callback) {
-        if (obj[intervalProp]) {
-            if (obj[timerProp]) {
-                clearInterval(obj[timerProp]);
-            }
+        if (!obj || typeof callback !== 'function') return;
+        if (!obj[timerProp] && typeof obj[intervalProp] === 'number' && obj[intervalProp] > 0) {
             obj[timerProp] = setInterval(callback, obj[intervalProp]);
         }
     },
@@ -42,12 +55,16 @@ export const TimerUtils = {
     /**
      * Stops the interval timer and clears the interval ms.
      */
+    /**
+     * Stops the interval timer and clears interval ms. Safe to call multiple times.
+     */
     stop(obj, timerProp, intervalProp) {
+        if (!obj) return;
         if (obj[timerProp]) {
             clearInterval(obj[timerProp]);
             obj[timerProp] = null;
-            obj[intervalProp] = null;
         }
+        obj[intervalProp] = null;
     }
 };
 // modules/objectUtils.mjs
