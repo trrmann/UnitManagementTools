@@ -64,11 +64,27 @@ export class Configuration {
                 this._storageObj.Cache.Set(Configuration.ConfigFilename, configObj, Configuration.ConfigCacheExpireMS);
             }
         }
-        // 3. If still not found, fetch from persistent storage (simulate by re-calling Get with no TTLs)
+        // 3. If still not found, try local storage
         if (!configObj) {
-            configObj = await this._storageObj.Get(Configuration.ConfigFilename, { ...Configuration.StorageConfig, cacheTtlMs: null, sessionTtlMs: null });
-            // If found, set in session storage and cache for future use
+            configObj = await this._storageObj.Get(Configuration.ConfigFilename, { ...Configuration.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: Configuration.ConfigLocalExpireMS });
+            // If found in local, set in session and cache for faster access next time
             if (configObj) {
+                if (this._storageObj.SessionStorage && typeof this._storageObj.SessionStorage.Set === 'function') {
+                    this._storageObj.SessionStorage.Set(Configuration.ConfigFilename, configObj, Configuration.ConfigSessionExpireMS);
+                }
+                if (this._storageObj.Cache && typeof this._storageObj.Cache.Set === 'function') {
+                    this._storageObj.Cache.Set(Configuration.ConfigFilename, configObj, Configuration.ConfigCacheExpireMS);
+                }
+            }
+        }
+        // 4. If still not found, fetch from persistent storage (simulate by re-calling Get with no TTLs)
+        if (!configObj) {
+            configObj = await this._storageObj.Get(Configuration.ConfigFilename, { ...Configuration.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: null });
+            // If found, set in local, session, and cache for future use
+            if (configObj) {
+                if (this._storageObj.LocalStorage && typeof this._storageObj.LocalStorage.Set === 'function') {
+                    this._storageObj.LocalStorage.Set(Configuration.ConfigFilename, configObj, Configuration.ConfigLocalExpireMS);
+                }
                 if (this._storageObj.SessionStorage && typeof this._storageObj.SessionStorage.Set === 'function') {
                     this._storageObj.SessionStorage.Set(Configuration.ConfigFilename, configObj, Configuration.ConfigSessionExpireMS);
                 }
