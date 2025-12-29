@@ -193,6 +193,61 @@ export class Users {
 
         // Cache miss - recalculate
         const membersData = await this.members.MembersDetails();
+        return this.UserEntries.map(user => {
+            const member = membersData.find(member => member.memberNumber === user.memberNumber);
+            
+            //TODO #06 read the additional roles from the users record
+            const additionalRoles = user.roles || [];
+            
+            //TODO #07 validate the additional roles do not have a calling associated with them
+            if (this.members?.Roles && additionalRoles.length > 0) {
+                for (const roleId of additionalRoles) {
+                    const roleEntries = this.members.Roles.RoleEntryById(roleId);
+                    if (roleEntries && roleEntries.length > 0) {
+                        const role = roleEntries[0];
+                        if (role.calling !== null && role.calling !== undefined) {
+                            throw new Error(`Additional role "${role.name}" (ID: ${roleId}) for user ${user.memberNumber} has a calling associated with it (calling ID: ${role.calling}). Additional roles must not have callings.`);
+                        }
+                    }
+                }
+            }
+            
+            return {
+                memberNumber: member ? member.memberNumber : user.memberNumber,
+                fullname: member ? member.fullname : '',
+                titlelessFullname: member ? member.titlelessFullname : '',
+                firstName: member ? member.firstName : '',
+                middleName: member ? member.middleName : '',
+                maidenName: member ? member.maidenName : '',
+                maternalLastName: member ? member.maternalLastName : '',
+                paternalLastName: member ? member.paternalLastName : '',
+                maidenNameMaternal: member ? member.maidenNameMaternal : false,
+                genderMale: member ? member.genderMale : false,
+                gender: member ? member.gender : '',
+                password: user.password,
+                email: member ? member.email : user.email,
+                phone: member ? member.phone : '',
+                callingIDs: member ? member.callingIDs : [],
+                callingNames: member ? member.callingNames : [],
+                callingHaveTitles: member ? member.callingHaveTitles : [],
+                callingTitles: member ? member.callingTitles : [],
+                callingTitleOrdinals: member ? member.callingTitleOrdinals : [],
+                roleIDs: member ? member.callingRoleIDs : [],
+                roleNames: member ? member.callingRoleNames : [],
+                callingsActive: member ? member.callingsActive : [],
+                allSubRoles: member ? member.callingsAllSubRoles : [],
+                allSubRoleNames: member ? member.callingsAllSubRoleNames : [],
+                subRoles: member ? member.callingsSubRoles : [],
+                subRoleNames: member ? member.callingsSubRoleNames : [],
+                levels: member ? member.levels : [],
+                memberactive: member ? member.active : false,
+                active: user.active,
+                stakeUnitNumber: member ? member.stakeUnitNumber : undefined,
+                unitNumber: member ? member.unitNumber : undefined,
+                stakeName: member ? member.stakeName : '',
+                unitName: member ? member.unitName : '',
+                unitType: member ? member.unitType : ''
+            };
         
         // Create Map for O(1) member lookup instead of O(n) array.find()
         const memberMap = new Map();
