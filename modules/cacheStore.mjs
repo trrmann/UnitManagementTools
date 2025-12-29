@@ -3,6 +3,12 @@
 import { TimerUtils } from "./objectUtils.mjs";
 
 export class CacheStore {
+        // Iterates over all values in the cache
+        forEachValue(callback, thisArg = undefined) {
+            for (const entry of this._store.values()) {
+                callback.call(thisArg, entry.value, this);
+            }
+        }
     // Ergonomic alias for Has(key), matching Map API
     has(key) {
         return this.Has(key);

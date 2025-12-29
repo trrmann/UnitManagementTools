@@ -79,6 +79,15 @@ describe('CacheStore', () => {
       cache.Set('y', 2, 1000);
       expect(cache.Keys().sort()).toEqual(['x', 'y']);
     });
+
+    test('forEachValue iterates all values', () => {
+      cache.Set('a', 10);
+      cache.Set('b', 20);
+      cache.Set('c', 30);
+      const values = [];
+      cache.forEachValue((value) => values.push(value));
+      expect(values.sort((a, b) => a - b)).toEqual([10, 20, 30]);
+    });
   });
 
   describe('Timer and expiry', () => {
