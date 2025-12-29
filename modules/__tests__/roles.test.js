@@ -1,28 +1,3 @@
-  test('RoleEntryById and HasRoleById use fast path and return correct result', () => {
-    roles.roles = {
-      roles: [
-        { id: '1', name: 'Leader', calling: 'c1', active: true },
-        { id: '2', name: 'Assistant', calling: 'c2', active: false }
-      ]
-    };
-    // First access builds the map
-    expect(roles.RoleEntryById('1')).toEqual([
-      { id: '1', name: 'Leader', calling: 'c1', active: true }
-    ]);
-    // Second access should use the map (fast path)
-    expect(roles.RoleEntryById('2')).toEqual([
-      { id: '2', name: 'Assistant', calling: 'c2', active: false }
-    ]);
-    // Non-existent id
-    expect(roles.RoleEntryById('999')).toEqual([]);
-    // Changing roles invalidates the map
-    roles.roles = { roles: [{ id: '3', name: 'Clerk', calling: 'c3', active: true }] };
-    expect(roles.RoleEntryById('3')).toEqual([
-      { id: '3', name: 'Clerk', calling: 'c3', active: true }
-    ]);
-    expect(roles.HasRoleById('3')).toBe(true);
-    expect(roles.HasRoleById('1')).toBe(false);
-  });
 import { Roles } from '../roles.mjs';
 import { Callings } from '../callings.mjs';
 import { ObjectUtils } from '../objectUtils.mjs';
@@ -82,6 +57,31 @@ describe('Roles Class', () => {
       expect(roles.HasRoleById('1')).toBe(true);
       expect(roles.HasRoleByName('Leader')).toBe(true);
       expect(roles.HasRoleById('99')).toBe(false);
+    });
+    test('RoleEntryById and HasRoleById use fast path and return correct result', () => {
+      roles.roles = {
+        roles: [
+          { id: '1', name: 'Leader', calling: 'c1', active: true },
+          { id: '2', name: 'Assistant', calling: 'c2', active: false }
+        ]
+      };
+      // First access builds the map
+      expect(roles.RoleEntryById('1')).toEqual([
+        { id: '1', name: 'Leader', calling: 'c1', active: true }
+      ]);
+      // Second access should use the map (fast path)
+      expect(roles.RoleEntryById('2')).toEqual([
+        { id: '2', name: 'Assistant', calling: 'c2', active: false }
+      ]);
+      // Non-existent id
+      expect(roles.RoleEntryById('999')).toEqual([]);
+      // Changing roles invalidates the map
+      roles.roles = { roles: [{ id: '3', name: 'Clerk', calling: 'c3', active: true }] };
+      expect(roles.RoleEntryById('3')).toEqual([
+        { id: '3', name: 'Clerk', calling: 'c3', active: true }
+      ]);
+      expect(roles.HasRoleById('3')).toBe(true);
+      expect(roles.HasRoleById('1')).toBe(false);
     });
   });
 
