@@ -20,6 +20,7 @@ export class CacheStore {
         }
     // Calls the callback for each [key, value] pair in the cache
     forEachEntry(callback, thisArg = undefined) {
+        if (this._store.size === 0) return;
         for (const [key, entry] of this._store.entries()) {
             callback.call(thisArg, key, entry.value, this);
         }
@@ -85,6 +86,7 @@ export class CacheStore {
 
     // Returns an array of values for which the callback returns true
     filterValues(callback, thisArg = undefined) {
+        if (this._store.size === 0) return [];
         const result = [];
         for (const entry of this._store.values()) {
             if (callback.call(thisArg, entry.value, this)) {
@@ -96,6 +98,7 @@ export class CacheStore {
 
     // Returns a new array with the results of calling a provided function on every value
     mapValues(callback, thisArg = undefined) {
+        if (this._store.size === 0) return [];
         const result = [];
         for (const entry of this._store.values()) {
             result.push(callback.call(thisArg, entry.value, this));
@@ -105,11 +108,12 @@ export class CacheStore {
 
     // Deletes all keys provided in an array
     deleteAll(keys) {
-        if (!Array.isArray(keys)) return this;
+        if (!Array.isArray(keys)) return 0;
+        let count = 0;
         for (const key of keys) {
-            this.Delete(key);
+            if (this.Delete(key)) count++;
         }
-        return this;
+        return count;
     }
 
     // Deletes all entries for which the predicate returns true
@@ -129,8 +133,7 @@ export class CacheStore {
     replace(key, newValue) {
         if (this.Has(key)) {
             const entry = this._store.get(key);
-            entry.value = newValue;
-            this._store.set(key, entry);
+            this._store.set(key, { ...entry, value: newValue });
             return true;
         }
         return false;
@@ -201,9 +204,10 @@ export class CacheStore {
             }
         // Iterates over all values in the cache
         forEachValue(callback, thisArg = undefined) {
-            for (const entry of this._store.values()) {
-                callback.call(thisArg, entry.value, this);
-            }
+        if (this._store.size === 0) return;
+        for (const entry of this._store.values()) {
+            callback.call(thisArg, entry.value, this);
+        }
         }
     // Ergonomic alias for Has(key), matching Map API
     has(key) {

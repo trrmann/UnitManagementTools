@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import { CacheStore } from '../cacheStore.mjs';
 
 describe('CacheStore', () => {
@@ -68,6 +69,18 @@ describe('CacheStore', () => {
     cache.Set('b', 2);
     cache.Set('c', 3);
     cache.deleteAll(['a', 'c']);
+    expect(cache.Has('a')).toBe(false);
+    expect(cache.Has('c')).toBe(false);
+    expect(cache.Has('b')).toBe(true);
+  });
+
+  test('deleteAll returns count of deleted keys and deletes only specified keys', () => {
+    const cache = new CacheStore();
+    cache.Set('a', 1);
+    cache.Set('b', 2);
+    cache.Set('c', 3);
+    const deleted = cache.deleteAll(['a', 'c', 'not-there']);
+    expect(deleted).toBe(2);
     expect(cache.Has('a')).toBe(false);
     expect(cache.Has('c')).toBe(false);
     expect(cache.Has('b')).toBe(true);
@@ -204,5 +217,85 @@ describe('CacheStore', () => {
     const values = [];
     cache.forEachValue((value) => values.push(value));
     expect(values.sort((a, b) => a - b)).toEqual([10, 20, 30]);
+  });
+
+  test('Set does not call Delete for new keys, but does for existing', () => {
+    const cache = new CacheStore();
+    const spyDelete = jest.spyOn(cache, 'Delete');
+    cache.Set('a', 1); // new key
+    expect(spyDelete).not.toHaveBeenCalled();
+    cache.Set('a', 2); // existing key
+    expect(spyDelete).toHaveBeenCalledWith('a');
+    spyDelete.mockRestore();
+  });
+
+  test('replace only updates existing, non-expired keys and does not create new keys', () => {
+    const cache = new CacheStore();
+    // New key: should not replace, should return false
+    expect(cache.replace('missing', 99)).toBe(false);
+    expect(cache.Has('missing')).toBe(false);
+    // Existing key: should replace
+    cache.Set('a', 1, 1000);
+    expect(cache.replace('a', 42)).toBe(true);
+    expect(cache.Get('a').value).toBe(42);
+    // Expired key: should not replace
+    cache.Set('b', 2, 1); // expires quickly
+    setTimeout(() => {
+      expect(cache.replace('b', 100)).toBe(false);
+      expect(cache.Has('b')).toBe(false);
+    }, 2);
+  });
+
+  test('mapValues returns empty array for empty cache', () => {
+    const cache = new CacheStore();
+    expect(cache.mapValues(v => v * 2)).toEqual([]);
+  });
+  test('filterValues returns empty array for empty cache', () => {
+    const cache = new CacheStore();
+    expect(cache.filterValues(v => v > 0)).toEqual([]);
+  });
+
+  describe('forEachValue', () => {
+    test('iterates over all values', () => {
+      const cache = new CacheStore();
+      cache.Set('a', 1);
+      cache.Set('b', 2);
+      cache.Set('c', 3);
+      const cb = jest.fn();
+      cache.forEachValue(cb);
+      expect(cb).toHaveBeenCalledTimes(3);
+      expect(cb).toHaveBeenCalledWith(1, cache);
+      expect(cb).toHaveBeenCalledWith(2, cache);
+      expect(cb).toHaveBeenCalledWith(3, cache);
+    });
+
+    test('does not call callback for empty cache', () => {
+      const cache = new CacheStore();
+      const cb = jest.fn();
+      cache.forEachValue(cb);
+      expect(cb).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('forEachEntry', () => {
+    test('iterates over all entries', () => {
+      const cache = new CacheStore();
+      cache.Set('a', 1);
+      cache.Set('b', 2);
+      cache.Set('c', 3);
+      const cb = jest.fn();
+      cache.forEachEntry(cb);
+      expect(cb).toHaveBeenCalledTimes(3);
+      expect(cb).toHaveBeenCalledWith('a', 1, cache);
+      expect(cb).toHaveBeenCalledWith('b', 2, cache);
+      expect(cb).toHaveBeenCalledWith('c', 3, cache);
+    });
+
+    test('does not call callback for empty cache', () => {
+      const cache = new CacheStore();
+      const cb = jest.fn();
+      cache.forEachEntry(cb);
+      expect(cb).not.toHaveBeenCalled();
+    });
   });
 });
