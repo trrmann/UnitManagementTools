@@ -59,7 +59,6 @@ export class Configuration {
         // 2. If not found, try session storage
         if (!configObj) {
             configObj = await this._storageObj.Get(Configuration.ConfigFilename, { ...Configuration.StorageConfig, cacheTtlMs: null, sessionTtlMs: Configuration.ConfigSessionExpireMS });
-            // If found in session, set in cache for faster access next time
             if (configObj && this._storageObj.Cache && typeof this._storageObj.Cache.Set === 'function') {
                 this._storageObj.Cache.Set(Configuration.ConfigFilename, configObj, Configuration.ConfigCacheExpireMS);
             }
@@ -67,7 +66,6 @@ export class Configuration {
         // 3. If still not found, try local storage
         if (!configObj) {
             configObj = await this._storageObj.Get(Configuration.ConfigFilename, { ...Configuration.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: Configuration.ConfigLocalExpireMS });
-            // If found in local, set in session and cache for faster access next time
             if (configObj) {
                 if (this._storageObj.SessionStorage && typeof this._storageObj.SessionStorage.Set === 'function') {
                     this._storageObj.SessionStorage.Set(Configuration.ConfigFilename, configObj, Configuration.ConfigSessionExpireMS);
@@ -77,21 +75,13 @@ export class Configuration {
                 }
             }
         }
-        // 4. If still not found, fetch from persistent storage (simulate by re-calling Get with no TTLs)
-        if (!configObj) {
-            configObj = await this._storageObj.Get(Configuration.ConfigFilename, { ...Configuration.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: null });
-            // If found, set in local, session, and cache for future use
-            if (configObj) {
-                if (this._storageObj.LocalStorage && typeof this._storageObj.LocalStorage.Set === 'function') {
-                    this._storageObj.LocalStorage.Set(Configuration.ConfigFilename, configObj, Configuration.ConfigLocalExpireMS);
-                }
-                if (this._storageObj.SessionStorage && typeof this._storageObj.SessionStorage.Set === 'function') {
-                    this._storageObj.SessionStorage.Set(Configuration.ConfigFilename, configObj, Configuration.ConfigSessionExpireMS);
-                }
-                if (this._storageObj.Cache && typeof this._storageObj.Cache.Set === 'function') {
-                    this._storageObj.Cache.Set(Configuration.ConfigFilename, configObj, Configuration.ConfigCacheExpireMS);
-                }
-            }
+        // 4. If still not found, use GoogleDrive for read/write priority
+        if (!configObj && this._storageObj && typeof this._storageObj.Get === 'function' && this._storageObj.constructor.name === 'GoogleDrive') {
+            configObj = await this._storageObj.Get(Configuration.ConfigFilename, { ...Configuration.StorageConfig });
+        }
+        // 5. If still not found, fallback to GitHubDataObj for read-only
+        if (!configObj && this._storageObj && typeof this._storageObj._gitHubDataObj === 'object' && typeof this._storageObj._gitHubDataObj.fetchJsonFile === 'function') {
+            configObj = await this._storageObj._gitHubDataObj.fetchJsonFile(Configuration.ConfigFilename);
         }
         this.configuration = configObj ? configObj : undefined;
     }

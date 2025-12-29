@@ -56,7 +56,6 @@ export class Org {
         // 2. If not found, try session storage
         if (!orgObj) {
             orgObj = await this.Storage.Get(Org.OrgFilename, { ...Org.StorageConfig, cacheTtlMs: null, sessionTtlMs: Org.OrgSessionExpireMS });
-            // If found in session, set in cache for faster access next time
             if (orgObj && this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
                 this.Storage.Cache.Set(Org.OrgFilename, orgObj, Org.OrgCacheExpireMS);
             }
@@ -64,7 +63,6 @@ export class Org {
         // 3. If still not found, try local storage
         if (!orgObj) {
             orgObj = await this.Storage.Get(Org.OrgFilename, { ...Org.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: Org.OrgLocalExpireMS });
-            // If found in local, set in session and cache for faster access next time
             if (orgObj) {
                 if (this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
                     this.Storage.SessionStorage.Set(Org.OrgFilename, orgObj, Org.OrgSessionExpireMS);
@@ -74,21 +72,13 @@ export class Org {
                 }
             }
         }
-        // 4. If still not found, fetch from persistent storage (simulate by re-calling Get with no TTLs)
-        if (!orgObj) {
-            orgObj = await this.Storage.Get(Org.OrgFilename, { ...Org.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: null });
-            // If found, set in local, session, and cache for future use
-            if (orgObj) {
-                if (this.Storage.LocalStorage && typeof this.Storage.LocalStorage.Set === 'function') {
-                    this.Storage.LocalStorage.Set(Org.OrgFilename, orgObj, Org.OrgLocalExpireMS);
-                }
-                if (this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
-                    this.Storage.SessionStorage.Set(Org.OrgFilename, orgObj, Org.OrgSessionExpireMS);
-                }
-                if (this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
-                    this.Storage.Cache.Set(Org.OrgFilename, orgObj, Org.OrgCacheExpireMS);
-                }
-            }
+        // 4. If still not found, use GoogleDrive for read/write priority
+        if (!orgObj && this.Storage && typeof this.Storage.Get === 'function' && this.Storage.constructor.name === 'GoogleDrive') {
+            orgObj = await this.Storage.Get(Org.OrgFilename, { ...Org.StorageConfig });
+        }
+        // 5. If still not found, fallback to GitHubDataObj for read-only
+        if (!orgObj && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.fetchJsonFile === 'function') {
+            orgObj = await this.Storage._gitHubDataObj.fetchJsonFile(Org.OrgFilename);
         }
         this.organization = orgObj ? orgObj : undefined;
     }
