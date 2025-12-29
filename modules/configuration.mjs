@@ -98,13 +98,6 @@ export class Configuration {
     // ===== Utility Methods =====
     /**
      * Flattens a nested object into a single-level object with dot-separated keys.
-     * @param {Object} obj - The object to flatten.
-     * @param {string} parentKey - The prefix for the keys (used for recursion).
-     * @param {string} separator - The separator between keys.
-     * @returns {Object} The flattened object.
-     */
-    /**
-     * Flattens a nested object into a single-level object with dot-separated keys.
      * Delegates to ObjectUtils.flattenObject.
      * @param {Object} obj - The object to flatten.
      * @param {string} [parentKey] - The prefix for the keys (used for recursion).
@@ -126,15 +119,28 @@ export class Configuration {
         return c ? [c] : [];
     }
 
+    /**
+     * Checks if configuration exists and is non-empty.
+     * @returns {boolean} True if configuration exists and has keys, false otherwise.
+     */
     HasConfig() {
         return !!this.configuration && Object.keys(this.configuration).length > 0;
     }
 
+    /**
+     * Checks if configuration contains a value for the specified key.
+     * @param {string} key - The configuration key to check.
+     * @returns {boolean} True if the key exists and has a value, false otherwise.
+     */
     HasConfigByKey(key) {
         const configByKey = this.GetConfigByKey(key);
         return configByKey !== null && configByKey.length > 0;
     }
 
+    /**
+     * Returns all configuration keys.
+     * @returns {Array<string>} Array of configuration keys, or empty array if configuration is undefined.
+     */
     GetConfigKeys() {
         return this.configuration ? Object.keys(this.configuration) : [];
     }
