@@ -136,7 +136,7 @@ export class Storage {
         return this.GetAllKeys().includes(key);
     }
     GetAllKeys() {
-        return this._keyRegistry.Keys;
+        return Array.from(this._keyRegistry.keys());
     }
     RegisterSecureKey(key, expire) {
         this.RegisterKey(key, expire);
@@ -150,7 +150,7 @@ export class Storage {
         return this.GetAllSecureKeys().includes(key);
     }
     GetAllSecureKeys() {
-        return this._secureKeyRegistry.Keys;
+        return Array.from(this._secureKeyRegistry.keys());
     }
     RegistryPrune() {
         const now = Date.now();
