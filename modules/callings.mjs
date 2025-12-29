@@ -53,13 +53,24 @@ export class Callings {
         if (!this.Storage) {
             throw new Error("Storage is not available in Callings. Ensure configuration is properly initialized.");
         }
-        // Try to get from cache first
+        // 1. Try to get from cache
         let callingsObj = await this.Storage.Get(Callings.CallingsFilename, { ...Callings.StorageConfig, cacheTtlMs: Callings.CallingsCacheExpireMS });
+        // 2. If not found, try session storage
         if (!callingsObj) {
-            // If not found, fetch from persistent storage (simulate by re-calling Get with no cacheTtlMs)
-            callingsObj = await this.Storage.Get(Callings.CallingsFilename, { ...Callings.StorageConfig, cacheTtlMs: null });
-            // If found, set in cache for future use
+            callingsObj = await this.Storage.Get(Callings.CallingsFilename, { ...Callings.StorageConfig, cacheTtlMs: null, sessionTtlMs: Callings.CallingsSessionExpireMS });
+            // If found in session, set in cache for faster access next time
+            if (callingsObj && this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
+                this.Storage.Cache.Set(Callings.CallingsFilename, callingsObj, Callings.CallingsCacheExpireMS);
+            }
+        }
+        // 3. If still not found, fetch from persistent storage (simulate by re-calling Get with no TTLs)
+        if (!callingsObj) {
+            callingsObj = await this.Storage.Get(Callings.CallingsFilename, { ...Callings.StorageConfig, cacheTtlMs: null, sessionTtlMs: null });
+            // If found, set in session storage and cache for future use
             if (callingsObj) {
+                if (this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
+                    this.Storage.SessionStorage.Set(Callings.CallingsFilename, callingsObj, Callings.CallingsSessionExpireMS);
+                }
                 if (this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
                     this.Storage.Cache.Set(Callings.CallingsFilename, callingsObj, Callings.CallingsCacheExpireMS);
                 }
