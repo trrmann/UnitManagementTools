@@ -5,6 +5,7 @@ import './roles.ui.js';
 import './users.ui.js';
 import './testing.ui.js';
 import './workflows.ui.js';
+import './eventscheduletemplate.ui.js';
 // --- Configuration Tab Logic ---
 window.openEditConfiguration = function() {
     // Example: Show a modal with editable configuration fields
@@ -51,6 +52,14 @@ window.showSection = function(sectionId) {
     originalShowSection(sectionId);
     if (sectionId === 'configuration') {
         renderConfigurationTable();
+    }
+    if (sectionId === 'eventscheduletemplate') {
+        // Dynamically import and render the Event Schedule Template tab logic
+        import('./eventscheduletemplate.ui.js').then(mod => {
+            if (mod && typeof mod.renderEventScheduleTemplateTable === 'function') {
+                mod.renderEventScheduleTemplateTable();
+            }
+        });
     }
 };
 
