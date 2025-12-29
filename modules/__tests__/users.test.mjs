@@ -96,16 +96,42 @@ describe('Users Class', () => {
       expect(result.length).toBe(1);
       expect(result[0].fullname).toBe('John Doe');
     });
+    test('UserById returns empty array for empty users list', async () => {
+      users.users = { users: [] };
+      const result = await users.UserById('1');
+      expect(result).toEqual([]);
+    });
     test('UserByEmail returns correct user', async () => {
       const result = await users.UserByEmail('jane@example.com');
       expect(result.length).toBe(1);
       expect(result[0].fullname).toBe('Jane Smith');
+    });
+    test('UserByEmail returns empty array for empty users list', async () => {
+      users.users = { users: [] };
+      const result = await users.UserByEmail('test@example.com');
+      expect(result).toEqual([]);
     });
     test('HasUserById returns true for existing user', async () => {
       const exists = await users.HasUserById('1');
       expect(exists).toBe(true);
       const notExists = await users.HasUserById('99');
       expect(notExists).toBe(false);
+    });
+    test('HasUserById returns false for empty users list', async () => {
+      users.users = { users: [] };
+      const exists = await users.HasUserById('1');
+      expect(exists).toBe(false);
+    });
+    test('HasUserByEmail returns true for existing user', async () => {
+      const exists = await users.HasUserByEmail('john@example.com');
+      expect(exists).toBe(true);
+      const notExists = await users.HasUserByEmail('nonexistent@example.com');
+      expect(notExists).toBe(false);
+    });
+    test('HasUserByEmail returns false for empty users list', async () => {
+      users.users = { users: [] };
+      const exists = await users.HasUserByEmail('john@example.com');
+      expect(exists).toBe(false);
     });
   });
 });

@@ -236,11 +236,13 @@ export class Users {
     // ===== Filtering and Lookup Methods =====
     async UserById(id) {
         const users = await this.UsersDetails();
+        if (users.length === 0) return [];
         return users.filter(u => u.memberNumber === id || String(u.memberNumber) === String(id));
     }
 
     async UserByEmail(email) {
         const users = await this.UsersDetails();
+        if (users.length === 0) return [];
         return users.filter(u => u.email === email);
     }
 
@@ -250,12 +252,12 @@ export class Users {
     }
 
     async HasUserById(id) {
-        const userById = await this.UserById(id);
-        return (userById !== null && userById.length > 0);
+        const users = await this.UsersDetails();
+        return users.some(u => u.memberNumber === id || String(u.memberNumber) === String(id));
     }
 
     async HasUserByEmail(email) {
-        const userByEmail = await this.UserByEmail(email);
-        return (userByEmail !== null && userByEmail.length > 0);
+        const users = await this.UsersDetails();
+        return users.some(u => u.email === email);
     }
 }
