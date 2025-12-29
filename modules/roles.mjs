@@ -77,11 +77,27 @@ export class Roles {
                 this.Callings.storage.Cache.Set(Roles.RolesFilename, rolesObj, Roles.RolesCacheExpireMS);
             }
         }
-        // 3. If still not found, fetch from persistent storage (simulate by re-calling Get with no TTLs)
+        // 3. If still not found, try local storage
         if (!rolesObj) {
-            rolesObj = await this.Callings.storage.Get(Roles.RolesFilename, { ...Roles.StorageConfig, cacheTtlMs: null, sessionTtlMs: null });
-            // If found, set in session storage and cache for future use
+            rolesObj = await this.Callings.storage.Get(Roles.RolesFilename, { ...Roles.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: Roles.RolesLocalExpireMS });
+            // If found in local, set in session and cache for faster access next time
             if (rolesObj) {
+                if (this.Callings.storage.SessionStorage && typeof this.Callings.storage.SessionStorage.Set === 'function') {
+                    this.Callings.storage.SessionStorage.Set(Roles.RolesFilename, rolesObj, Roles.RolesSessionExpireMS);
+                }
+                if (this.Callings.storage.Cache && typeof this.Callings.storage.Cache.Set === 'function') {
+                    this.Callings.storage.Cache.Set(Roles.RolesFilename, rolesObj, Roles.RolesCacheExpireMS);
+                }
+            }
+        }
+        // 4. If still not found, fetch from persistent storage (simulate by re-calling Get with no TTLs)
+        if (!rolesObj) {
+            rolesObj = await this.Callings.storage.Get(Roles.RolesFilename, { ...Roles.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: null });
+            // If found, set in local, session, and cache for future use
+            if (rolesObj) {
+                if (this.Callings.storage.LocalStorage && typeof this.Callings.storage.LocalStorage.Set === 'function') {
+                    this.Callings.storage.LocalStorage.Set(Roles.RolesFilename, rolesObj, Roles.RolesLocalExpireMS);
+                }
                 if (this.Callings.storage.SessionStorage && typeof this.Callings.storage.SessionStorage.Set === 'function') {
                     this.Callings.storage.SessionStorage.Set(Roles.RolesFilename, rolesObj, Roles.RolesSessionExpireMS);
                 }
