@@ -4,6 +4,7 @@ export class Roles {
     // ===== Private Fast Lookup Maps =====
     #_idMap = null;
     #_nameMap = null;
+    #_callingMap = null;
     #_rolesDetailsCache = null;
 
     // ===== Instance Accessors =====
@@ -22,6 +23,7 @@ export class Roles {
         this.roles = undefined;
         this.#_idMap = null;
         this.#_nameMap = null;
+        this.#_callingMap = null;
         this.#_rolesDetailsCache = null;
     }
 
@@ -73,6 +75,7 @@ export class Roles {
     _invalidateMaps() {
         this.#_idMap = null;
         this.#_nameMap = null;
+        this.#_callingMap = null;
         this.#_rolesDetailsCache = null;
     }
 
@@ -96,6 +99,20 @@ export class Roles {
                         this.#_nameMap.set(role.name, []);
                     }
                     this.#_nameMap.get(role.name).push(role);
+                }
+            }
+        }
+    }
+
+    _buildCallingMap() {
+        if (!this.#_callingMap) {
+            this.#_callingMap = new Map();
+            for (const role of this.RolesDetails) {
+                if (role && role.callingID !== undefined && role.callingID !== null) {
+                    if (!this.#_callingMap.has(role.callingID)) {
+                        this.#_callingMap.set(role.callingID, []);
+                    }
+                    this.#_callingMap.get(role.callingID).push(role);
                 }
             }
         }
@@ -218,7 +235,10 @@ export class Roles {
         this._buildNameMap();
         return this.#_nameMap.has(name) ? this.#_nameMap.get(name) : [];
     }
-    RolesByCalling(callingId) { return this.RolesDetails.filter(role => role.callingID === callingId); }
+    RolesByCalling(callingId) {
+        this._buildCallingMap();
+        return this.#_callingMap.has(callingId) ? this.#_callingMap.get(callingId) : [];
+    }
     ActiveRoleById(id) { return this.RoleById(id).filter(role => role.active === true); }
     ActiveRoleByName(name) { return this.RoleByName(name).filter(role => role.active === true); }
     ActiveRolesByCalling(callingId) { return this.RolesByCalling(callingId).filter(role => role.active === true); }
@@ -236,7 +256,10 @@ export class Roles {
         this._buildNameMap();
         return this.#_nameMap.has(name);
     }
-    HasRolesByCalling(callingId) { return this.RolesByCalling(callingId).length > 0; }
+    HasRolesByCalling(callingId) {
+        this._buildCallingMap();
+        return this.#_callingMap.has(callingId);
+    }
     HasActiveRoleById(id) { return this.ActiveRoleById(id).length > 0; }
     HasActiveRoleByName(name) { return this.ActiveRoleByName(name).length > 0; }
     HasActiveRolesByCalling(callingId) { return this.ActiveRolesByCalling(callingId).length > 0; }

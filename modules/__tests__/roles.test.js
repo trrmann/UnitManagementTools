@@ -143,5 +143,27 @@ describe('Roles Class', () => {
       expect(roles.HasRoleByName('New Leader')).toBe(true);
       expect(roles.HasRoleByName('Leader')).toBe(false);
     });
+    test('RolesByCalling and HasRolesByCalling use fast path', () => {
+      // Test that calling map is used for lookups
+      const rolesWithC1 = roles.RolesByCalling('c1');
+      expect(rolesWithC1).toHaveLength(1);
+      expect(rolesWithC1[0].name).toBe('Leader');
+      expect(roles.HasRolesByCalling('c1')).toBe(true);
+      expect(roles.HasRolesByCalling('c999')).toBe(false);
+      
+      // Test multiple roles with same calling
+      roles.roles = {
+        roles: [
+          { id: '30', name: 'Role A', calling: 'c100', active: true, subRoles: [] },
+          { id: '31', name: 'Role B', calling: 'c100', active: true, subRoles: [] },
+          { id: '32', name: 'Role C', calling: 'c200', active: true, subRoles: [] }
+        ]
+      };
+      const rolesWithC100 = roles.RolesByCalling('c100');
+      expect(rolesWithC100).toHaveLength(2);
+      expect(roles.HasRolesByCalling('c100')).toBe(true);
+      expect(roles.HasRolesByCalling('c200')).toBe(true);
+      expect(roles.HasRolesByCalling('c1')).toBe(false);
+    });
   });
 });
