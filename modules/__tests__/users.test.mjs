@@ -31,6 +31,9 @@ describe('Users Class', () => {
       { memberNumber: '1', password: 'pass1', email: 'john@example.com', active: true, roles: [] },
       { memberNumber: '2', password: 'pass2', email: 'jane@example.com', active: false, roles: [] },
       { memberNumber: '3', password: 'pass3', email: 'other@example.com', active: true, roles: [] }
+      { memberNumber: '1', password: 'pass1', email: 'john@example.com', active: true },
+      { memberNumber: '2', password: 'pass2', email: 'jane@example.com', active: false },
+      { memberNumber: '3', password: 'pass3', email: 'other@example.com', active: true }
     ]
   };
   beforeEach(() => {
@@ -60,6 +63,8 @@ describe('Users Class', () => {
     mockMembers = {
       MembersDetails: jest.fn(async () => mockMembersData),
       Roles: mockRoles
+    mockMembers = {
+      MembersDetails: jest.fn(async () => mockMembersData)
     };
     users.members = mockMembers;
     users.users = mockUsersData;
@@ -91,15 +96,53 @@ describe('Users Class', () => {
       expect(details[1].fullname).toBe('Jane Smith');
       expect(details[2].fullname).toBe(''); // No member match
     });
+    test('UsersDetails caches results and reuses them', async () => {
+      // First call
+      const details1 = await users.UsersDetails();
+      expect(mockMembers.MembersDetails).toHaveBeenCalledTimes(1);
+      
+      // Second call - should use cache
+      const details2 = await users.UsersDetails();
+      expect(mockMembers.MembersDetails).toHaveBeenCalledTimes(1); // Still 1, not 2
+      
+      // Results should be the same
+      expect(details1).toBe(details2);
+    });
+    test('UsersDetails cache invalidates when users data changes', async () => {
+      // First call
+      await users.UsersDetails();
+      expect(mockMembers.MembersDetails).toHaveBeenCalledTimes(1);
+      
+      // Change users data
+      users.users = {
+        users: [
+          { memberNumber: '1', password: 'pass1', email: 'john@example.com', active: true }
+        ]
+      };
+      
+      // Second call - should recalculate
+      await users.UsersDetails();
+      expect(mockMembers.MembersDetails).toHaveBeenCalledTimes(2);
+    });
     test('UserById returns correct user', async () => {
       const result = await users.UserById('1');
       expect(result.length).toBe(1);
       expect(result[0].fullname).toBe('John Doe');
     });
+    test('UserById returns empty array for empty users list', async () => {
+      users.users = { users: [] };
+      const result = await users.UserById('1');
+      expect(result).toEqual([]);
+    });
     test('UserByEmail returns correct user', async () => {
       const result = await users.UserByEmail('jane@example.com');
       expect(result.length).toBe(1);
       expect(result[0].fullname).toBe('Jane Smith');
+    });
+    test('UserByEmail returns empty array for empty users list', async () => {
+      users.users = { users: [] };
+      const result = await users.UserByEmail('test@example.com');
+      expect(result).toEqual([]);
     });
     test('HasUserById returns true for existing user', async () => {
       const exists = await users.HasUserById('1');
@@ -167,6 +210,142 @@ describe('Users Class', () => {
       // Should only have calling-based roles
       expect(details[0].roleIDs).toEqual([1]);
       expect(details[0].roleNames).toEqual(['Bishop']);
+  describe('Additional roles validation (TODO #06, #07)', () => {
+    test('UsersDetails accepts users with no additional roles', async () => {
+      users.users = {
+        users: [
+          { memberNumber: '1', password: 'pass1', email: 'john@example.com', active: true, roles: [] }
+        ]
+      };
+      const details = await users.UsersDetails();
+      expect(details.length).toBe(1);
+    });
+
+    test('UsersDetails accepts users with additional roles that have no calling', async () => {
+      const mockRoles = {
+        RoleEntryById: jest.fn((id) => {
+          if (id === -1) {
+            return [{ id: -1, name: 'Application Administrator', calling: null, active: true }];
+          }
+          return [];
+        })
+      };
+      users.members.Roles = mockRoles;
+      users.users = {
+        users: [
+          { memberNumber: '1', password: 'pass1', email: 'john@example.com', active: true, roles: [-1] }
+        ]
+      };
+      const details = await users.UsersDetails();
+      expect(details.length).toBe(1);
+      expect(mockRoles.RoleEntryById).toHaveBeenCalledWith(-1);
+    });
+
+    test('UsersDetails throws error when additional role has a calling', async () => {
+      const mockRoles = {
+        RoleEntryById: jest.fn((id) => {
+          if (id === 5) {
+            return [{ id: 5, name: 'Bishop', calling: 9, active: true }];
+          }
+          return [];
+        })
+      };
+      users.members.Roles = mockRoles;
+      users.users = {
+        users: [
+          { memberNumber: '1', password: 'pass1', email: 'john@example.com', active: true, roles: [5] }
+        ]
+      };
+      await expect(users.UsersDetails()).rejects.toThrow(
+        'Additional role "Bishop" (ID: 5) for user 1 has a calling associated with it (calling ID: 9). Additional roles must not have callings.'
+      );
+    });
+
+    test('UsersDetails validates multiple additional roles', async () => {
+      const mockRoles = {
+        RoleEntryById: jest.fn((id) => {
+          if (id === -1) {
+            return [{ id: -1, name: 'Application Administrator', calling: null, active: true }];
+          } else if (id === -2) {
+            return [{ id: -2, name: 'Application Tester', calling: null, active: true }];
+          }
+          return [];
+        })
+      };
+      users.members.Roles = mockRoles;
+      users.users = {
+        users: [
+          { memberNumber: '1', password: 'pass1', email: 'john@example.com', active: true, roles: [-1, -2] }
+        ]
+      };
+      const details = await users.UsersDetails();
+      expect(details.length).toBe(1);
+      expect(mockRoles.RoleEntryById).toHaveBeenCalledWith(-1);
+      expect(mockRoles.RoleEntryById).toHaveBeenCalledWith(-2);
+    });
+
+    test('UsersDetails throws error on first invalid role in multiple additional roles', async () => {
+      const mockRoles = {
+        RoleEntryById: jest.fn((id) => {
+          if (id === -1) {
+            return [{ id: -1, name: 'Application Administrator', calling: null, active: true }];
+          } else if (id === 5) {
+            return [{ id: 5, name: 'Bishop', calling: 9, active: true }];
+          }
+          return [];
+        })
+      };
+      users.members.Roles = mockRoles;
+      users.users = {
+        users: [
+          { memberNumber: '1', password: 'pass1', email: 'john@example.com', active: true, roles: [-1, 5] }
+        ]
+      };
+      await expect(users.UsersDetails()).rejects.toThrow(
+        'Additional role "Bishop" (ID: 5) for user 1 has a calling associated with it (calling ID: 9). Additional roles must not have callings.'
+      );
+    });
+
+    test('UsersDetails handles users without roles field', async () => {
+      users.users = {
+        users: [
+          { memberNumber: '1', password: 'pass1', email: 'john@example.com', active: true }
+        ]
+      };
+      const details = await users.UsersDetails();
+      expect(details.length).toBe(1);
+    });
+
+    test('UsersDetails handles role that does not exist', async () => {
+      const mockRoles = {
+        RoleEntryById: jest.fn((id) => {
+          return [];
+        })
+      };
+      users.members.Roles = mockRoles;
+      users.users = {
+        users: [
+          { memberNumber: '1', password: 'pass1', email: 'john@example.com', active: true, roles: [999] }
+        ]
+      };
+      const details = await users.UsersDetails();
+      expect(details.length).toBe(1);
+      expect(mockRoles.RoleEntryById).toHaveBeenCalledWith(999);
+    test('HasUserById returns false for empty users list', async () => {
+      users.users = { users: [] };
+      const exists = await users.HasUserById('1');
+      expect(exists).toBe(false);
+    });
+    test('HasUserByEmail returns true for existing user', async () => {
+      const exists = await users.HasUserByEmail('john@example.com');
+      expect(exists).toBe(true);
+      const notExists = await users.HasUserByEmail('nonexistent@example.com');
+      expect(notExists).toBe(false);
+    });
+    test('HasUserByEmail returns false for empty users list', async () => {
+      users.users = { users: [] };
+      const exists = await users.HasUserByEmail('john@example.com');
+      expect(exists).toBe(false);
     });
   });
 });
