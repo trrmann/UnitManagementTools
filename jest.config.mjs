@@ -4,6 +4,7 @@ export default {
   moduleFileExtensions: ['js', 'mjs', 'json', 'node'],
   testRegex: '.*\\.test\\.mjs$',
   transform: {
+    '^.+\\.mjs$': ['babel-jest', { presets: ['@babel/preset-env'] }],
     '^.+\\.[jt]sx?$': 'babel-jest',
   },
   transformIgnorePatterns: [

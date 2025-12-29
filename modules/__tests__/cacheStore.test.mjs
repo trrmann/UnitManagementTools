@@ -229,6 +229,24 @@ describe('CacheStore', () => {
     spyDelete.mockRestore();
   });
 
+  test('Set does not perform unnecessary writes if value and expiration are unchanged', () => {
+    const cache = new CacheStore();
+    cache.Set('a', 1, 1000);
+    const entry = cache._store.get('a');
+    const spyDelete = jest.spyOn(cache, 'Delete');
+    const spySet = jest.spyOn(cache._store, 'set');
+    // Call Set with same value and expiration
+    cache.Set('a', 1, 1000);
+    expect(spyDelete).not.toHaveBeenCalled();
+    expect(spySet).not.toHaveBeenCalled();
+    // Call Set with different value
+    cache.Set('a', 2, 1000);
+    expect(spyDelete).toHaveBeenCalledWith('a');
+    expect(spySet).toHaveBeenCalled();
+    spyDelete.mockRestore();
+    spySet.mockRestore();
+  });
+
   test('replace only updates existing, non-expired keys and does not create new keys', () => {
     const cache = new CacheStore();
     // New key: should not replace, should return false
@@ -238,6 +256,11 @@ describe('CacheStore', () => {
     cache.Set('a', 1, 1000);
     expect(cache.replace('a', 42)).toBe(true);
     expect(cache.Get('a').value).toBe(42);
+    // Should not update if value is unchanged
+    const spySet = jest.spyOn(cache._store, 'set');
+    expect(cache.replace('a', 42)).toBe(false);
+    expect(spySet).not.toHaveBeenCalled();
+    spySet.mockRestore();
     // Expired key: should not replace
     cache.Set('b', 2, 1); // expires quickly
     setTimeout(() => {
@@ -297,5 +320,282 @@ describe('CacheStore', () => {
       cache.forEachEntry(cb);
       expect(cb).not.toHaveBeenCalled();
     });
+  });
+
+  describe('forEach', () => {
+    it('iterates over all values and keys', () => {
+      const cache = new CacheStore();
+      cache.Set('a', 1);
+      cache.Set('b', 2);
+      cache.Set('c', 3);
+      const cb = jest.fn();
+      cache.forEach(cb);
+      expect(cb).toHaveBeenCalledTimes(3);
+      expect(cb).toHaveBeenCalledWith(1, 'a', cache);
+      expect(cb).toHaveBeenCalledWith(2, 'b', cache);
+      expect(cb).toHaveBeenCalledWith(3, 'c', cache);
+    });
+    it('does not call callback for empty cache', () => {
+      const cache = new CacheStore();
+      const cb = jest.fn();
+      cache.forEach(cb);
+      expect(cb).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('every', () => {
+    it('returns true for empty cache', () => {
+      const cache = new CacheStore();
+      const cb = jest.fn();
+      expect(cache.every(cb)).toBe(true);
+      expect(cb).not.toHaveBeenCalled();
+    });
+    it('returns true if all values pass', () => {
+      const cache = new CacheStore();
+      cache.Set('a', 1);
+      cache.Set('b', 2);
+      expect(cache.every(v => v > 0)).toBe(true);
+    });
+    it('returns false if any value fails', () => {
+      const cache = new CacheStore();
+      cache.Set('a', 1);
+      cache.Set('b', 0);
+      expect(cache.every(v => v > 0)).toBe(false);
+    });
+  });
+
+  describe('some', () => {
+    it('returns false for empty cache', () => {
+      const cache = new CacheStore();
+      const cb = jest.fn();
+      expect(cache.some(cb)).toBe(false);
+      expect(cb).not.toHaveBeenCalled();
+    });
+    it('returns true if any value passes', () => {
+      const cache = new CacheStore();
+      cache.Set('a', 0);
+      cache.Set('b', 2);
+      expect(cache.some(v => v > 0)).toBe(true);
+    });
+    it('returns false if no values pass', () => {
+      const cache = new CacheStore();
+      cache.Set('a', 0);
+      cache.Set('b', 0);
+      expect(cache.some(v => v > 0)).toBe(false);
+    });
+  });
+
+  describe('findValue', () => {
+    it('returns undefined for empty cache', () => {
+      const cache = new CacheStore();
+      const cb = jest.fn();
+      expect(cache.findValue(cb)).toBeUndefined();
+      expect(cb).not.toHaveBeenCalled();
+    });
+    it('returns first matching value', () => {
+      cache.Set('a', 1);
+      cache.Set('b', 2);
+      cache.Set('c', 3);
+      const found = cache.findValue((v) => v > 1);
+      expect(found).toBe(2);
+    });
+    it('returns undefined if no match', () => {
+      cache.Set('a', 1);
+      cache.Set('b', 2);
+      const notFound = cache.findValue((v) => v > 10);
+      expect(notFound).toBeUndefined();
+    });
+  });
+
+  describe('findEntry', () => {
+    it('returns undefined for empty cache', () => {
+      const cache = new CacheStore();
+      const cb = jest.fn();
+      expect(cache.findEntry(cb)).toBeUndefined();
+      expect(cb).not.toHaveBeenCalled();
+    });
+    it('returns first matching [key, value]', () => {
+      cache.Set('a', 1);
+      cache.Set('b', 2);
+      cache.Set('c', 3);
+      expect(cache.findEntry((v) => v > 1)).toEqual(['b', 2]);
+    });
+    it('returns undefined if no match', () => {
+      cache.Set('a', 1);
+      cache.Set('b', 2);
+      expect(cache.findEntry((v) => v > 10)).toBeUndefined();
+    });
+  });
+
+  describe('reduce', () => {
+    it('returns initialValue for empty cache', () => {
+      const cache = new CacheStore();
+      const cb = jest.fn();
+      expect(cache.reduce(cb, 42)).toBe(42);
+      expect(cb).not.toHaveBeenCalled();
+    });
+    it('throws TypeError for empty cache with no initialValue', () => {
+      const cache = new CacheStore();
+      const cb = jest.fn();
+      expect(() => cache.reduce(cb)).toThrow(TypeError);
+      expect(cb).not.toHaveBeenCalled();
+    });
+    it('reduces values in cache', () => {
+      const cache = new CacheStore();
+      cache.Set('a', 1);
+      cache.Set('b', 2);
+      cache.Set('c', 3);
+      const sum = cache.reduce((acc, v) => acc + v, 0);
+      expect(sum).toBe(6);
+    });
+    it('reduces values in cache with no initialValue', () => {
+      const cache = new CacheStore();
+      cache.Set('a', 1);
+      cache.Set('b', 2);
+      cache.Set('c', 3);
+      const sum = cache.reduce((acc, v) => acc + v);
+      expect(sum).toBe(6);
+    });
+  });
+
+  describe('deleteWhere', () => {
+    it('returns 0 for empty cache', () => {
+      const cache = new CacheStore();
+      const cb = jest.fn();
+      expect(cache.deleteWhere(cb)).toBe(0);
+      expect(cb).not.toHaveBeenCalled();
+    });
+    it('deletes matching entries and returns count', () => {
+      const cache = new CacheStore();
+      cache.Set('a', 1);
+      cache.Set('b', 2);
+      cache.Set('c', 3);
+      const count = cache.deleteWhere(v => v > 1);
+      expect(count).toBe(2);
+      expect(cache.Has('a')).toBe(true);
+      expect(cache.Has('b')).toBe(false);
+      expect(cache.Has('c')).toBe(false);
+    });
+    it('returns 0 if no entries match', () => {
+      const cache = new CacheStore();
+      cache.Set('a', 1);
+      cache.Set('b', 2);
+      expect(cache.deleteWhere(v => v > 10)).toBe(0);
+      expect(cache.Has('a')).toBe(true);
+      expect(cache.Has('b')).toBe(true);
+    });
+  });
+
+  describe('toMap', () => {
+    it('returns empty Map for empty cache', () => {
+        const cache = new CacheStore();
+        const map = cache.toMap();
+        expect(map).toBeInstanceOf(Map);
+        expect(map.size).toBe(0);
+    });
+    it('returns Map with all key-value pairs', () => {
+        const cache = new CacheStore();
+        cache.Set('a', 1);
+        cache.Set('b', 2);
+        const map = cache.toMap();
+        expect(map.size).toBe(2);
+        expect(map.get('a')).toBe(1);
+        expect(map.get('b')).toBe(2);
+    });
+  });
+
+  describe('toJSON', () => {
+    it('returns empty object for empty cache', () => {
+        const cache = new CacheStore();
+        expect(cache.toJSON()).toEqual({});
+    });
+    it('returns object with all key-value pairs', () => {
+        const cache = new CacheStore();
+        cache.Set('a', 1);
+        cache.Set('b', 2);
+        expect(cache.toJSON()).toEqual({ a: 1, b: 2 });
+    });
+  });
+
+  describe('valuesArray', () => {
+    it('returns empty array for empty cache', () => {
+        const cache = new CacheStore();
+        expect(cache.valuesArray()).toEqual([]);
+    });
+});
+
+describe('entriesArray', () => {
+    it('returns empty array for empty cache', () => {
+        const cache = new CacheStore();
+        expect(cache.entriesArray()).toEqual([]);
+    });
+});
+
+describe('keysArray', () => {
+    it('returns empty array for empty cache', () => {
+        const cache = new CacheStore();
+        expect(cache.keysArray()).toEqual([]);
+    });
+});
+
+describe('FromCacheStore', () => {
+    it('returns empty CacheStore for empty source', () => {
+        const cache = new CacheStore();
+        const clone = CacheStore.FromCacheStore(cache);
+        expect(clone).not.toBe(cache);
+        expect(clone.toJSON()).toEqual({});
+        clone.Set('x', 1);
+        expect(cache.Has('x')).toBe(false);
+        expect(clone.Has('x')).toBe(true);
+    });
+});
+describe('clone', () => {
+    it('returns empty CacheStore for empty source', () => {
+        const cache = new CacheStore();
+        const clone = cache.clone();
+        expect(clone).not.toBe(cache);
+        expect(clone.toJSON()).toEqual({});
+        clone.Set('y', 2);
+        expect(cache.Has('y')).toBe(false);
+        expect(clone.Has('y')).toBe(true);
+    });
+});
+
+describe('clearIf', () => {
+    it('returns 0 for empty cache', () => {
+        const cache = new CacheStore();
+        expect(cache.clearIf(() => true)).toBe(0);
+    });
+    it('removes all matching entries and returns count', () => {
+        const cache = new CacheStore();
+        cache.Set('a', 1);
+        cache.Set('b', 2);
+        cache.Set('c', 3);
+        const count = cache.clearIf(v => v > 1);
+        expect(count).toBe(2);
+        expect(cache.Has('a')).toBe(true);
+        expect(cache.Has('b')).toBe(false);
+        expect(cache.Has('c')).toBe(false);
+    });
+    it('returns 0 if no entries match', () => {
+        const cache = new CacheStore();
+        cache.Set('a', 1);
+        cache.Set('b', 2);
+        expect(cache.clearIf(v => v > 10)).toBe(0);
+        expect(cache.Has('a')).toBe(true);
+        expect(cache.Has('b')).toBe(true);
+    });
+});
+  test('deleteMany is an alias for deleteAll and returns correct count', () => {
+    const cache = new CacheStore();
+    cache.Set('a', 1);
+    cache.Set('b', 2);
+    cache.Set('c', 3);
+    expect(cache.deleteMany(['a', 'b'])).toBe(2);
+    expect(cache.Has('a')).toBe(false);
+    expect(cache.Has('b')).toBe(false);
+    expect(cache.Has('c')).toBe(true);
+    // Deleting non-existent keys returns 0
+    expect(cache.deleteMany(['x', 'y'])).toBe(0);
   });
 });

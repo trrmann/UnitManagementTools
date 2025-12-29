@@ -45,24 +45,28 @@ export class SessionStorage {
     }
 
     // ===== Core Methods =====
-    Set(key, value, ttlMs = SessionStorage.DefaultSessionStorageValueExpireMS) { 
+    Set(key, value, ttlMs = SessionStorage.DefaultSessionStorageValueExpireMS, isObject = false) { 
+        let storeValue = value;
+        if (isObject) {
+            storeValue = JSON.stringify(value);
+        }
         if(ttlMs > 0) {
             const expires = Date.now() + ttlMs;
-            const payload = JSON.stringify({ value, expires });
+            const payload = JSON.stringify({ value: storeValue, expires });
             sessionStorage.setItem(key, payload);
         } else {
-            sessionStorage.setItem(key, value);
+            sessionStorage.setItem(key, storeValue);
         }
         this._keyRegistry.add(key);
     }
     SetObject(key, value, ttlMs = SessionStorage.DefaultSessionStorageValueExpireMS) {
-        this.Set(key, JSON.stringify(value), ttlMs);
+        this.Set(key, value, ttlMs, true);
     }
     GetAllKeys() {
         return Array.from(this._keyRegistry);
     }
     HasKey(key) {
-        return this.GetAllKeys().includes(key);
+        return this._keyRegistry.has(key);
     }
     Delete(key) {
         sessionStorage.removeItem(key);
@@ -88,7 +92,12 @@ export class SessionStorage {
     }
     GetObject(key) {
         const val = this.Get(key);
-        return val ? JSON.parse(val) : val;
+        if (val === undefined || val === null) return val;
+        try {
+            return typeof val === 'string' ? JSON.parse(val) : val;
+        } catch {
+            return val;
+        }
     }
     Clear() {
         const keys = this.GetAllKeys();

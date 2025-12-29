@@ -1,7 +1,15 @@
-// ...existing code...
+
 import { TimerUtils } from "./objectUtils.mjs";
 
 export class CacheStore {
+    // Ergonomic alias for deleteAll(keys), matching Map/Set API
+    deleteMany(keys) {
+        return this.deleteAll(keys);
+    }
+    // Removes all entries for which the predicate returns true (ergonomic alias for deleteWhere)
+    clearIf(predicate, thisArg = undefined) {
+        return this.deleteWhere(predicate, thisArg);
+    }
             // Creates a new CacheStore from a Map of key-value pairs
             static fromMap(map, ttlMs = CacheStore.DefaultCacheValueExpireMS) {
                 const cache = new CacheStore();
@@ -12,6 +20,7 @@ export class CacheStore {
             }
         // Returns a new Map of all current key-value pairs
         toMap() {
+            if (this._store.size === 0) return new Map();
             const map = new Map();
             for (const [key, entry] of this._store.entries()) {
                 map.set(key, entry.value);
@@ -28,6 +37,12 @@ export class CacheStore {
 
     // Reduces the values in the cache to a single value using the callback
     reduce(callback, initialValue) {
+        if (this._store.size === 0) {
+            if (initialValue === undefined) {
+                throw new TypeError('Reduce of empty CacheStore with no initial value');
+            }
+            return initialValue;
+        }
         let accumulator = initialValue;
         let start = 0;
         for (const [key, entry] of this._store.entries()) {
@@ -38,14 +53,12 @@ export class CacheStore {
             }
             start++;
         }
-        if (start === 0 && accumulator === undefined) {
-            throw new TypeError('Reduce of empty CacheStore with no initial value');
-        }
         return accumulator;
     }
 
     // Returns true if all values pass the callback test, else false
     every(callback, thisArg = undefined) {
+        if (this._store.size === 0) return true;
         for (const [key, entry] of this._store.entries()) {
             if (!callback.call(thisArg, entry.value, key, this)) {
                 return false;
@@ -56,6 +69,7 @@ export class CacheStore {
 
     // Returns true if at least one value passes the callback test, else false
     some(callback, thisArg = undefined) {
+        if (this._store.size === 0) return false;
         for (const [key, entry] of this._store.entries()) {
             if (callback.call(thisArg, entry.value, key, this)) {
                 return true;
@@ -66,6 +80,7 @@ export class CacheStore {
 
     // Returns the first [key, value] pair for which the callback returns true, or undefined
     findEntry(callback, thisArg = undefined) {
+        if (this._store.size === 0) return undefined;
         for (const [key, entry] of this._store.entries()) {
             if (callback.call(thisArg, entry.value, key, this)) {
                 return [key, entry.value];
@@ -76,6 +91,7 @@ export class CacheStore {
 
     // Returns the first value for which the callback returns true, or undefined
     findValue(callback, thisArg = undefined) {
+        if (this._store.size === 0) return undefined;
         for (const entry of this._store.values()) {
             if (callback.call(thisArg, entry.value, this)) {
                 return entry.value;
@@ -119,6 +135,7 @@ export class CacheStore {
     // Deletes all entries for which the predicate returns true
     deleteWhere(predicate, thisArg = undefined) {
         if (typeof predicate !== 'function') return 0;
+        if (this._store.size === 0) return 0;
         let count = 0;
         for (const [key, entry] of this._store.entries()) {
             if (predicate.call(thisArg, entry.value, key, this)) {
@@ -133,6 +150,9 @@ export class CacheStore {
     replace(key, newValue) {
         if (this.Has(key)) {
             const entry = this._store.get(key);
+            if (entry.value === newValue) {
+                return false;
+            }
             this._store.set(key, { ...entry, value: newValue });
             return true;
         }
@@ -141,6 +161,7 @@ export class CacheStore {
 
     // Ergonomic alias for Keys(), returns all keys as an array
     keysArray() {
+        if (this._store.size === 0) return [];
         return this.Keys();
     }
 
@@ -178,6 +199,7 @@ export class CacheStore {
     // Creates a new CacheStore from an existing instance (deep copy)
     static FromCacheStore(instance) {
         const cache = new CacheStore(instance._cachePruneIntervalMs || CacheStore.DefaultCachePruneIntervalMS);
+        if (instance._store.size === 0) return cache;
         for (const [key, entry] of instance._store.entries()) {
             cache._store.set(key, { ...entry });
         }
@@ -186,6 +208,7 @@ export class CacheStore {
 
     // Returns a plain object of key-value pairs (omits expiration)
     toJSON() {
+        if (this._store.size === 0) return {};
         const obj = {};
         for (const [key, entry] of this._store.entries()) {
             obj[key] = entry.value;
@@ -281,6 +304,11 @@ export class CacheStore {
             expires = Date.now() + ttlMs;
         }
         if (this.Has(key)) {
+            const entry = this._store.get(key);
+            // If value and expiration are unchanged, do nothing
+            if (entry.value === value && entry.expires === expires) {
+                return this;
+            }
             this.Delete(key);
         }
         this._store.set(key, { value, expires });
@@ -364,6 +392,7 @@ export class CacheStore {
     }
 
     forEach(callback, thisArg = undefined) {
+        if (this._store.size === 0) return;
         this._store.forEach((entry, key) => {
             callback.call(thisArg, entry.value, key, this);
         });
@@ -371,6 +400,7 @@ export class CacheStore {
 
 
     values() {
+        if (this._store.size === 0) return [];
         return Array.from(this._store.values()).map(entry => entry.value);
     }
 
@@ -385,6 +415,7 @@ export class CacheStore {
     }
 
     entries() {
+        if (this._store.size === 0) return [];
         return Array.from(this._store.entries()).map(([key, entry]) => [key, entry.value]);
     }
 
