@@ -45,24 +45,28 @@ export class LocalStorage {
     }
 
     // ===== Core Methods =====
-    Set(key, value, ttlMs = LocalStorage.DefaultLocalStorageValueExpireMS) { 
+    Set(key, value, ttlMs = LocalStorage.DefaultLocalStorageValueExpireMS, isObject = false) { 
+        let storeValue = value;
+        if (isObject) {
+            storeValue = JSON.stringify(value);
+        }
         if(ttlMs > 0) {
             const expires = Date.now() + ttlMs;
-            const payload = JSON.stringify({ value, expires });
+            const payload = JSON.stringify({ value: storeValue, expires });
             localStorage.setItem(key, payload);
         } else {
-            localStorage.setItem(key, value);
+            localStorage.setItem(key, storeValue);
         }
         this._keyRegistry.add(key);
     }
     SetObject(key, value, ttlMs = LocalStorage.DefaultLocalStorageValueExpireMS) {
-        this.Set(key, JSON.stringify(value), ttlMs);
+        this.Set(key, value, ttlMs, true);
     }
     GetAllKeys() {
         return Array.from(this._keyRegistry);
     }
     HasKey(key) {
-        return this.GetAllKeys().includes(key);
+        return this._keyRegistry.has(key);
     }
     Delete(key) {
         localStorage.removeItem(key);
@@ -88,17 +92,24 @@ export class LocalStorage {
     }
     GetObject(key) {
         const val = this.Get(key);
-        return val ? JSON.parse(val) : val;
+        if (val === undefined || val === null) return val;
+        try {
+            return typeof val === 'string' ? JSON.parse(val) : val;
+        } catch {
+            return val;
+        }
     }
     Clear() {
+        if (this._keyRegistry.size === 0) return;
         const keys = this.GetAllKeys();
-        keys.forEach(key =>{
+        keys.forEach(key => {
             this.Delete(key);
         });
     }
     LocalStoragePrune() {
+        if (this._keyRegistry.size === 0) return;
         const keys = this.GetAllKeys();
-        keys.forEach(key =>{
+        keys.forEach(key => {
             this.Get(key);
         });
     }
