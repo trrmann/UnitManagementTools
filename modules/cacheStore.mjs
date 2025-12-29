@@ -3,6 +3,22 @@
 import { TimerUtils } from "./objectUtils.mjs";
 
 export class CacheStore {
+            // Creates a new CacheStore from a Map of key-value pairs
+            static fromMap(map, ttlMs = CacheStore.DefaultCacheValueExpireMS) {
+                const cache = new CacheStore();
+                for (const [key, value] of map.entries()) {
+                    cache.Set(key, value, ttlMs);
+                }
+                return cache;
+            }
+        // Returns a new Map of all current key-value pairs
+        toMap() {
+            const map = new Map();
+            for (const [key, entry] of this._store.entries()) {
+                map.set(key, entry.value);
+            }
+            return map;
+        }
     // Calls the callback for each [key, value] pair in the cache
     forEachEntry(callback, thisArg = undefined) {
         for (const [key, entry] of this._store.entries()) {

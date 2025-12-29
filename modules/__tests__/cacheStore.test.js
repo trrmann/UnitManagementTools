@@ -1,3 +1,51 @@
+      describe('fromMap', () => {
+        it('should create a CacheStore from a Map', () => {
+          const map = new Map([
+            ['a', 1],
+            ['b', 2],
+            ['c', 3]
+          ]);
+          const cache = CacheStore.fromMap(map);
+          expect(cache instanceof CacheStore).toBe(true);
+          expect(cache.Get('a').value).toBe(1);
+          expect(cache.Get('b').value).toBe(2);
+          expect(cache.Get('c').value).toBe(3);
+          expect(cache.size).toBe(3);
+        });
+
+        it('should allow custom ttlMs for all entries', () => {
+          const map = new Map([
+            ['x', 10],
+            ['y', 20]
+          ]);
+          const cache = CacheStore.fromMap(map, 12345);
+          expect(cache.Get('x').expires - Date.now()).toBeLessThanOrEqual(12345);
+          expect(cache.Get('y').expires - Date.now()).toBeLessThanOrEqual(12345);
+        });
+      });
+    describe('toMap', () => {
+      it('should return a Map of all key-value pairs', () => {
+        const cache = new CacheStore();
+        cache.Set('a', 1);
+        cache.Set('b', 2);
+        const map = cache.toMap();
+        expect(map instanceof Map).toBe(true);
+        expect(map.size).toBe(2);
+        expect(map.get('a')).toBe(1);
+        expect(map.get('b')).toBe(2);
+      });
+
+      it('should not include expired entries', () => {
+        const cache = new CacheStore();
+        cache.Set('a', 1, 1); // expires quickly
+        cache.Set('b', 2, 10000); // long expiry
+        jest.advanceTimersByTime(2); // expire 'a'
+        cache.clearExpired();
+        const map = cache.toMap();
+        expect(map.has('a')).toBe(false);
+        expect(map.get('b')).toBe(2);
+      });
+    });
   describe('forEachEntry', () => {
     it('should call callback for each [key, value] pair', () => {
       const cache = new CacheStore();
