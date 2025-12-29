@@ -2,52 +2,121 @@
     import { Configuration } from "./configuration.mjs";
     import { Auth } from "../modules/auth.mjs";
 
+// Static HTML templates for modal content (memory optimization)
+const MODAL_TEMPLATES = {
+    ADD_MEMBER: `
+        <div class="form-group">
+            <label>First Name</label>
+            <input type="text" placeholder="Enter first name" required>
+        </div>
+        <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" placeholder="Enter last name" required>
+        </div>
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" placeholder="Enter email" required>
+        </div>
+        <div class="form-group">
+            <label>Phone</label>
+            <input type="tel" placeholder="Enter phone number" required>
+        </div>
+        <div class="form-group">
+            <label>Role</label>
+            <select required>
+                <option value="">Select Role</option>
+                <option value="member">Member</option>
+                <option value="home-teacher">Home Teacher</option>
+                <option value="relief-society">Relief Society</option>
+                <option value="elders-quorum">Elders Quorum</option>
+            </select>
+        </div>
+    `,
+    NEW_ASSIGNMENT: `
+        <div class="form-group">
+            <label>Assignment Title</label>
+            <input type="text" placeholder="Enter assignment title" required>
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            <textarea placeholder="Enter assignment description" rows="4"></textarea>
+        </div>
+        <div class="form-group">
+            <label>Assign To</label>
+            <select required>
+                <option value="">Select Member</option>
+                <option value="james">James Johnson</option>
+                <option value="sarah">Sarah Williams</option>
+                <option value="michael">Michael Brown</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Due Date</label>
+            <input type="date" required>
+        </div>
+    `,
+    SCHEDULE_EVENT: `
+        <div class="form-group">
+            <label>Event Name</label>
+            <input type="text" placeholder="Enter event name" required>
+        </div>
+        <div class="form-group">
+            <label>Event Date</label>
+            <input type="date" required>
+        </div>
+        <div class="form-group">
+            <label>Start Time</label>
+            <input type="time" required>
+        </div>
+        <div class="form-group">
+            <label>End Time</label>
+            <input type="time" required>
+        </div>
+        <div class="form-group">
+            <label>Location</label>
+            <input type="text" placeholder="Enter location" required>
+        </div>
+    `
+};
+
+const FORM_TITLES = {
+    referral: 'Member Referral Form',
+    homeTeaching: 'Home Teaching Report',
+    welfare: 'Welfare Assistance Request',
+    missionary: 'Missionary Recommendation',
+    activity: 'Activity Planning Form',
+    service: 'Service Project Log'
+};
+
 export class Site {
     constructor() {
         this._siteConfig = null;
         this._toggleBtn = null;
         this._navBar = null;
         this._icon = null;
+        // Cache modal DOM elements for performance
+        this._modal = null;
+        this._modalTitle = null;
+        this._modalBody = null;
+        // Debounce timer for resize handler
+        this._resizeTimer = null;
+        // Cache filter elements for performance
+        this._memberSearchInput = null;
+        // Store bound event handlers for cleanup
+        this._boundHandlers = {
+            resize: null,
+            toggleClick: null,
+            windowClick: null
+        };
     }
-        _createModalDiv() {
-            if (document.getElementById('modal')) return;
-            const modal = document.createElement('div');
-            modal.id = 'modal';
-            modal.className = 'modal';
-            const modalContent = document.createElement('div');
-            modalContent.className = 'modal-content';
-            const closeSpan = document.createElement('span');
-            closeSpan.className = 'close';
-            closeSpan.innerHTML = '&times;';
-            closeSpan.onclick = () => { window.closeModal(); };
-            const modalTitle = document.createElement('h3');
-            modalTitle.id = 'modalTitle';
-            modalTitle.textContent = 'Modal Title';
-            const modalForm = document.createElement('form');
-            modalForm.id = 'modalForm';
-            const modalBody = document.createElement('div');
-            modalBody.id = 'modalBody';
-            const modalActions = document.createElement('div');
-            modalActions.className = 'modal-actions';
-            const saveBtn = document.createElement('button');
-            saveBtn.type = 'submit';
-            saveBtn.className = 'btn-primary';
-            saveBtn.textContent = 'Save';
-            const cancelBtn = document.createElement('button');
-            cancelBtn.type = 'button';
-            cancelBtn.className = 'btn-secondary';
-            cancelBtn.textContent = 'Cancel';
-            cancelBtn.onclick = () => { window.closeModal(); };
-            modalActions.appendChild(saveBtn);
-            modalActions.appendChild(cancelBtn);
-            modalForm.appendChild(modalBody);
-            modalForm.appendChild(modalActions);
-            modalContent.appendChild(closeSpan);
-            modalContent.appendChild(modalTitle);
-            modalContent.appendChild(modalForm);
-            modal.appendChild(modalContent);
-            document.body.appendChild(modal);
-        }
+
+    // Debounce utility for resize events
+    _debounce(func, wait) {
+        return (...args) => {
+            clearTimeout(this._resizeTimer);
+            this._resizeTimer = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
 
     static async Factory(storageObject) {
         const site = new Site();
@@ -64,10 +133,20 @@ export class Site {
             this._toggleBtn = document.getElementById('userMenuToggle');
             this._navBar = document.querySelector('.navbar');
             this._icon = document.getElementById('userMenuToggleIcon');
+            // Cache modal elements for performance
+            this._modal = document.getElementById('modal');
+            this._modalTitle = document.getElementById('modalTitle');
+            this._modalBody = document.getElementById('modalBody');
+            // Cache filter elements for performance
+            this._memberSearchInput = document.getElementById('memberSearch');
             if (this._toggleBtn && this._navBar) {
                 this._updateToggleVisibility();
-                window.addEventListener('resize', () => this._updateToggleVisibility());
-                this._toggleBtn.addEventListener('click', () => this._toggleMenu());
+                // Store bound handlers for cleanup
+                this._boundHandlers.resize = this._debounce(() => this._updateToggleVisibility(), 150);
+                this._boundHandlers.toggleClick = () => this._toggleMenu();
+                // Debounce resize handler to improve performance (150ms delay)
+                window.addEventListener('resize', this._boundHandlers.resize);
+                this._toggleBtn.addEventListener('click', this._boundHandlers.toggleClick);
             }
         });
         // Section navigation
@@ -86,12 +165,12 @@ export class Site {
         // Modal and edit functions
         window.openModal = this.openModal.bind(this);
         window.closeModal = this.closeModal.bind(this);
-        window.onclick = (event) => {
-            const modal = document.getElementById('modal');
-            if (event.target === modal) {
-                modal.classList.remove('show');
+        this._boundHandlers.windowClick = (event) => {
+            if (this._modal && event.target === this._modal) {
+                this._modal.classList.remove('show');
             }
         };
+        window.onclick = this._boundHandlers.windowClick;
         // Edit and CRUD
         window.editMember = this.editMember.bind(this);
         window.deleteMember = this.deleteMember.bind(this);
@@ -168,9 +247,20 @@ export class Site {
     }
 
     filterMembers() {
-        const searchInput = document.getElementById('memberSearch');
+        // Use cached search input if available, otherwise query DOM
+        const searchInput = this._memberSearchInput || document.getElementById('memberSearch');
+        if (!searchInput) return;
+        
         const searchTerm = searchInput.value.toLowerCase();
         const tableRows = document.querySelectorAll('#membersBody tr');
+        
+        // Early exit if no search term - show all rows
+        if (!searchTerm) {
+            tableRows.forEach(row => { row.style.display = ''; });
+            return;
+        }
+        
+        // Filter rows by search term
         tableRows.forEach(row => {
             const text = row.textContent.toLowerCase();
             row.style.display = text.includes(searchTerm) ? '' : 'none';
@@ -193,107 +283,38 @@ export class Site {
 
     // --- Modal and CRUD methods ---
     openModal(title, content) {
-        const modal = document.getElementById('modal');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalBody = document.getElementById('modalBody');
-        modalTitle.textContent = title;
-        modalBody.innerHTML = content;
-        modal.classList.add('show');
+        // Use cached elements if available, otherwise query DOM (fallback for safety)
+        const modal = this._modal || document.getElementById('modal');
+        const modalTitle = this._modalTitle || document.getElementById('modalTitle');
+        const modalBody = this._modalBody || document.getElementById('modalBody');
+        if (modalTitle) modalTitle.textContent = title;
+        if (modalBody) modalBody.innerHTML = content;
+        if (modal) modal.classList.add('show');
     }
     closeModal() {
-        const modal = document.getElementById('modal');
-        modal.classList.remove('show');
+        // Use cached element if available, otherwise query DOM (fallback for safety)
+        const modal = this._modal || document.getElementById('modal');
+        if (modal) modal.classList.remove('show');
     }
     editMember(id) { alert(`Edit member ${id}`); }
     deleteMember(id) { if (confirm('Are you sure you want to delete this member?')) { alert(`Member ${id} deleted`); } }
     editAssignment(id) { alert(`Edit assignment ${id}`); }
     markComplete(id) { alert(`Assignment ${id} marked complete`); }
     viewAssignment(id) { alert(`View assignment ${id}`); }
-    openAddMember() { this.openModal('Add Member', `
-        <div class="form-group">
-            <label>First Name</label>
-            <input type="text" placeholder="Enter first name" required>
-        </div>
-        <div class="form-group">
-            <label>Last Name</label>
-            <input type="text" placeholder="Enter last name" required>
-        </div>
-        <div class="form-group">
-            <label>Email</label>
-            <input type="email" placeholder="Enter email" required>
-        </div>
-        <div class="form-group">
-            <label>Phone</label>
-            <input type="tel" placeholder="Enter phone number" required>
-        </div>
-        <div class="form-group">
-            <label>Role</label>
-            <select required>
-                <option value="">Select Role</option>
-                <option value="member">Member</option>
-                <option value="home-teacher">Home Teacher</option>
-                <option value="relief-society">Relief Society</option>
-                <option value="elders-quorum">Elders Quorum</option>
-            </select>
-        </div>
-    `); }
-    openNewAssignment() { this.openModal('New Assignment', `
-        <div class="form-group">
-            <label>Assignment Title</label>
-            <input type="text" placeholder="Enter assignment title" required>
-        </div>
-        <div class="form-group">
-            <label>Description</label>
-            <textarea placeholder="Enter assignment description" rows="4"></textarea>
-        </div>
-        <div class="form-group">
-            <label>Assign To</label>
-            <select required>
-                <option value="">Select Member</option>
-                <option value="james">James Johnson</option>
-                <option value="sarah">Sarah Williams</option>
-                <option value="michael">Michael Brown</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>Due Date</label>
-            <input type="date" required>
-        </div>
-    `); }
-    openScheduleEvent() { this.openModal('Schedule Event', `
-        <div class="form-group">
-            <label>Event Name</label>
-            <input type="text" placeholder="Enter event name" required>
-        </div>
-        <div class="form-group">
-            <label>Event Date</label>
-            <input type="date" required>
-        </div>
-        <div class="form-group">
-            <label>Start Time</label>
-            <input type="time" required>
-        </div>
-        <div class="form-group">
-            <label>End Time</label>
-            <input type="time" required>
-        </div>
-        <div class="form-group">
-            <label>Location</label>
-            <input type="text" placeholder="Enter location" required>
-        </div>
-    `); }
+    openAddMember() { 
+        this.openModal('Add Member', MODAL_TEMPLATES.ADD_MEMBER); 
+    }
+    openNewAssignment() { 
+        this.openModal('New Assignment', MODAL_TEMPLATES.NEW_ASSIGNMENT); 
+    }
+    openScheduleEvent() { 
+        this.openModal('Schedule Event', MODAL_TEMPLATES.SCHEDULE_EVENT); 
+    }
     openForm(formType) {
-        const formTitles = {
-            referral: 'Member Referral Form',
-            homeTeaching: 'Home Teaching Report',
-            welfare: 'Welfare Assistance Request',
-            missionary: 'Missionary Recommendation',
-            activity: 'Activity Planning Form',
-            service: 'Service Project Log'
-        };
-        this.openModal(formTitles[formType] || 'Form', `
+        const title = FORM_TITLES[formType] || 'Form';
+        this.openModal(title, `
             <div class="form-group">
-                <label>Form Type: ${formTitles[formType]}</label>
+                <label>Form Type: ${title}</label>
                 <textarea placeholder="Enter form details..." rows="6"></textarea>
             </div>
             <div class="form-group">
@@ -308,19 +329,59 @@ export class Site {
     previousMonth() { alert('Previous month'); }
     nextMonth() { alert('Next month'); }
 
-    // _buildConfigFromConfiguration is now obsolete due to direct use of Configuration.Fetch in Factory
-}
-
-
-
-// Edit functions
-
-window.editMember = function(id) {
-    alert(`Edit member ${id}`);
-};
-
-window.deleteMember = function(id) {
-    if (confirm('Are you sure you want to delete this member?')) {
-        alert(`Member ${id} deleted`);
+    // Cleanup method to prevent memory leaks
+    dispose() {
+        // Clear debounce timer
+        if (this._resizeTimer) {
+            clearTimeout(this._resizeTimer);
+            this._resizeTimer = null;
+        }
+        
+        // Remove event listeners
+        if (this._boundHandlers.resize) {
+            window.removeEventListener('resize', this._boundHandlers.resize);
+        }
+        if (this._boundHandlers.toggleClick && this._toggleBtn) {
+            this._toggleBtn.removeEventListener('click', this._boundHandlers.toggleClick);
+        }
+        if (this._boundHandlers.windowClick) {
+            window.onclick = null;
+        }
+        
+        // Clear window function bindings
+        window.showSection = null;
+        window.changeMembersPage = null;
+        window.filterMembers = null;
+        window.filterAssignments = null;
+        window.filterSchedule = null;
+        window.quickAction = null;
+        window.openModal = null;
+        window.closeModal = null;
+        window.editMember = null;
+        window.deleteMember = null;
+        window.editAssignment = null;
+        window.markComplete = null;
+        window.viewAssignment = null;
+        window.openAddMember = null;
+        window.openNewAssignment = null;
+        window.openScheduleEvent = null;
+        window.openForm = null;
+        window.generateReport = null;
+        window.exportReport = null;
+        window.editEvent = null;
+        window.previousMonth = null;
+        window.nextMonth = null;
+        
+        // Clear cached DOM references
+        this._toggleBtn = null;
+        this._navBar = null;
+        this._icon = null;
+        this._modal = null;
+        this._modalTitle = null;
+        this._modalBody = null;
+        this._memberSearchInput = null;
+        this._boundHandlers = null;
     }
+
+    // _buildConfigFromConfiguration is now obsolete due to direct use of Configuration.Fetch in Factory
 }
