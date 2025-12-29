@@ -4,6 +4,26 @@ import { TimerUtils } from "./objectUtils.mjs";
 
 export class CacheStore {
 
+    // Returns the first [key, value] pair for which the callback returns true, or undefined
+    findEntry(callback, thisArg = undefined) {
+        for (const [key, entry] of this._store.entries()) {
+            if (callback.call(thisArg, entry.value, key, this)) {
+                return [key, entry.value];
+            }
+        }
+        return undefined;
+    }
+
+    // Returns the first value for which the callback returns true, or undefined
+    findValue(callback, thisArg = undefined) {
+        for (const entry of this._store.values()) {
+            if (callback.call(thisArg, entry.value, this)) {
+                return entry.value;
+            }
+        }
+        return undefined;
+    }
+
     // Returns an array of values for which the callback returns true
     filterValues(callback, thisArg = undefined) {
         const result = [];

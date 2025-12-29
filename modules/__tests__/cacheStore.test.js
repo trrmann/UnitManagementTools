@@ -1,6 +1,32 @@
 import { CacheStore } from '../cacheStore.mjs';
 
 describe('CacheStore', () => {
+    describe('findEntry', () => {
+      it('should return the first [key, value] pair matching the callback', () => {
+        const cache = new CacheStore();
+        cache.Set('a', 1);
+        cache.Set('b', 2);
+        cache.Set('c', 3);
+        const result = cache.findEntry((v, k) => v % 2 === 0);
+        expect(result).toEqual(['b', 2]);
+      });
+
+      it('should return undefined if no entry matches', () => {
+        const cache = new CacheStore();
+        cache.Set('a', 1);
+        cache.Set('b', 3);
+        const result = cache.findEntry((v) => v > 10);
+        expect(result).toBeUndefined();
+      });
+
+      it('should respect thisArg', () => {
+        const cache = new CacheStore();
+        cache.Set('x', 5);
+        const context = { target: 5 };
+        const result = cache.findEntry(function(v) { return v === this.target; }, context);
+        expect(result).toEqual(['x', 5]);
+      });
+    });
   let cache;
   beforeEach(() => {
     jest.useFakeTimers();
@@ -127,6 +153,16 @@ describe('CacheStore', () => {
       cache.Set('c', 4);
       const evens = cache.filterValues(v => v % 2 === 0);
       expect(evens).toEqual([2, 4]);
+    });
+
+    test('findValue finds the first matching value or undefined', () => {
+      cache.Set('a', 2);
+      cache.Set('b', 3);
+      cache.Set('c', 4);
+      const found = cache.findValue(v => v > 2);
+      expect(found).toBe(3);
+      const notFound = cache.findValue(v => v > 10);
+      expect(notFound).toBeUndefined();
     });
 
     test('clearAll empties the cache', () => {
