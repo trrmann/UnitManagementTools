@@ -100,14 +100,16 @@ export class SessionStorage {
         }
     }
     Clear() {
+        if (this._keyRegistry.size === 0) return;
         const keys = this.GetAllKeys();
-        keys.forEach(key =>{
+        keys.forEach(key => {
             this.Delete(key);
         });
     }
     SessionStoragePrune() {
+        if (this._keyRegistry.size === 0) return;
         const keys = this.GetAllKeys();
-        keys.forEach(key =>{
+        keys.forEach(key => {
             this.Get(key);
         });
     }

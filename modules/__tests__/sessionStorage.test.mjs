@@ -48,6 +48,16 @@ describe('SessionStorage Class', () => {
       expect(() => JSON.parse(parsed.value)).not.toThrow();
       expect(ss.GetObject('complex')).toEqual(obj);
     });
+    test('Clear and SessionStoragePrune are fast for empty registry', () => {
+      // Should not throw or do anything if empty
+      expect(() => ss.Clear()).not.toThrow();
+      expect(() => ss.SessionStoragePrune()).not.toThrow();
+      // Add a key, then clear
+      ss.Set('foo', 'bar', 10000);
+      expect(ss.HasKey('foo')).toBe(true);
+      ss.Clear();
+      expect(ss.HasKey('foo')).toBe(false);
+    });
     // ...rest of file unchanged...
   });
 });
