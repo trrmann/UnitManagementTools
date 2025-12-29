@@ -7,6 +7,7 @@ export class CacheStore {
     get Store() { return this._store; }
     get CachePruneTimer() { return this._cachePruneTimer; }
     get CachePruneIntervalMs() { return this._cachePruneIntervalMs; }
+    get Size() { return this._store.size; }
 
     // ===== Constructor =====
     constructor(cachePruneIntervalMs = CacheStore.DefaultCachePruneIntervalMS) {
