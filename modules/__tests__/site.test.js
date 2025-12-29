@@ -1,0 +1,101 @@
+import { Site } from '../site.mjs';
+
+describe('Site Class', () => {
+  let site;
+
+  beforeEach(() => {
+    site = new Site();
+    // Mock DOM methods and elements for testing
+    global.document = {
+      body: { appendChild: jest.fn() },
+      querySelector: jest.fn(sel => ({ classList: { remove: jest.fn(), add: jest.fn(), toggle: jest.fn(), contains: jest.fn() }, addEventListener: jest.fn() })),
+      querySelectorAll: jest.fn(sel => [{ classList: { remove: jest.fn(), add: jest.fn() }, textContent: '', style: {} }]),
+      activeElement: { classList: { contains: jest.fn(() => false), remove: jest.fn(), add: jest.fn() } }
+    };
+    global.document.createElement = jest.fn(tag => ({ className: '', id: '', innerHTML: '', textContent: '', appendChild: jest.fn(), addEventListener: jest.fn(), style: {}, type: '', onclick: null }));
+    global.document.getElementById = jest.fn(id => {
+      if (id === 'modal') return null;
+      if (id === 'userMenuToggle') return { style: {}, addEventListener: jest.fn(), classList: { remove: jest.fn(), add: jest.fn(), toggle: jest.fn(), contains: jest.fn() } };
+      if (id === 'userMenuToggleIcon') return { classList: { remove: jest.fn(), add: jest.fn(), contains: jest.fn() } };
+      if (id === 'modalTitle') return { textContent: '' };
+      if (id === 'modalForm') return {};
+      if (id === 'modalBody') return {};
+      return null;
+    });
+    global.window = {
+      addEventListener: jest.fn(),
+      event: { target: { closest: jest.fn(() => ({ classList: { remove: jest.fn(), add: jest.fn() } })) } },
+      membersCurrentPage: 1
+    };
+    global.alert = jest.fn();
+  });
+
+  test('constructor initializes properties', () => {
+    expect(site._siteConfig).toBeNull();
+    expect(site._toggleBtn).toBeNull();
+    expect(site._navBar).toBeNull();
+    expect(site._icon).toBeNull();
+  });
+
+  test('_createModalDiv creates modal if not present', () => {
+    // Patch appendChild to accept any object
+    global.document.body.appendChild = jest.fn();
+    site._createModalDiv();
+    expect(global.document.createElement).toHaveBeenCalledWith('div');
+    expect(global.document.body.appendChild).toHaveBeenCalled();
+  });
+
+  test('_setupEventListeners sets up listeners and window bindings', () => {
+    // Patch addEventListener to immediately call the callback for DOMContentLoaded
+    global.document.addEventListener = jest.fn((event, cb) => {
+      if (event === 'DOMContentLoaded') cb();
+    });
+    global.document.querySelector = jest.fn(sel => ({ classList: { remove: jest.fn(), add: jest.fn(), toggle: jest.fn(), contains: jest.fn() }, addEventListener: jest.fn() }));
+    site._setupEventListeners();
+    expect(global.document.getElementById).toHaveBeenCalledWith('userMenuToggle');
+    expect(global.document.querySelector).toHaveBeenCalledWith('.navbar');
+    expect(global.document.getElementById).toHaveBeenCalledWith('userMenuToggleIcon');
+    expect(typeof window.showSection).toBe('function');
+    expect(typeof window.quickAction).toBe('function');
+  });
+
+  test('_toggleMenu toggles navBar and icon', () => {
+    site._navBar = { classList: { toggle: jest.fn(), contains: jest.fn(() => true), remove: jest.fn(), add: jest.fn() } };
+    site._icon = { classList: { remove: jest.fn(), add: jest.fn() } };
+    site._toggleMenu();
+    expect(site._navBar.classList.toggle).toHaveBeenCalledWith('show');
+    expect(site._icon.classList.remove).toHaveBeenCalledWith('fa-bars');
+    expect(site._icon.classList.add).toHaveBeenCalledWith('fa-xmark');
+  });
+
+  test('_updateToggleVisibility sets display and navBar state', () => {
+    site._toggleBtn = { style: {} };
+    site._navBar = { classList: { remove: jest.fn(), add: jest.fn() } };
+    site._icon = { classList: { remove: jest.fn(), add: jest.fn() } };
+    global.window.innerWidth = 500;
+    site._updateToggleVisibility();
+    expect(site._toggleBtn.style.display).toBe('block');
+    global.window.innerWidth = 800;
+    site._updateToggleVisibility();
+    expect(site._toggleBtn.style.display).toBe('none');
+  });
+
+  test('showSection activates correct section and nav button', () => {
+    global.document.querySelectorAll = jest.fn(() => [{ classList: { remove: jest.fn(), add: jest.fn() } }]);
+    global.document.getElementById = jest.fn(() => ({ classList: { add: jest.fn() } }));
+    site.showSection('section1');
+    expect(global.document.getElementById).toHaveBeenCalledWith('section1');
+  });
+
+  test('quickAction triggers alert', () => {
+    site.quickAction('test');
+    expect(global.alert).toHaveBeenCalledWith('Action: test');
+  });
+
+  test('filterMembers filters table rows', () => {
+    global.document.getElementById = jest.fn(() => ({ value: 'foo' }));
+    global.document.querySelectorAll = jest.fn(() => [{ textContent: 'foo', style: {} }, { textContent: 'bar', style: {} }]);
+    site.filterMembers();
+    expect(global.document.querySelectorAll).toHaveBeenCalledWith('#membersBody tr');
+  });
+});
