@@ -76,8 +76,13 @@ export class CacheStore {
         }
     }
     Get(key) {
-        if(this.Has(key)) {
-            return this._store.get(key);
+        if (this._store.has(key)) {
+            const entry = this._store.get(key);
+            if (entry.expires && Date.now() > entry.expires) {
+                this.Delete(key);
+                return undefined;
+            }
+            return entry;
         } else {
             return undefined;
         }
