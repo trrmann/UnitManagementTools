@@ -3,6 +3,25 @@
 import { TimerUtils } from "./objectUtils.mjs";
 
 export class CacheStore {
+
+    // Returns a plain object of key-value pairs (omits expiration)
+    toJSON() {
+        const obj = {};
+        for (const [key, entry] of this._store.entries()) {
+            obj[key] = entry.value;
+        }
+        return obj;
+    }
+
+            // Removes all expired entries from the cache
+            clearExpired() {
+                const now = Date.now();
+                for (const [key, entry] of this._store.entries()) {
+                    if (entry.expires && now > entry.expires) {
+                        this._store.delete(key);
+                    }
+                }
+            }
         // Iterates over all values in the cache
         forEachValue(callback, thisArg = undefined) {
             for (const entry of this._store.values()) {

@@ -80,6 +80,21 @@ describe('CacheStore', () => {
       expect(cache.Keys().sort()).toEqual(['x', 'y']);
     });
 
+    test('toJSON returns plain object of key-value pairs', () => {
+      cache.Set('a', 10);
+      cache.Set('b', 20);
+      expect(cache.toJSON()).toEqual({ a: 10, b: 20 });
+    });
+
+    test('clearExpired removes only expired entries', () => {
+      cache.Set('a', 1, 1); // expires quickly
+      cache.Set('b', 2, 10000); // long expiry
+      jest.advanceTimersByTime(2); // expire 'a'
+      cache.clearExpired();
+      expect(cache.Has('a')).toBe(false);
+      expect(cache.Has('b')).toBe(true);
+    });
+
     test('forEachValue iterates all values', () => {
       cache.Set('a', 10);
       cache.Set('b', 20);
