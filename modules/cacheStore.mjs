@@ -49,13 +49,14 @@ export class CacheStore {
     // ===== Core Methods =====
     Set(key, value, ttlMs = CacheStore.DefaultCacheValueExpireMS) {
         let expires = null;
-        if(ttlMs > 0) {
+        if (ttlMs > 0) {
             expires = Date.now() + ttlMs;
         }
-        if(this.Has(key)) {
+        if (this.Has(key)) {
             this.Delete(key);
         }
         this._store.set(key, { value, expires });
+        return this;
     }
     Keys() {
         return Array.from(this._store.keys());
