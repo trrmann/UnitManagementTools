@@ -51,8 +51,10 @@ export class Site {
 
     static async Factory(storageObject) {
         const site = new Site();
-        await site._buildConfigFromConfiguration(storageObject);
-            // site._createModalDiv(); // This line should be commented out or removed
+        // Use Configuration.Fetch to leverage hierarchical caching
+        const configInstance = await Configuration.Factory(storageObject);
+        await configInstance.Fetch();
+        site._siteConfig = configInstance.configuration;
         site._setupEventListeners();
         return site;
     }
@@ -306,10 +308,7 @@ export class Site {
     previousMonth() { alert('Previous month'); }
     nextMonth() { alert('Next month'); }
 
-    async _buildConfigFromConfiguration(storageObject) {
-        const configInstance = await Configuration.Factory(storageObject);
-        this._siteConfig = configInstance.configuration;
-    }
+    // _buildConfigFromConfiguration is now obsolete due to direct use of Configuration.Fetch in Factory
 }
 
 
