@@ -253,7 +253,7 @@ export class Users {
         if (!userEntries || userEntries.length === 0) {
             // In development, freeze the empty array
             let details = [];
-            if (process && process.env && process.env.NODE_ENV === "development") {
+            if (typeof process !== "undefined" && process.env && process.env.NODE_ENV === "development") {
                 Object.freeze(details);
             }
             this.#_usersDetailsCache = details;
@@ -330,7 +330,7 @@ export class Users {
             };
         });
         // In development, freeze the array and its objects ONCE, immediately after caching
-        if (process && process.env && process.env.NODE_ENV === "development") {
+        if (typeof process !== "undefined" && process.env && process.env.NODE_ENV === "development") {
             details.forEach(obj => Object.freeze(obj));
             Object.freeze(details);
         }
