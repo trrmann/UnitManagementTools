@@ -2,6 +2,9 @@
 neon.env
 data/secrets.json
 
+# Node modules
+node_modules/
+package-lock.json
 # Dependencies
 node_modules/
 
