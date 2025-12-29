@@ -65,6 +65,8 @@ export class Users {
     constructor() {
         this.users = undefined;
         this.members = undefined;
+        this._cachedUsersDetails = null;
+        this._cacheInvalidationKey = null;
     }
 
     // ===== Static Methods =====
@@ -73,6 +75,8 @@ export class Users {
         users.users = dataJSON.users;
         users.members = dataJSON.members ? Members.CopyFromJSON(dataJSON.members) : undefined;
         users.lastFetched = dataJSON.lastFetched;
+        users._cachedUsersDetails = null;
+        users._cacheInvalidationKey = null;
         return users;
     }
 
@@ -92,6 +96,8 @@ export class Users {
             destination.members = source.members;
         }
         destination.lastFetched = source.lastFetched;
+        destination._cachedUsersDetails = null;
+        destination._cacheInvalidationKey = null;
     }
 
     static async Factory(configuration) {
@@ -151,14 +157,36 @@ export class Users {
             usersObj = await this.Storage._gitHubDataObj.fetchJsonFile(Users.UsersFilename);
         }
         this.users = usersObj ? usersObj : undefined;
+        // Invalidate cache when data is fetched
+        this._invalidateUsersDetailsCache();
     }
 
     // ===== Core Data Accessors =====
     get UserEntries() { return this.users?.users || []; }
 
+    // ===== Cache Management =====
+    _getCacheInvalidationKey() {
+        // Generate a key based on the current state of users and members data
+        const usersKey = this.users ? JSON.stringify(this.users.users) : 'null';
+        const membersKey = this.members ? JSON.stringify(this.members.members) : 'null';
+        return `${usersKey}:${membersKey}`;
+    }
+
+    _invalidateUsersDetailsCache() {
+        this._cachedUsersDetails = null;
+        this._cacheInvalidationKey = null;
+    }
+
     async UsersDetails() {
+        // Check if cache is valid
+        const currentKey = this._getCacheInvalidationKey();
+        if (this._cachedUsersDetails && this._cacheInvalidationKey === currentKey) {
+            return this._cachedUsersDetails;
+        }
+
+        // Cache miss - recalculate
         const membersData = await this.members.MembersDetails();
-        return this.UserEntries.map(user => {
+        const result = this.UserEntries.map(user => {
             const member = membersData.find(member => member.memberNumber === user.memberNumber);
             return {
                 memberNumber: member ? member.memberNumber : user.memberNumber,
@@ -197,6 +225,12 @@ export class Users {
                 unitType: member ? member.unitType : ''
             };
         });
+
+        // Update cache
+        this._cachedUsersDetails = result;
+        this._cacheInvalidationKey = currentKey;
+
+        return result;
     }
 
     // ===== Filtering and Lookup Methods =====
