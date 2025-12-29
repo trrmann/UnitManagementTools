@@ -6,6 +6,9 @@ describe('TimerUtils', () => {
     obj = {};
     jest.useFakeTimers();
   });
+  afterEach(() => {
+    jest.useRealTimers();
+  });
 
   test('start sets interval and properties', () => {
     const callback = jest.fn();
@@ -66,34 +69,37 @@ describe('createStorageConfig', () => {
 });
 
 describe('ObjectUtils', () => {
-  test('flattenObject flattens nested objects', () => {
-    const obj = { a: { b: { c: 1 } }, d: 2 };
-    const flat = ObjectUtils.flattenObject(obj);
-    expect(flat).toEqual({ 'a.b.c': 1, d: 2 });
+  describe('flattenObject', () => {
+    test('flattens nested objects', () => {
+      const obj = { a: { b: { c: 1 } }, d: 2 };
+      const flat = ObjectUtils.flattenObject(obj);
+      expect(flat).toEqual({ 'a.b.c': 1, d: 2 });
+    });
   });
 
-  test('filterByProperty filters array by property', () => {
-    const arr = [{ x: 1 }, { x: 2 }, { x: 1 }];
-    const filtered = ObjectUtils.filterByProperty(arr, 'x', 1);
-    expect(filtered).toEqual([{ x: 1 }, { x: 1 }]);
+  describe('filterByProperty and filterBy', () => {
+    test('filterByProperty filters array by property', () => {
+      const arr = [{ x: 1 }, { x: 2 }, { x: 1 }];
+      const filtered = ObjectUtils.filterByProperty(arr, 'x', 1);
+      expect(filtered).toEqual([{ x: 1 }, { x: 1 }]);
+    });
+    test('filterBy is alias for filterByProperty', () => {
+      const arr = [{ y: 'a' }, { y: 'b' }];
+      expect(ObjectUtils.filterBy(arr, 'y', 'b')).toEqual([{ y: 'b' }]);
+    });
   });
 
-  test('filterBy is alias for filterByProperty', () => {
-    const arr = [{ y: 'a' }, { y: 'b' }];
-    expect(ObjectUtils.filterBy(arr, 'y', 'b')).toEqual([{ y: 'b' }]);
-  });
-
-  test('hasAny returns true for non-empty array', () => {
-    expect(ObjectUtils.hasAny([1])).toBe(true);
-  });
-
-  test('hasAny returns false for empty array', () => {
-    expect(ObjectUtils.hasAny([])).toBe(false);
-  });
-
-  test('hasAny returns false for non-array', () => {
-    expect(ObjectUtils.hasAny(null)).toBe(false);
-    expect(ObjectUtils.hasAny(undefined)).toBe(false);
-    expect(ObjectUtils.hasAny({})).toBe(false);
+  describe('hasAny', () => {
+    test('returns true for non-empty array', () => {
+      expect(ObjectUtils.hasAny([1])).toBe(true);
+    });
+    test('returns false for empty array', () => {
+      expect(ObjectUtils.hasAny([])).toBe(false);
+    });
+    test('returns false for non-array', () => {
+      expect(ObjectUtils.hasAny(null)).toBe(false);
+      expect(ObjectUtils.hasAny(undefined)).toBe(false);
+      expect(ObjectUtils.hasAny({})).toBe(false);
+    });
   });
 });
