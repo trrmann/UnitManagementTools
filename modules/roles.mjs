@@ -72,7 +72,6 @@ export class Roles {
         // 2. If not found, try session storage
         if (!rolesObj) {
             rolesObj = await this.Callings.storage.Get(Roles.RolesFilename, { ...Roles.StorageConfig, cacheTtlMs: null, sessionTtlMs: Roles.RolesSessionExpireMS });
-            // If found in session, set in cache for faster access next time
             if (rolesObj && this.Callings.storage.Cache && typeof this.Callings.storage.Cache.Set === 'function') {
                 this.Callings.storage.Cache.Set(Roles.RolesFilename, rolesObj, Roles.RolesCacheExpireMS);
             }
@@ -80,7 +79,6 @@ export class Roles {
         // 3. If still not found, try local storage
         if (!rolesObj) {
             rolesObj = await this.Callings.storage.Get(Roles.RolesFilename, { ...Roles.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: Roles.RolesLocalExpireMS });
-            // If found in local, set in session and cache for faster access next time
             if (rolesObj) {
                 if (this.Callings.storage.SessionStorage && typeof this.Callings.storage.SessionStorage.Set === 'function') {
                     this.Callings.storage.SessionStorage.Set(Roles.RolesFilename, rolesObj, Roles.RolesSessionExpireMS);
@@ -90,21 +88,13 @@ export class Roles {
                 }
             }
         }
-        // 4. If still not found, fetch from persistent storage (simulate by re-calling Get with no TTLs)
-        if (!rolesObj) {
-            rolesObj = await this.Callings.storage.Get(Roles.RolesFilename, { ...Roles.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: null });
-            // If found, set in local, session, and cache for future use
-            if (rolesObj) {
-                if (this.Callings.storage.LocalStorage && typeof this.Callings.storage.LocalStorage.Set === 'function') {
-                    this.Callings.storage.LocalStorage.Set(Roles.RolesFilename, rolesObj, Roles.RolesLocalExpireMS);
-                }
-                if (this.Callings.storage.SessionStorage && typeof this.Callings.storage.SessionStorage.Set === 'function') {
-                    this.Callings.storage.SessionStorage.Set(Roles.RolesFilename, rolesObj, Roles.RolesSessionExpireMS);
-                }
-                if (this.Callings.storage.Cache && typeof this.Callings.storage.Cache.Set === 'function') {
-                    this.Callings.storage.Cache.Set(Roles.RolesFilename, rolesObj, Roles.RolesCacheExpireMS);
-                }
-            }
+        // 4. If still not found, use GoogleDrive for read/write priority
+        if (!rolesObj && this.Callings.storage && typeof this.Callings.storage.Get === 'function' && this.Callings.storage.constructor.name === 'GoogleDrive') {
+            rolesObj = await this.Callings.storage.Get(Roles.RolesFilename, { ...Roles.StorageConfig });
+        }
+        // 5. If still not found, fallback to GitHubDataObj for read-only
+        if (!rolesObj && this.Callings.storage && typeof this.Callings.storage._gitHubDataObj === 'object' && typeof this.Callings.storage._gitHubDataObj.fetchJsonFile === 'function') {
+            rolesObj = await this.Callings.storage._gitHubDataObj.fetchJsonFile(Roles.RolesFilename);
         }
         this.roles = rolesObj ? rolesObj : undefined;
     }
