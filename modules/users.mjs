@@ -44,9 +44,40 @@ import { Members } from "./members.mjs";
 import { createStorageConfig } from "./objectUtils.mjs";
 
 export class Users {
+    #_usersDetailsCache = undefined;
     // ===== Instance Accessors =====
 
+    /**
+     * Explicitly invalidates the cached users details. Call this after any mutation to users or members data.
+     * This ensures that UsersDetails() returns up-to-date information.
+     */
+    InvalidateUsersDetailsCache() {
+        this.#_usersDetailsCache = undefined;
+    }
+
     get Members() { return this.members; }
+    set Members(val) {
+        // If val.members is an array, wrap it in a Proxy to auto-invalidate cache on mutation
+        if (val && Array.isArray(val.members)) {
+            const self = this;
+            val.members = new Proxy(val.members, {
+                set(target, prop, value, receiver) {
+                    if (typeof prop === "string" && !isNaN(prop)) {
+                        self.InvalidateUsersDetailsCache();
+                    }
+                    return Reflect.set(target, prop, value, receiver);
+                },
+                deleteProperty(target, prop) {
+                    if (typeof prop === "string" && !isNaN(prop)) {
+                        self.InvalidateUsersDetailsCache();
+                    }
+                    return Reflect.deleteProperty(target, prop);
+                }
+            });
+        }
+        this.members = val;
+        this.#_usersDetailsCache = undefined;
+    }
     get Org() {
         return this.members && this.members.Org ? this.members.Org : undefined;
     }
@@ -60,12 +91,30 @@ export class Users {
         return this.Callings.storage;
     }
     get Users() { return this.users; }
+    set Users(val) {
+        // If val.users is an array, wrap it in a Proxy to auto-invalidate cache on mutation
+        if (val && Array.isArray(val.users)) {
+            const self = this;
+            val.users = new Proxy(val.users, {
+                set(target, prop, value, receiver) {
+                    // Only invalidate cache for mutating operations (not length reads, etc.)
+                    if (typeof prop === "string" && !isNaN(prop)) {
+                        self.InvalidateUsersDetailsCache();
+                    }
+                    return Reflect.set(target, prop, value, receiver);
+                },
+                deleteProperty(target, prop) {
+                    if (typeof prop === "string" && !isNaN(prop)) {
+                        self.InvalidateUsersDetailsCache();
+                    }
+                    return Reflect.deleteProperty(target, prop);
+                }
+            });
+        }
+        this.users = val;
+        this.#_usersDetailsCache = undefined;
+    }
 
-    /**
-     * Read-only accessor for additional roles from the users record.
-     * Returns an array of objects: { memberNumber, additionalRoles }
-     * where additionalRoles is an array of role IDs/names (as stored in user.additionalRoles)
-     */
     /**
      * Read-only accessor for additional roles from the users record, filtered to exclude roles with callings.
      * Returns an array of objects: { memberNumber, additionalRoles }
@@ -191,34 +240,57 @@ export class Users {
     // ===== Core Data Accessors =====
     get UserEntries() { return this.users?.users || []; }
 
+    /**
+     * Returns merged user/member details. Do not mutate the returned array or objects.
+     * All mutating operations must call InvalidateUsersDetailsCache().
+     * In development mode, the returned array and objects are frozen to catch accidental mutation.
+     */
     async UsersDetails() {
+        if (this.#_usersDetailsCache) {
+            return this.#_usersDetailsCache;
+        }
+        const userEntries = this.UserEntries;
+        if (!userEntries || userEntries.length === 0) {
+            // In development, freeze the empty array
+            let details = [];
+            if (process && process.env && process.env.NODE_ENV === "development") {
+                Object.freeze(details);
+            }
+            this.#_usersDetailsCache = details;
+            return details;
+        }
         const membersData = await this.members.MembersDetails();
-        // Prepare additional roles map for fast lookup
-        const additionalRolesMap = {};
-        this.AdditionalRoles.forEach(({ memberNumber, additionalRoles }) => {
-            additionalRolesMap[memberNumber] = additionalRoles;
-        });
-        // Prepare roleId to name lookup if available
-        let roleIdToName = {};
-        if (this.members && this.members.Roles && Array.isArray(this.members.Roles.roles)) {
+        // Only build additionalRolesMap if there are additional roles
+        let additionalRolesMap = undefined;
+        const additionalRolesArr = this.AdditionalRoles;
+        if (additionalRolesArr.length > 0) {
+            additionalRolesMap = {};
+            additionalRolesArr.forEach(({ memberNumber, additionalRoles }) => {
+                additionalRolesMap[memberNumber] = additionalRoles;
+            });
+        }
+        // Only build roleIdToName if there are roles
+        let roleIdToName = undefined;
+        if (this.members && this.members.Roles && Array.isArray(this.members.Roles.roles) && this.members.Roles.roles.length > 0) {
+            roleIdToName = {};
             for (const role of this.members.Roles.roles) {
                 if (role && role.id != null && role.name != null) {
                     roleIdToName[role.id] = role.name;
                 }
             }
         }
-        return this.UserEntries.map(user => {
+        const details = userEntries.map(user => {
             const member = membersData.find(member => member.memberNumber === user.memberNumber);
             // Merge roleIDs: member.callingRoleIDs + additionalRoles (if any, deduped)
             const memberRoleIDs = member ? (Array.isArray(member.callingRoleIDs) ? member.callingRoleIDs : []) : [];
-            const addRoles = Array.isArray(additionalRolesMap[user.memberNumber]) ? additionalRolesMap[user.memberNumber] : [];
+            const addRoles = (additionalRolesMap && Array.isArray(additionalRolesMap[user.memberNumber])) ? additionalRolesMap[user.memberNumber] : [];
             // Merge and dedupe
             const roleIDs = Array.from(new Set([...memberRoleIDs, ...addRoles]));
             // Merge roleNames: member.callingRoleNames + additionalRoleNames (if any, deduped)
             const memberRoleNames = member ? (Array.isArray(member.callingRoleNames) ? member.callingRoleNames : []) : [];
-            const addRoleNames = addRoles
-                .map(roleId => roleIdToName[roleId])
-                .filter(name => name && !memberRoleNames.includes(name));
+            const addRoleNames = (roleIdToName && addRoles.length > 0)
+                ? addRoles.map(roleId => roleIdToName[roleId]).filter(name => name && !memberRoleNames.includes(name))
+                : [];
             const roleNames = Array.from(new Set([...memberRoleNames, ...addRoleNames]));
             return {
                 memberNumber: member ? member.memberNumber : user.memberNumber,
@@ -257,17 +329,30 @@ export class Users {
                 unitType: member ? member.unitType : ''
             };
         });
+        // In development, freeze the array and its objects ONCE, immediately after caching
+        if (process && process.env && process.env.NODE_ENV === "development") {
+            details.forEach(obj => Object.freeze(obj));
+            Object.freeze(details);
+        }
+        this.#_usersDetailsCache = details;
+        return details;
     }
 
     // ===== Filtering and Lookup Methods =====
+    /**
+     * Returns the user object for the given id, or null if not found.
+     */
     async UserById(id) {
         const users = await this.UsersDetails();
-        return users.filter(u => u.memberNumber === id || String(u.memberNumber) === String(id));
+        return users.find(u => u.memberNumber === id || String(u.memberNumber) === String(id)) || null;
     }
 
+    /**
+     * Returns the user object for the given email, or null if not found.
+     */
     async UserByEmail(email) {
         const users = await this.UsersDetails();
-        return users.filter(u => u.email === email);
+        return users.find(u => u.email === email) || null;
     }
 
     get ActiveUsers() {
@@ -277,11 +362,19 @@ export class Users {
 
     async HasUserById(id) {
         const userById = await this.UserById(id);
-        return (userById !== null && userById.length > 0);
+        return userById !== null;
     }
 
     async HasUserByEmail(email) {
         const userByEmail = await this.UserByEmail(email);
-        return (userByEmail !== null && userByEmail.length > 0);
+        return userByEmail !== null;
+    }
+
+    /**
+     * Returns merged user details (like UsersDetails) for only active users.
+     */
+    async ActiveUserDetails() {
+        const all = await this.UsersDetails();
+        return all.filter(u => u.active === true);
     }
 }
