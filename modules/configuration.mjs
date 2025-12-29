@@ -19,7 +19,7 @@ export class Configuration {
     // ===== Static Methods =====
     static CopyFromJSON(dataJSON) {
         const config = new Configuration(dataJSON._storageObj);
-        config.configuration = dataJSON.configuration;
+        config._restoreConfigState(dataJSON._storageObj, dataJSON.configuration);
         return config;
     }
 
@@ -31,8 +31,12 @@ export class Configuration {
     }
 
     static CopyFromObject(destination, source) {
-        destination._storageObj = source._storageObj;
-        destination.configuration = source.configuration;
+        destination._restoreConfigState(source._storageObj, source.configuration);
+    }
+    // Protected: encapsulate config state restoration for maintainability
+    _restoreConfigState(storageObj, configuration) {
+        this._storageObj = storageObj;
+        this.configuration = configuration;
     }
 
     static async Factory(storageObject) {
@@ -66,16 +70,16 @@ export class Configuration {
         // 1. Try to get from cache
         let configObj = await this._storageObj.Get(Configuration.ConfigFilename, { ...Configuration.StorageConfig, cacheTtlMs: Configuration.ConfigCacheExpireMS });
         // 2. If not found, try session storage
-        if (!configObj) {
+        if (configObj === undefined) {
             configObj = await this._storageObj.Get(Configuration.ConfigFilename, { ...Configuration.StorageConfig, cacheTtlMs: null, sessionTtlMs: Configuration.ConfigSessionExpireMS });
-            if (configObj && this._storageObj.Cache && typeof this._storageObj.Cache.Set === 'function') {
+            if (configObj !== undefined && this._storageObj.Cache && typeof this._storageObj.Cache.Set === 'function') {
                 this._storageObj.Cache.Set(Configuration.ConfigFilename, configObj, Configuration.ConfigCacheExpireMS);
             }
         }
         // 3. If still not found, try local storage
-        if (!configObj) {
+        if (configObj === undefined) {
             configObj = await this._storageObj.Get(Configuration.ConfigFilename, { ...Configuration.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: Configuration.ConfigLocalExpireMS });
-            if (configObj) {
+            if (configObj !== undefined) {
                 if (this._storageObj.SessionStorage && typeof this._storageObj.SessionStorage.Set === 'function') {
                     this._storageObj.SessionStorage.Set(Configuration.ConfigFilename, configObj, Configuration.ConfigSessionExpireMS);
                 }
@@ -85,14 +89,14 @@ export class Configuration {
             }
         }
         // 4. If still not found, use GoogleDrive for read/write priority
-        if (!configObj && this._storageObj && typeof this._storageObj.Get === 'function' && this._storageObj.constructor.name === 'GoogleDrive') {
+        if (configObj === undefined && this._storageObj && typeof this._storageObj.Get === 'function' && this._storageObj.constructor.name === 'GoogleDrive') {
             configObj = await this._storageObj.Get(Configuration.ConfigFilename, { ...Configuration.StorageConfig });
         }
         // 5. If still not found, fallback to GitHubDataObj for read-only
-        if (!configObj && this._storageObj && typeof this._storageObj._gitHubDataObj === 'object' && typeof this._storageObj._gitHubDataObj.fetchJsonFile === 'function') {
+        if (configObj === undefined && this._storageObj && typeof this._storageObj._gitHubDataObj === 'object' && typeof this._storageObj._gitHubDataObj.fetchJsonFile === 'function') {
             configObj = await this._storageObj._gitHubDataObj.fetchJsonFile(Configuration.ConfigFilename);
         }
-        this.configuration = configObj ? configObj : undefined;
+        this.configuration = configObj !== undefined ? configObj : undefined;
     }
 
     // ===== Utility Methods =====
