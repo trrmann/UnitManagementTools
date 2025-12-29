@@ -7,6 +7,10 @@ export class Configuration {
     get Config() { return this.configuration; }
 
     // ===== Constructor =====
+    /**
+     * Creates a Configuration instance.
+     * @param {Object} storageObject - The storage object used for config persistence and retrieval.
+     */
     constructor(storageObject) {
         this._storageObj = storageObject;
         this.configuration = undefined;
