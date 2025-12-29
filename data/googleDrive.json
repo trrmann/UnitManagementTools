@@ -10,6 +10,7 @@
         "javascript_origins":["http://127.0.0.1:5500"],
         "scopes":"https://www.googleapis.com/auth/drive.file",
         "discovery_docs":["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
-        "serviceURL":"https://console.cloud.google.com/auth/overview?project=mann-2023-mail"
+        "serviceURL":"https://console.cloud.google.com/auth/overview?project=mann-2023-mail",
+        "name":"projects/538865728149/secrets/oauth-googledrive-secret/versions/latest"
     }
 }

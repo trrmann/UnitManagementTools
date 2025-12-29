@@ -24,6 +24,33 @@ export class GoogleDrive {
         this.DISCOVERY_DOCS = [GoogleDrive.DefaultDiscoveryDocEntry];
         this.SCOPES = GoogleDrive.DefaultScope;
         this.isInitialized = false;
+        this._secretManagerName = null;
+        this._secretValue = null;
+    }
+
+    // Property to get the secret value retrieved from Secret Manager
+    get SecretValue() { return this._secretValue; }
+    // Property to get the Google Secret Manager resource name
+    get SecretManagerName() { return this._secretManagerName; }
+
+    // Fetch secret value from Google Secret Manager using OAuth2 access token and secretManagerName
+    async fetchSecretManagerValue() {
+        if (!this._gisToken) throw new Error("Not signed in with Google");
+        if (!this._secretManagerName) throw new Error("Secret Manager name not set");
+        // Google Secret Manager REST API endpoint
+        const url = `https://secretmanager.googleapis.com/v1/${this._secretManagerName}:access`;
+        const res = await fetch(url, {
+            method: 'GET',
+            headers: { 'Authorization': 'Bearer ' + this._gisToken }
+        });
+        if (!res.ok) throw new Error('Failed to access secret from Secret Manager');
+        const data = await res.json();
+        // Secret payload is base64 encoded
+        if (data && data.payload && data.payload.data) {
+            this._secretValue = atob(data.payload.data);
+        } else {
+            throw new Error('Secret Manager response missing payload');
+        }
     }
 
     // ===== Static Methods =====
@@ -73,6 +100,7 @@ export class GoogleDrive {
             drive.CLIENT_ID = config.CLIENT_ID;
             drive.API_KEY = config.API_KEY;
             if (config.SCOPES) drive.SCOPES = config.SCOPES;
+            if (config.name) drive._secretManagerName = config.name;
         } else {
             const googleConfig = await drive._gitHubDataObj.fetchJsonFile("googleDrive.json");
             let secrets = null;
@@ -90,12 +118,29 @@ export class GoogleDrive {
             drive.CLIENT_ID = googleConfig.web.client_id;
             drive.DISCOVERY_DOCS = googleConfig.web.discovery_docs;
             drive.SCOPES = googleConfig.web.scopes;
+            if (googleConfig.web && googleConfig.web.name) drive._secretManagerName = googleConfig.web.name;
             if(secrets) drive.API_KEY = secrets.googleDrive.client_secret;
         }
         await drive.loadGisScript();
         await drive.signIn();
+        // Fetch secret from Secret Manager if name is set
+        if (drive._secretManagerName) {
+            await drive.fetchSecretManagerValue();
+        }
         return drive;
     }
+    /*
+    const {SecretManagerServiceClient} = require('@google-cloud/secret-manager');
+const client = new SecretManagerServiceClient();
+async function accessSecret() {
+  const [version] = await client.accessSecretVersion({
+    name: 'projects/PROJECT_ID/secrets/SECRET_ID/versions/latest',
+  });
+  const payload = version.payload.data.toString();
+  console.log(`Secret: ${payload}`);
+}
+accessSecret();
+    /**/
     // (Removed loadGapiScript, not needed for GIS OAuth2)
     // Dynamically load Google Identity Services script
     async loadGisScript() {
