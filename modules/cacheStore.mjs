@@ -4,6 +4,74 @@ import { TimerUtils } from "./objectUtils.mjs";
 
 export class CacheStore {
 
+    // Returns an array of values for which the callback returns true
+    filterValues(callback, thisArg = undefined) {
+        const result = [];
+        for (const entry of this._store.values()) {
+            if (callback.call(thisArg, entry.value, this)) {
+                result.push(entry.value);
+            }
+        }
+        return result;
+    }
+
+    // Returns a new array with the results of calling a provided function on every value
+    mapValues(callback, thisArg = undefined) {
+        const result = [];
+        for (const entry of this._store.values()) {
+            result.push(callback.call(thisArg, entry.value, this));
+        }
+        return result;
+    }
+
+    // Deletes all keys provided in an array
+    deleteAll(keys) {
+        if (!Array.isArray(keys)) return this;
+        for (const key of keys) {
+            this.Delete(key);
+        }
+        return this;
+    }
+
+    // Ergonomic alias for Keys(), returns all keys as an array
+    keysArray() {
+        return this.Keys();
+    }
+
+    // Ergonomic alias for entries(), returns all [key, value] pairs as an array
+    entriesArray() {
+        return this.entries();
+    }
+
+    // Ergonomic alias for values(), returns all values as an array
+    valuesArray() {
+        return this.values();
+    }
+
+    // Ergonomic alias for Clear(), matching common cache APIs
+    clearAll() {
+        return this.Clear();
+    }
+
+    // Ergonomic alias for Size, matching Map API
+    get size() {
+        return this.Size;
+    }
+
+    // Returns a deep copy of this CacheStore
+    clone() {
+        return CacheStore.FromCacheStore(this);
+    }
+
+    // Creates a new CacheStore from an existing instance (deep copy)
+    static FromCacheStore(instance) {
+        const cache = new CacheStore(instance._cachePruneIntervalMs || CacheStore.DefaultCachePruneIntervalMS);
+        for (const [key, entry] of instance._store.entries()) {
+            cache._store.set(key, { ...entry });
+        }
+        return cache;
+    }
+
     // Returns a plain object of key-value pairs (omits expiration)
     toJSON() {
         const obj = {};

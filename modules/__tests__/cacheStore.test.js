@@ -80,6 +80,99 @@ describe('CacheStore', () => {
       expect(cache.Keys().sort()).toEqual(['x', 'y']);
     });
 
+    test('valuesArray returns all values as array', () => {
+      cache.Set('a', 10);
+      cache.Set('b', 20);
+      expect(cache.valuesArray().sort((a, b) => a - b)).toEqual([10, 20]);
+    });
+
+    test('entriesArray returns all [key, value] pairs as array', () => {
+      cache.Set('foo', 1);
+      cache.Set('bar', 2);
+      const entries = cache.entriesArray();
+      expect(entries).toEqual(expect.arrayContaining([
+        ['foo', 1],
+        ['bar', 2]
+      ]));
+      expect(entries.length).toBe(2);
+    });
+
+    test('keysArray returns all keys as array', () => {
+      cache.Set('a', 10);
+      cache.Set('b', 20);
+      expect(cache.keysArray().sort()).toEqual(['a', 'b']);
+    });
+
+    test('deleteAll removes all specified keys', () => {
+      cache.Set('a', 1);
+      cache.Set('b', 2);
+      cache.Set('c', 3);
+      cache.deleteAll(['a', 'c']);
+      expect(cache.Has('a')).toBe(false);
+      expect(cache.Has('c')).toBe(false);
+      expect(cache.Has('b')).toBe(true);
+    });
+
+    test('mapValues maps over all values', () => {
+      cache.Set('a', 2);
+      cache.Set('b', 3);
+      cache.Set('c', 4);
+      const squares = cache.mapValues(v => v * v);
+      expect(squares.sort((a, b) => a - b)).toEqual([4, 9, 16]);
+    });
+
+    test('filterValues filters values correctly', () => {
+      cache.Set('a', 2);
+      cache.Set('b', 3);
+      cache.Set('c', 4);
+      const evens = cache.filterValues(v => v % 2 === 0);
+      expect(evens).toEqual([2, 4]);
+    });
+
+    test('clearAll empties the cache', () => {
+      cache.Set('a', 1);
+      cache.Set('b', 2);
+      expect(cache.size).toBe(2);
+      cache.clearAll();
+      expect(cache.size).toBe(0);
+      expect(cache.Keys()).toEqual([]);
+    });
+
+    test('size getter matches Size and updates', () => {
+      expect(cache.size).toBe(0);
+      cache.Set('a', 1);
+      expect(cache.size).toBe(1);
+      expect(cache.size).toBe(cache.Size);
+      cache.Set('b', 2);
+      expect(cache.size).toBe(2);
+      cache.Delete('a');
+      expect(cache.size).toBe(1);
+      cache.Clear();
+      expect(cache.size).toBe(0);
+    });
+
+    test('FromCacheStore creates a deep copy', () => {
+      cache.Set('a', 10);
+      cache.Set('b', 20);
+      const clone = CacheStore.FromCacheStore(cache);
+      expect(clone).not.toBe(cache);
+      expect(clone.toJSON()).toEqual(cache.toJSON());
+      clone.Set('c', 30);
+      expect(cache.Has('c')).toBe(false);
+      expect(clone.Has('c')).toBe(true);
+    });
+
+    test('clone() returns a deep copy', () => {
+      cache.Set('x', 1);
+      cache.Set('y', 2);
+      const clone = cache.clone();
+      expect(clone).not.toBe(cache);
+      expect(clone.toJSON()).toEqual(cache.toJSON());
+      clone.Set('z', 3);
+      expect(cache.Has('z')).toBe(false);
+      expect(clone.Has('z')).toBe(true);
+    });
+
     test('toJSON returns plain object of key-value pairs', () => {
       cache.Set('a', 10);
       cache.Set('b', 20);
