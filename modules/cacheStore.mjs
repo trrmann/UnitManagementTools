@@ -122,6 +122,10 @@ export class CacheStore {
             callback.call(thisArg, entry, key, this);
         });
     }
+
+    values() {
+        return Array.from(this._store.values()).map(entry => entry.value);
+    }
 }
 // Example usage:
 // import { CacheStore } from './cacheStore.mjs';
