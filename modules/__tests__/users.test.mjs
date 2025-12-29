@@ -1,0 +1,207 @@
+import { Users } from '../users.mjs';
+
+describe('Users Class', () => {
+  let users;
+  let mockMembers;
+  const mockMembersData = [
+    {
+      memberNumber: '1',
+      fullname: 'John Doe',
+      email: 'john@example.com',
+      active: true,
+      callingIDs: ['c1'],
+      callingNames: ['Bishop'],
+    },
+    {
+      memberNumber: '2',
+      fullname: 'Jane Smith',
+      email: 'jane@example.com',
+      active: false,
+      callingIDs: ['c2'],
+      callingNames: ['Clerk'],
+    }
+  ];
+  const mockUsersData = {
+    users: [
+      { memberNumber: '1', password: 'pass1', email: 'john@example.com', active: true },
+      { memberNumber: '2', password: 'pass2', email: 'jane@example.com', active: false },
+      { memberNumber: '3', password: 'pass3', email: 'other@example.com', active: true }
+    ]
+  };
+  beforeEach(() => {
+    users = new Users();
+    mockMembers = {
+      MembersDetails: jest.fn(async () => mockMembersData)
+    };
+    users.members = mockMembers;
+    users.users = mockUsersData;
+  });
+
+  describe('Initialization', () => {
+    test('constructor initializes properties', () => {
+      expect(users.users).toBeDefined();
+      expect(users.members).toBeDefined();
+    });
+  });
+
+  describe('User queries', () => {
+    test('UserEntries returns all user objects', () => {
+      expect(users.UserEntries.length).toBe(3);
+    });
+    test('ActiveUsers returns only active users', () => {
+      expect(users.ActiveUsers.length).toBe(2);
+      expect(users.ActiveUsers[0].memberNumber).toBe('1');
+      expect(users.ActiveUsers[1].memberNumber).toBe('3');
+    });
+  });
+
+  describe('User details and lookup', () => {
+    test('UsersDetails returns enriched user details', async () => {
+      const details = await users.UsersDetails();
+      expect(details.length).toBe(3);
+      expect(details[0].fullname).toBe('John Doe');
+      expect(details[1].fullname).toBe('Jane Smith');
+      expect(details[2].fullname).toBe(''); // No member match
+    });
+    test('UserById returns correct user', async () => {
+      const result = await users.UserById('1');
+      expect(result.length).toBe(1);
+      expect(result[0].fullname).toBe('John Doe');
+    });
+    test('UserByEmail returns correct user', async () => {
+      const result = await users.UserByEmail('jane@example.com');
+      expect(result.length).toBe(1);
+      expect(result[0].fullname).toBe('Jane Smith');
+    });
+    test('HasUserById returns true for existing user', async () => {
+      const exists = await users.HasUserById('1');
+      expect(exists).toBe(true);
+      const notExists = await users.HasUserById('99');
+      expect(notExists).toBe(false);
+    });
+  });
+
+  describe('Additional roles validation (TODO #06, #07)', () => {
+    test('UsersDetails accepts users with no additional roles', async () => {
+      users.users = {
+        users: [
+          { memberNumber: '1', password: 'pass1', email: 'john@example.com', active: true, roles: [] }
+        ]
+      };
+      const details = await users.UsersDetails();
+      expect(details.length).toBe(1);
+    });
+
+    test('UsersDetails accepts users with additional roles that have no calling', async () => {
+      const mockRoles = {
+        RoleEntryById: jest.fn((id) => {
+          if (id === -1) {
+            return [{ id: -1, name: 'Application Administrator', calling: null, active: true }];
+          }
+          return [];
+        })
+      };
+      users.members.Roles = mockRoles;
+      users.users = {
+        users: [
+          { memberNumber: '1', password: 'pass1', email: 'john@example.com', active: true, roles: [-1] }
+        ]
+      };
+      const details = await users.UsersDetails();
+      expect(details.length).toBe(1);
+      expect(mockRoles.RoleEntryById).toHaveBeenCalledWith(-1);
+    });
+
+    test('UsersDetails throws error when additional role has a calling', async () => {
+      const mockRoles = {
+        RoleEntryById: jest.fn((id) => {
+          if (id === 5) {
+            return [{ id: 5, name: 'Bishop', calling: 9, active: true }];
+          }
+          return [];
+        })
+      };
+      users.members.Roles = mockRoles;
+      users.users = {
+        users: [
+          { memberNumber: '1', password: 'pass1', email: 'john@example.com', active: true, roles: [5] }
+        ]
+      };
+      await expect(users.UsersDetails()).rejects.toThrow(
+        'Additional role "Bishop" (ID: 5) for user 1 has a calling associated with it (calling ID: 9). Additional roles must not have callings.'
+      );
+    });
+
+    test('UsersDetails validates multiple additional roles', async () => {
+      const mockRoles = {
+        RoleEntryById: jest.fn((id) => {
+          if (id === -1) {
+            return [{ id: -1, name: 'Application Administrator', calling: null, active: true }];
+          } else if (id === -2) {
+            return [{ id: -2, name: 'Application Tester', calling: null, active: true }];
+          }
+          return [];
+        })
+      };
+      users.members.Roles = mockRoles;
+      users.users = {
+        users: [
+          { memberNumber: '1', password: 'pass1', email: 'john@example.com', active: true, roles: [-1, -2] }
+        ]
+      };
+      const details = await users.UsersDetails();
+      expect(details.length).toBe(1);
+      expect(mockRoles.RoleEntryById).toHaveBeenCalledWith(-1);
+      expect(mockRoles.RoleEntryById).toHaveBeenCalledWith(-2);
+    });
+
+    test('UsersDetails throws error on first invalid role in multiple additional roles', async () => {
+      const mockRoles = {
+        RoleEntryById: jest.fn((id) => {
+          if (id === -1) {
+            return [{ id: -1, name: 'Application Administrator', calling: null, active: true }];
+          } else if (id === 5) {
+            return [{ id: 5, name: 'Bishop', calling: 9, active: true }];
+          }
+          return [];
+        })
+      };
+      users.members.Roles = mockRoles;
+      users.users = {
+        users: [
+          { memberNumber: '1', password: 'pass1', email: 'john@example.com', active: true, roles: [-1, 5] }
+        ]
+      };
+      await expect(users.UsersDetails()).rejects.toThrow(
+        'Additional role "Bishop" (ID: 5) for user 1 has a calling associated with it (calling ID: 9). Additional roles must not have callings.'
+      );
+    });
+
+    test('UsersDetails handles users without roles field', async () => {
+      users.users = {
+        users: [
+          { memberNumber: '1', password: 'pass1', email: 'john@example.com', active: true }
+        ]
+      };
+      const details = await users.UsersDetails();
+      expect(details.length).toBe(1);
+    });
+
+    test('UsersDetails handles role that does not exist', async () => {
+      const mockRoles = {
+        RoleEntryById: jest.fn((id) => {
+          return [];
+        })
+      };
+      users.members.Roles = mockRoles;
+      users.users = {
+        users: [
+          { memberNumber: '1', password: 'pass1', email: 'john@example.com', active: true, roles: [999] }
+        ]
+      };
+      const details = await users.UsersDetails();
+      expect(details.length).toBe(1);
+      expect(mockRoles.RoleEntryById).toHaveBeenCalledWith(999);
+    });
+  });
+});
