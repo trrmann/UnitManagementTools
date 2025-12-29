@@ -116,6 +116,12 @@ export class CacheStore {
     StopCachePruneTimer() {
         TimerUtils.stop(this, '_cachePruneTimer', '_cachePruneIntervalMs');
     }
+
+    forEach(callback, thisArg = undefined) {
+        this._store.forEach((entry, key) => {
+            callback.call(thisArg, entry, key, this);
+        });
+    }
 }
 // Example usage:
 // import { CacheStore } from './cacheStore.mjs';
