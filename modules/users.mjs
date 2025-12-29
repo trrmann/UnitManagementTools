@@ -61,6 +61,41 @@ export class Users {
     }
     get Users() { return this.users; }
 
+    /**
+     * Read-only accessor for additional roles from the users record.
+     * Returns an array of objects: { memberNumber, additionalRoles }
+     * where additionalRoles is an array of role IDs/names (as stored in user.additionalRoles)
+     */
+    /**
+     * Read-only accessor for additional roles from the users record, filtered to exclude roles with callings.
+     * Returns an array of objects: { memberNumber, additionalRoles }
+     * where additionalRoles is an array of role IDs/names (as stored in user.additionalRoles),
+     * but only those roles that do NOT have a calling associated with them.
+     */
+    get AdditionalRoles() {
+        if (!this.users || !Array.isArray(this.users.users)) return [];
+        // Get set of role IDs/names that have callings associated with them
+        // Assumes this.Callings and this.Callings.rolesWithCallings is an array of role IDs/names
+        // If not available, fallback to empty set (no filtering)
+        let rolesWithCallings = [];
+        if (this.Callings && Array.isArray(this.Callings.rolesWithCallings)) {
+            rolesWithCallings = this.Callings.rolesWithCallings;
+        } else if (this.members && this.members.Roles && Array.isArray(this.members.Roles.rolesWithCallings)) {
+            rolesWithCallings = this.members.Roles.rolesWithCallings;
+        }
+        const rolesWithCallingsSet = new Set(rolesWithCallings);
+        return this.users.users
+            .filter(user => Array.isArray(user.additionalRoles) && user.additionalRoles.length > 0)
+            .map(user => {
+                const filteredRoles = user.additionalRoles.filter(role => !rolesWithCallingsSet.has(role));
+                return {
+                    memberNumber: user.memberNumber,
+                    additionalRoles: filteredRoles
+                };
+            })
+            .filter(user => user.additionalRoles.length > 0);
+    }
+
     // ===== Constructor =====
     constructor() {
         this.users = undefined;
@@ -158,8 +193,33 @@ export class Users {
 
     async UsersDetails() {
         const membersData = await this.members.MembersDetails();
+        // Prepare additional roles map for fast lookup
+        const additionalRolesMap = {};
+        this.AdditionalRoles.forEach(({ memberNumber, additionalRoles }) => {
+            additionalRolesMap[memberNumber] = additionalRoles;
+        });
+        // Prepare roleId to name lookup if available
+        let roleIdToName = {};
+        if (this.members && this.members.Roles && Array.isArray(this.members.Roles.roles)) {
+            for (const role of this.members.Roles.roles) {
+                if (role && role.id != null && role.name != null) {
+                    roleIdToName[role.id] = role.name;
+                }
+            }
+        }
         return this.UserEntries.map(user => {
             const member = membersData.find(member => member.memberNumber === user.memberNumber);
+            // Merge roleIDs: member.callingRoleIDs + additionalRoles (if any, deduped)
+            const memberRoleIDs = member ? (Array.isArray(member.callingRoleIDs) ? member.callingRoleIDs : []) : [];
+            const addRoles = Array.isArray(additionalRolesMap[user.memberNumber]) ? additionalRolesMap[user.memberNumber] : [];
+            // Merge and dedupe
+            const roleIDs = Array.from(new Set([...memberRoleIDs, ...addRoles]));
+            // Merge roleNames: member.callingRoleNames + additionalRoleNames (if any, deduped)
+            const memberRoleNames = member ? (Array.isArray(member.callingRoleNames) ? member.callingRoleNames : []) : [];
+            const addRoleNames = addRoles
+                .map(roleId => roleIdToName[roleId])
+                .filter(name => name && !memberRoleNames.includes(name));
+            const roleNames = Array.from(new Set([...memberRoleNames, ...addRoleNames]));
             return {
                 memberNumber: member ? member.memberNumber : user.memberNumber,
                 fullname: member ? member.fullname : '',
@@ -180,8 +240,8 @@ export class Users {
                 callingHaveTitles: member ? member.callingHaveTitles : [],
                 callingTitles: member ? member.callingTitles : [],
                 callingTitleOrdinals: member ? member.callingTitleOrdinals : [],
-                roleIDs: member ? member.callingRoleIDs : [],
-                roleNames: member ? member.callingRoleNames : [],
+                roleIDs,
+                roleNames,
                 callingsActive: member ? member.callingsActive : [],
                 allSubRoles: member ? member.callingsAllSubRoles : [],
                 allSubRoleNames: member ? member.callingsAllSubRoleNames : [],

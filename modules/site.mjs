@@ -209,34 +209,63 @@ export class Site {
     editAssignment(id) { alert(`Edit assignment ${id}`); }
     markComplete(id) { alert(`Assignment ${id} marked complete`); }
     viewAssignment(id) { alert(`View assignment ${id}`); }
-    openAddMember() { this.openModal('Add Member', `
-        <div class="form-group">
-            <label>First Name</label>
-            <input type="text" placeholder="Enter first name" required>
-        </div>
-        <div class="form-group">
-            <label>Last Name</label>
-            <input type="text" placeholder="Enter last name" required>
-        </div>
-        <div class="form-group">
-            <label>Email</label>
-            <input type="email" placeholder="Enter email" required>
-        </div>
-        <div class="form-group">
-            <label>Phone</label>
-            <input type="tel" placeholder="Enter phone number" required>
-        </div>
-        <div class="form-group">
-            <label>Role</label>
-            <select required>
-                <option value="">Select Role</option>
-                <option value="member">Member</option>
-                <option value="home-teacher">Home Teacher</option>
-                <option value="relief-society">Relief Society</option>
-                <option value="elders-quorum">Elders Quorum</option>
-            </select>
-        </div>
-    `); }
+    /**
+     * Dynamically generates the role selector options from all available roles (including additional roles).
+     * @param {object} usersInstance - An instance of Users class.
+     */
+    async openAddMember(usersInstance) {
+        // Gather all available roles (IDs and names) from usersInstance
+        let roles = [];
+        if (usersInstance && usersInstance.members && usersInstance.members.Roles && Array.isArray(usersInstance.members.Roles.roles)) {
+            roles = usersInstance.members.Roles.roles.map(r => ({ id: r.id, name: r.name }));
+        }
+        // Add any additional roles not already present
+        if (usersInstance && typeof usersInstance.AdditionalRoles === 'object') {
+            const additionalRoleIDs = new Set();
+            usersInstance.AdditionalRoles.forEach(({ additionalRoles }) => {
+                additionalRoles.forEach(roleId => additionalRoleIDs.add(roleId));
+            });
+            // Only add if not already present
+            additionalRoleIDs.forEach(roleId => {
+                if (!roles.some(r => r.id === roleId)) {
+                    // Try to get name from roles, fallback to ID
+                    let name = roleId;
+                    if (usersInstance.members && usersInstance.members.Roles && Array.isArray(usersInstance.members.Roles.roles)) {
+                        const found = usersInstance.members.Roles.roles.find(r => r.id === roleId);
+                        if (found && found.name) name = found.name;
+                    }
+                    roles.push({ id: roleId, name });
+                }
+            });
+        }
+        // Sort roles alphabetically by name
+        roles.sort((a, b) => a.name.localeCompare(b.name));
+        // Build options HTML
+        const optionsHtml = [`<option value="">Select Role</option>`]
+            .concat(roles.map(r => `<option value="${r.id}">${r.name}</option>`)).join('');
+        this.openModal('Add Member', `
+            <div class="form-group">
+                <label>First Name</label>
+                <input type="text" placeholder="Enter first name" required>
+            </div>
+            <div class="form-group">
+                <label>Last Name</label>
+                <input type="text" placeholder="Enter last name" required>
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" placeholder="Enter email" required>
+            </div>
+            <div class="form-group">
+                <label>Phone</label>
+                <input type="tel" placeholder="Enter phone number" required>
+            </div>
+            <div class="form-group">
+                <label>Role</label>
+                <select required>${optionsHtml}</select>
+            </div>
+        `);
+    }
     openNewAssignment() { this.openModal('New Assignment', `
         <div class="form-group">
             <label>Assignment Title</label>
