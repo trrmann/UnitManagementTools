@@ -8,46 +8,11 @@ export class Site {
         this._toggleBtn = null;
         this._navBar = null;
         this._icon = null;
+        // Cache modal DOM elements for performance
+        this._modal = null;
+        this._modalTitle = null;
+        this._modalBody = null;
     }
-        _createModalDiv() {
-            if (document.getElementById('modal')) return;
-            const modal = document.createElement('div');
-            modal.id = 'modal';
-            modal.className = 'modal';
-            const modalContent = document.createElement('div');
-            modalContent.className = 'modal-content';
-            const closeSpan = document.createElement('span');
-            closeSpan.className = 'close';
-            closeSpan.innerHTML = '&times;';
-            closeSpan.onclick = () => { window.closeModal(); };
-            const modalTitle = document.createElement('h3');
-            modalTitle.id = 'modalTitle';
-            modalTitle.textContent = 'Modal Title';
-            const modalForm = document.createElement('form');
-            modalForm.id = 'modalForm';
-            const modalBody = document.createElement('div');
-            modalBody.id = 'modalBody';
-            const modalActions = document.createElement('div');
-            modalActions.className = 'modal-actions';
-            const saveBtn = document.createElement('button');
-            saveBtn.type = 'submit';
-            saveBtn.className = 'btn-primary';
-            saveBtn.textContent = 'Save';
-            const cancelBtn = document.createElement('button');
-            cancelBtn.type = 'button';
-            cancelBtn.className = 'btn-secondary';
-            cancelBtn.textContent = 'Cancel';
-            cancelBtn.onclick = () => { window.closeModal(); };
-            modalActions.appendChild(saveBtn);
-            modalActions.appendChild(cancelBtn);
-            modalForm.appendChild(modalBody);
-            modalForm.appendChild(modalActions);
-            modalContent.appendChild(closeSpan);
-            modalContent.appendChild(modalTitle);
-            modalContent.appendChild(modalForm);
-            modal.appendChild(modalContent);
-            document.body.appendChild(modal);
-        }
 
     static async Factory(storageObject) {
         const site = new Site();
@@ -64,6 +29,10 @@ export class Site {
             this._toggleBtn = document.getElementById('userMenuToggle');
             this._navBar = document.querySelector('.navbar');
             this._icon = document.getElementById('userMenuToggleIcon');
+            // Cache modal elements for performance
+            this._modal = document.getElementById('modal');
+            this._modalTitle = document.getElementById('modalTitle');
+            this._modalBody = document.getElementById('modalBody');
             if (this._toggleBtn && this._navBar) {
                 this._updateToggleVisibility();
                 window.addEventListener('resize', () => this._updateToggleVisibility());
@@ -87,9 +56,8 @@ export class Site {
         window.openModal = this.openModal.bind(this);
         window.closeModal = this.closeModal.bind(this);
         window.onclick = (event) => {
-            const modal = document.getElementById('modal');
-            if (event.target === modal) {
-                modal.classList.remove('show');
+            if (this._modal && event.target === this._modal) {
+                this._modal.classList.remove('show');
             }
         };
         // Edit and CRUD
@@ -193,16 +161,18 @@ export class Site {
 
     // --- Modal and CRUD methods ---
     openModal(title, content) {
-        const modal = document.getElementById('modal');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalBody = document.getElementById('modalBody');
-        modalTitle.textContent = title;
-        modalBody.innerHTML = content;
-        modal.classList.add('show');
+        // Use cached elements if available, otherwise query DOM (fallback for safety)
+        const modal = this._modal || document.getElementById('modal');
+        const modalTitle = this._modalTitle || document.getElementById('modalTitle');
+        const modalBody = this._modalBody || document.getElementById('modalBody');
+        if (modalTitle) modalTitle.textContent = title;
+        if (modalBody) modalBody.innerHTML = content;
+        if (modal) modal.classList.add('show');
     }
     closeModal() {
-        const modal = document.getElementById('modal');
-        modal.classList.remove('show');
+        // Use cached element if available, otherwise query DOM (fallback for safety)
+        const modal = this._modal || document.getElementById('modal');
+        if (modal) modal.classList.remove('show');
     }
     editMember(id) { alert(`Edit member ${id}`); }
     deleteMember(id) { if (confirm('Are you sure you want to delete this member?')) { alert(`Member ${id} deleted`); } }

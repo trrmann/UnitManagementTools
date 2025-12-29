@@ -37,16 +37,13 @@ describe('Site Class', () => {
       expect(site._toggleBtn).toBeNull();
       expect(site._navBar).toBeNull();
       expect(site._icon).toBeNull();
+      expect(site._modal).toBeNull();
+      expect(site._modalTitle).toBeNull();
+      expect(site._modalBody).toBeNull();
     });
   });
 
   describe('DOM and event handling', () => {
-    test('_createModalDiv creates modal if not present', () => {
-      global.document.body.appendChild = jest.fn();
-      site._createModalDiv();
-      expect(global.document.createElement).toHaveBeenCalledWith('div');
-      expect(global.document.body.appendChild).toHaveBeenCalled();
-    });
     test('_setupEventListeners sets up listeners and window bindings', () => {
       global.document.addEventListener = jest.fn((event, cb) => {
         if (event === 'DOMContentLoaded') cb();
@@ -96,6 +93,32 @@ describe('Site Class', () => {
       global.document.querySelectorAll = jest.fn(() => [{ textContent: 'foo', style: {} }, { textContent: 'bar', style: {} }]);
       site.filterMembers();
       expect(global.document.querySelectorAll).toHaveBeenCalledWith('#membersBody tr');
+    });
+  });
+
+  describe('Modal caching', () => {
+    test('openModal uses cached modal elements when available', () => {
+      const mockModal = { classList: { add: jest.fn() } };
+      const mockModalTitle = { textContent: '' };
+      const mockModalBody = { innerHTML: '' };
+      site._modal = mockModal;
+      site._modalTitle = mockModalTitle;
+      site._modalBody = mockModalBody;
+      
+      site.openModal('Test Title', '<p>Test Content</p>');
+      
+      expect(mockModalTitle.textContent).toBe('Test Title');
+      expect(mockModalBody.innerHTML).toBe('<p>Test Content</p>');
+      expect(mockModal.classList.add).toHaveBeenCalledWith('show');
+    });
+
+    test('closeModal uses cached modal element when available', () => {
+      const mockModal = { classList: { remove: jest.fn() } };
+      site._modal = mockModal;
+      
+      site.closeModal();
+      
+      expect(mockModal.classList.remove).toHaveBeenCalledWith('show');
     });
   });
 });
