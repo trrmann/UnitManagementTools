@@ -1,21 +1,5 @@
-// Google Drive data module, modeled after Callings class, using googleDrive.json as the data source
-// Maintains Google Drive API methods for interaction
-
+// ...existing code...
 export class GoogleDrive {
-    // ===== Instance Accessors =====
-    get Data() { return this._data; }
-    get GitHubDataObj() { return this._gitHubDataObj; }
-    get IsLoaded() { return this._isLoaded; }
-    get UnitManagementToolsKey() { return this._unitManagementToolsKey; }
-    get ClientId() { return this.CLIENT_ID; }
-    // Use SecretValue as the primary client secret, fallback to API_KEY
-    get ApiKey() {
-        return this._secretValue || this.API_KEY;
-    }
-    get DiscoveryDocs() { return this.DISCOVERY_DOCS; }
-    get Scopes() { return this.SCOPES; }
-    get IsInitialized() { return this.isInitialized; }
-
     // ===== Constructor =====
     constructor(gitHubDataObject) {
         this._data = [];
@@ -29,6 +13,47 @@ export class GoogleDrive {
         this.isInitialized = false;
         this._secretManagerName = null;
         this._secretValue = null;
+        // Internal maps for fast O(1) lookup (lazily built)
+        this._idMap = new Map();
+        this._nameMap = new Map();
+        this._cacheDirty = true;
+    }
+
+    get Data() {
+        return this._data;
+    }
+    set Data(val) {
+        this._data = val;
+        this._cacheDirty = true;
+    }
+
+    // API ergonomic: add item safely
+    addItem(item) {
+        if (!item || typeof item !== 'object') throw new Error('Item must be an object');
+        this._data.push(item);
+        this._cacheDirty = true;
+    }
+
+    // API ergonomic: remove item by id
+    removeItemById(id) {
+        const idx = this._data.findIndex(i => i.id === id);
+        if (idx !== -1) {
+            this._data.splice(idx, 1);
+            this._cacheDirty = true;
+            return true;
+        }
+        return false;
+    }
+
+    // API ergonomic: remove item by name
+    removeItemByName(name) {
+        const idx = this._data.findIndex(i => i.name === name);
+        if (idx !== -1) {
+            this._data.splice(idx, 1);
+            this._cacheDirty = true;
+            return true;
+        }
+        return false;
     }
 
     // Property to get the secret value retrieved from Secret Manager
@@ -63,7 +88,7 @@ export class GoogleDrive {
 
     static CopyFromJSON(dataJSON) {
         const drive = new GoogleDrive(dataJSON._gitHubDataObj);
-        drive._data = dataJSON._data;
+        drive.Data = dataJSON._data;
         drive._isLoaded = dataJSON._isLoaded;
         drive._unitManagementToolsKey = dataJSON._unitManagementToolsKey;
         drive.CLIENT_ID = dataJSON.CLIENT_ID;
@@ -87,7 +112,7 @@ export class GoogleDrive {
         };
     }
     static CopyFromObject(destination, source) {
-        destination._data = source._data;
+        destination.Data = source._data;
         destination._gitHubDataObj = source._gitHubDataObj;
         destination._isLoaded = source._isLoaded;
         destination._unitManagementToolsKey = source._unitManagementToolsKey;
@@ -161,38 +186,78 @@ accessSecret();
 
     CopyFromJSON(json) {
         if (Array.isArray(json)) {
-            this._data = json;
+            this.Data = json;
         } else if (json && Array.isArray(json.items)) {
-            this._data = json.items;
+            this.Data = json.items;
         } else {
-            this._data = [];
+            this.Data = [];
         }
-        this._buildCache();
     }
 
     CopyFromObject(obj) {
         this.CopyFromJSON(obj);
     }
 
-    // Accessors
+    // Accessors (O(1) with internal maps)
+    // Note: Direct mutation of this._data (e.g., push/splice) will NOT update the maps. Always use the setter for replacement.
     GetItemById(id) {
-        return this._data.find(item => item.id === id) || null;
+        if (!this._data || this._data.length === 0) return null;
+        return this._idMap.get(id) || null;
     }
 
     GetItemByName(name) {
-        return this._data.find(item => item.name === name) || null;
+        if (!this._data || this._data.length === 0) return null;
+        return this._nameMap.get(name) || null;
     }
 
     HasItemById(id) {
-        return this._data.some(item => item.id === id);
+        if (!this._data || this._data.length === 0) return false;
+        return this._idMap.has(id);
     }
 
     HasItemByName(name) {
-        return this._data.some(item => item.name === name);
+        if (!this._data || this._data.length === 0) return false;
+        return this._nameMap.has(name);
     }
 
     GetAll() {
+        if (!this._data || this._data.length === 0) return [];
         return this._data.slice();
+    }
+    // Build internal maps for fast lookup
+    _buildCache() {
+        this._idMap = new Map();
+        this._nameMap = new Map();
+        if (Array.isArray(this._data)) {
+            for (const item of this._data) {
+                if (item && item.id !== undefined) this._idMap.set(item.id, item);
+                if (item && item.name !== undefined) this._nameMap.set(item.name, item);
+            }
+        }
+        this._cacheDirty = false;
+    }
+    // Ensure cache is up to date before lookup
+    _ensureCache() {
+        if (this._cacheDirty) this._buildCache();
+    }
+    GetItemById(id) {
+        this._ensureCache();
+        return this._idMap.has(id) ? this._idMap.get(id) : null;
+    }
+
+    GetItemByName(name) {
+        this._ensureCache();
+        return this._nameMap.has(name) ? this._nameMap.get(name) : null;
+    }
+
+    HasItemById(id) {
+        this._ensureCache();
+        return this._idMap.has(id);
+    }
+
+    HasItemByName(name) {
+        this._ensureCache();
+        return this._nameMap.has(name);
     }
 
     // (Removed initClient, not needed for GIS OAuth2)
