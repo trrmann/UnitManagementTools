@@ -48,14 +48,19 @@ export class Storage {
 
     static async CopyFromJSON(dataJSON) {
         const storage = new Storage();
-        storage._keyRegistry = new Map(dataJSON._keyRegistry);
-        storage._secureKeyRegistry = new Map(dataJSON._secureKeyRegistry);
+        storage._restoreKeyRegistries(dataJSON._keyRegistry, dataJSON._secureKeyRegistry);
         // Timers and sub-objects are not restored from JSON
         storage._cache = await CacheStore.Factory();
         storage._sessionStorage = await SessionStorage.Factory();
         storage._localStorage = await LocalStorage.Factory();
         storage._crypto = await PublicKeyCrypto.Factory();
         return storage;
+    }
+
+    // Protected: encapsulate registry restoration for maintainability
+    _restoreKeyRegistries(keyRegistryArr, secureKeyRegistryArr) {
+        this._keyRegistry = new Map(keyRegistryArr);
+        this._secureKeyRegistry = new Map(secureKeyRegistryArr);
     }
     static CopyToJSON(instance) {
         return {
@@ -64,8 +69,7 @@ export class Storage {
         };
     }
     static CopyFromObject(destination, source) {
-        destination._keyRegistry = new Map(source._keyRegistry);
-        destination._secureKeyRegistry = new Map(source._secureKeyRegistry);
+        destination._restoreKeyRegistries(source._keyRegistry, source._secureKeyRegistry);
     }
     static async Factory(storageRegistryPruneIntervalMs = Storage.DefaultStoragePruneIntervalMS) {
         const storage = new Storage(storageRegistryPruneIntervalMs);
@@ -133,7 +137,7 @@ export class Storage {
         }
     }
     KeyRegistered(key) {
-        return this.GetAllKeys().includes(key);
+        return this._keyRegistry.has(key);
     }
     GetAllKeys() {
         return Array.from(this._keyRegistry.keys());
@@ -147,7 +151,7 @@ export class Storage {
         this.UnregisterKey(key);
     }
     SecureKeyRegistered(key) {
-        return this.GetAllSecureKeys().includes(key);
+        return this._secureKeyRegistry.has(key);
     }
     GetAllSecureKeys() {
         return Array.from(this._secureKeyRegistry.keys());
@@ -185,13 +189,13 @@ export class Storage {
         // 1. Cache
         if(this._cache.Has(key)) found = this._cache.Get(key);
         // 2. Session Storage
-        if(!found && this._sessionStorage.HasKey(key)) found = this._sessionStorage.Get(key);
+        if(found === undefined && this._sessionStorage.HasKey(key)) found = this._sessionStorage.Get(key);
         // 3. Local Storage
-        if(!found && this._localStorage.HasKey(key)) found = this._localStorage.Get(key);
+        if(found === undefined && this._localStorage.HasKey(key)) found = this._localStorage.GetKey(key);
         // 4. Google Drive (if available)
-        if(!found && this._googleDrive && this._googleDrive.HasKey(key)) found = await this._googleDrive.Get(key);
+        if(found === undefined && this._googleDrive && this._googleDrive.HasKey(key)) found = await this._googleDrive.Get(key);
         // 5. GitHub
-        if(!found && this._gitHub.Has(key)) found = await this._gitHub.Get(key,"json");
+        if(found === undefined && this._gitHub.Has(key)) found = await this._gitHub.Get(key,"json");
         if(secure && privateKey) {
             return this._crypto.decrypt(privateKey, found);
         }
