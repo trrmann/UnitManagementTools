@@ -173,13 +173,17 @@ export class Auth {
         const emailList = document.getElementById(elementID);
         if (!emailList || !this.allUsers) return;
         emailList.innerHTML = '';
+        
+        // Use DocumentFragment for batch DOM operations to improve performance
+        const fragment = document.createDocumentFragment();
         this.allUsers.forEach(user => {
             if ((user.memberactive || user.active) && user.email && typeof user.email === 'string' && user.email.trim() !== '') {
                 const option = document.createElement('option');
                 option.value = user.email;
-                emailList.appendChild(option);
+                fragment.appendChild(option);
             }
         });
+        emailList.appendChild(fragment);
     }
     ShowLoginForm() {
         const loginModal = document.getElementById(this.destinationID);

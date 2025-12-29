@@ -212,3 +212,87 @@ describe('Auth - Role Selector Caching', () => {
     expect(auth._cachedFilteredRoles).toEqual(['Ward Council', 'Stake Council', 'Area Council']);
   });
 });
+
+describe('Auth - PopulateEmailList Optimization', () => {
+  let auth, dom;
+
+  beforeEach(() => {
+    dom = new JSDOM('<!DOCTYPE html><html><body></body></html>');
+    global.document = dom.window.document;
+    global.window = dom.window;
+    
+    const targetDiv = document.createElement('div');
+    targetDiv.id = mockConfig.configuration.login.target;
+    document.body.appendChild(targetDiv);
+    
+    const emailList = document.createElement('datalist');
+    emailList.id = 'emailList';
+    document.body.appendChild(emailList);
+    
+    auth = new Auth(mockConfig);
+  });
+
+  test('PopulateEmailList handles empty user list', () => {
+    auth.allUsers = [];
+    auth.PopulateEmailList('emailList');
+    
+    const emailList = document.getElementById('emailList');
+    expect(emailList.children.length).toBe(0);
+  });
+
+  test('PopulateEmailList populates with active users with valid emails', () => {
+    auth.allUsers = [
+      { email: 'user1@example.com', memberactive: true },
+      { email: 'user2@example.com', active: true },
+      { email: '', memberactive: true }, // Empty email - should be filtered
+      { email: 'user3@example.com', memberactive: false, active: false }, // Inactive - should be filtered
+      { email: 'user4@example.com', active: true }
+    ];
+    
+    auth.PopulateEmailList('emailList');
+    
+    const emailList = document.getElementById('emailList');
+    expect(emailList.children.length).toBe(3);
+    expect(emailList.children[0].value).toBe('user1@example.com');
+    expect(emailList.children[1].value).toBe('user2@example.com');
+    expect(emailList.children[2].value).toBe('user4@example.com');
+  });
+
+  test('PopulateEmailList filters out whitespace-only emails', () => {
+    auth.allUsers = [
+      { email: 'user1@example.com', active: true },
+      { email: '   ', active: true }, // Whitespace only
+      { email: '\t\n', active: true } // Whitespace only
+    ];
+    
+    auth.PopulateEmailList('emailList');
+    
+    const emailList = document.getElementById('emailList');
+    expect(emailList.children.length).toBe(1);
+  });
+
+  test('PopulateEmailList clears previous options', () => {
+    const emailList = document.getElementById('emailList');
+    const oldOption = document.createElement('option');
+    oldOption.value = 'old@example.com';
+    emailList.appendChild(oldOption);
+    
+    auth.allUsers = [
+      { email: 'new@example.com', active: true }
+    ];
+    
+    auth.PopulateEmailList('emailList');
+    
+    expect(emailList.children.length).toBe(1);
+    expect(emailList.children[0].value).toBe('new@example.com');
+  });
+
+  test('PopulateEmailList handles missing element gracefully', () => {
+    auth.allUsers = [
+      { email: 'user1@example.com', active: true }
+    ];
+    
+    // Should not throw
+    expect(() => auth.PopulateEmailList('nonexistent')).not.toThrow();
+  });
+});
