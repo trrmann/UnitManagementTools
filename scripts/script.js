@@ -1,3 +1,53 @@
+import './organization.ui.js';
+import './configuration.ui.js';
+// --- Configuration Tab Logic ---
+window.openEditConfiguration = function() {
+    // Example: Show a modal with editable configuration fields
+    window.openModal('Edit Configuration', `
+        <div class="form-group">
+            <label>Site Title</label>
+            <input type="text" id="configSiteTitle" value="Unit Management Tools" required>
+        </div>
+        <div class="form-group">
+            <label>Admin Email</label>
+            <input type="email" id="configAdminEmail" value="admin@example.com" required>
+        </div>
+        <div class="form-group">
+            <label>Enable Debug Mode</label>
+            <input type="checkbox" id="configDebugMode">
+        </div>
+        <div class="form-group">
+            <label>Theme</label>
+            <select id="configTheme">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+            </select>
+        </div>
+    `);
+    // Optionally, pre-fill values from actual configuration
+};
+
+// Example: Render configuration table (placeholder, should be replaced with real config data)
+function renderConfigurationTable() {
+    const config = [
+        { key: 'Site Title', value: 'Unit Management Tools' },
+        { key: 'Admin Email', value: 'admin@example.com' },
+        { key: 'Debug Mode', value: 'Off' },
+        { key: 'Theme', value: 'Light' }
+    ];
+    const tbody = document.getElementById('configurationBody');
+    if (!tbody) return;
+    tbody.innerHTML = config.map(row => `<tr><td>${row.key}</td><td>${row.value}</td></tr>`).join('');
+}
+
+// Render configuration table when Configuration section is shown
+const originalShowSection = window.showSection;
+window.showSection = function(sectionId) {
+    originalShowSection(sectionId);
+    if (sectionId === 'configuration') {
+        renderConfigurationTable();
+    }
+};
 
 import { Storage } from "../modules/storage.mjs";
 import { Auth } from "../modules/auth.mjs";
