@@ -89,11 +89,27 @@ export class Users {
                 this.Storage.Cache.Set(Users.UsersFilename, usersObj, Users.UsersCacheExpireMS);
             }
         }
-        // 3. If still not found, fetch from persistent storage (simulate by re-calling Get with no TTLs)
+        // 3. If still not found, try local storage
         if (!usersObj) {
-            usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig, cacheTtlMs: null, sessionTtlMs: null });
-            // If found, set in session storage and cache for future use
+            usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: Users.UsersLocalExpireMS });
+            // If found in local, set in session and cache for faster access next time
             if (usersObj) {
+                if (this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
+                    this.Storage.SessionStorage.Set(Users.UsersFilename, usersObj, Users.UsersSessionExpireMS);
+                }
+                if (this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
+                    this.Storage.Cache.Set(Users.UsersFilename, usersObj, Users.UsersCacheExpireMS);
+                }
+            }
+        }
+        // 4. If still not found, fetch from persistent storage (simulate by re-calling Get with no TTLs)
+        if (!usersObj) {
+            usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: null });
+            // If found, set in local, session, and cache for future use
+            if (usersObj) {
+                if (this.Storage.LocalStorage && typeof this.Storage.LocalStorage.Set === 'function') {
+                    this.Storage.LocalStorage.Set(Users.UsersFilename, usersObj, Users.UsersLocalExpireMS);
+                }
                 if (this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
                     this.Storage.SessionStorage.Set(Users.UsersFilename, usersObj, Users.UsersSessionExpireMS);
                 }
