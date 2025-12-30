@@ -1,3 +1,12 @@
+// --- Dashboard Quick Actions: Reset Password ---
+document.addEventListener('DOMContentLoaded', () => {
+    const resetPasswordBtn = document.getElementById('resetPasswordBtn');
+    if (resetPasswordBtn) {
+        resetPasswordBtn.onclick = () => {
+            alert('Reset Password mock functionality triggered.');
+        };
+    }
+});
 import './organization.ui.js';
 import './configuration.ui.js';
 import './callings.ui.js';
