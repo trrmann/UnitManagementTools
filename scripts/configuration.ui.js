@@ -1,3 +1,32 @@
+// Toolbar button handlers
+function handleImport() {
+    alert('Import configuration (not yet implemented)');
+}
+function handleExport() {
+    alert('Export configuration (not yet implemented)');
+}
+function handleRekey() {
+    alert('Encryption rekey (not yet implemented)');
+}
+function handleCloudMigrate() {
+    alert('Cloud store migration (not yet implemented)');
+}
+function handleAdd() {
+    alert('Add configuration entry (not yet implemented)');
+}
+function handleSearch(e) {
+    const value = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll('#configurationBody tr');
+    rows.forEach(row => {
+        // Only filter value rows (not headings)
+        const keyCell = row.querySelector('td');
+        if (!keyCell || row.children.length < 3) return;
+        const key = keyCell.textContent.toLowerCase();
+        const val = row.children[1].textContent.toLowerCase();
+        row.style.display = key.includes(value) || val.includes(value) ? '' : 'none';
+    });
+}
+
 // Configuration tab UI logic (modularized for testing)
 
 
@@ -54,6 +83,22 @@ function renderConfigTreeRows(node, tbody, path = [], depth = 0) {
 }
 
 export async function renderConfigurationTable(storageObj) {
+    // Attach toolbar event handlers (idempotent)
+    const importBtn = document.getElementById('configImportBtn');
+    if (importBtn) importBtn.onclick = handleImport;
+    const exportBtn = document.getElementById('configExportBtn');
+    if (exportBtn) exportBtn.onclick = handleExport;
+    const rekeyBtn = document.getElementById('configRekeyBtn');
+    if (rekeyBtn) rekeyBtn.onclick = handleRekey;
+    const migrateBtn = document.getElementById('configCloudMigrateBtn');
+    if (migrateBtn) migrateBtn.onclick = handleCloudMigrate;
+    const addBtn = document.getElementById('configAddBtn');
+    if (addBtn) addBtn.onclick = handleAdd;
+    const searchBar = document.getElementById('configurationSearch');
+    if (searchBar && !searchBar._wired) {
+        searchBar.addEventListener('input', handleSearch);
+        searchBar._wired = true;
+    }
     const tbody = document.getElementById('configurationBody');
     const table = tbody ? tbody.closest('table') : null;
     if (!tbody) return;
