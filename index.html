@@ -145,13 +145,13 @@
                                                             <!-- Testing Section -->
                                                             <section id="testing" class="section">
                                                                 <h2>Testing & Utilities</h2>
-                                                                <div class="section-toolbar">
-                                                                    <button class="btn-primary testing-ResetCache" onclick="resetCache()">
-                                                                        <i class="fas fa-sync-alt"></i> Reset Cache
-                                                                    </button>
-                                                                    <button class="btn-primary testing-ExportData" onclick="exportData()">
-                                                                        <i class="fas fa-file-export"></i> Export Data
-                                                                    </button>
+                                                                <div class="section-toolbar testing-toolbar improved-toolbar">
+                                                                    <div class="testing-toolbar-row">
+                                                                        <button class="btn-primary" id="resetCacheBtn">Reset Cache</button>
+                                                                        <button class="btn-primary" id="resetSessionStorageBtn">Reset Session Storage</button>
+                                                                        <button class="btn-primary" id="resetLocalStorageBtn">Reset Local Storage</button>
+                                                                        <button class="btn-primary" id="resetCloudStorageBtn">Reset Cloud Storage</button>
+                                                                    </div>
                                                                 </div>
                                                                 <div id="testingUtilities" class="testing-utilities">
                                                                     <p>Use these tools for development and troubleshooting.</p>
