@@ -31,15 +31,17 @@ export function openAddRole() {
     alert('Add Role modal would open here.');
 }
 
-window.renderRolesTable = renderRolesTable;
-window.renderRolesFromClass = renderRolesFromClass;
-window.openAddRole = openAddRole;
-window.editRole = function(id) {
-    alert('Edit role: ' + id);
-};
-window.deleteRole = function(id) {
-    alert('Delete role: ' + id);
-};
+if (typeof window !== 'undefined') {
+    window.renderRolesTable = renderRolesTable;
+    window.renderRolesFromClass = renderRolesFromClass;
+    window.openAddRole = openAddRole;
+    window.editRole = function(id) {
+        alert('Edit role: ' + id);
+    };
+    window.deleteRole = function(id) {
+        alert('Delete role: ' + id);
+    };
+}
 
 // --- Toolbar Button Handlers ---
 window.addEventListener('DOMContentLoaded', () => {

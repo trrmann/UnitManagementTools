@@ -6,7 +6,10 @@ class MockStorage {
         this.data = {};
         this.Cache = { Set: jest.fn(), Get: jest.fn() };
         this.SessionStorage = { Set: jest.fn(), Get: jest.fn() };
-        this.Get = jest.fn((filename) => this.data[filename] || undefined);
+        this.LocalStorage = { Set: jest.fn(), Get: jest.fn() };
+        // Async Get/Set methods to match Configuration requirements
+        this.Get = jest.fn(async (filename) => this.data[filename] || undefined);
+        this.Set = jest.fn(async (filename, value) => { this.data[filename] = value; });
     }
 }
 

@@ -146,13 +146,15 @@ describe('Testing Tab UI', () => {
         const revokeObjectURL = jest.fn();
         window.URL.createObjectURL = createObjectURL;
         window.URL.revokeObjectURL = revokeObjectURL;
-        const clickMock = jest.fn();
-        document.createElement = jest.fn(() => ({ click: clickMock, set href(v) {}, set download(v) {}, remove() {} }));
+        // Setup a persistent mock element for createElement
+        const mockElement = { click: jest.fn(), set href(v) {}, set download(v) {}, remove() {} };
+        document.createElement = jest.fn(() => mockElement);
+        window._mockElement = mockElement;
         document.body.appendChild = jest.fn();
         document.body.removeChild = jest.fn();
         document.getElementById('exportCacheBtn').onclick();
         expect(createObjectURL).toHaveBeenCalled();
-        expect(clickMock).toHaveBeenCalled();
+        expect(window._mockElement.click).toHaveBeenCalled();
     });
 
     it('importCacheInput imports cache entries from JSON', () => {
@@ -349,9 +351,14 @@ describe('Configuration Testing Tab Buttons', () => {
         window.alert = jest.fn();
         window.URL.createObjectURL = jest.fn(() => 'blob:url');
         window.URL.revokeObjectURL = jest.fn();
-        document.createElement = jest.fn(() => ({ click: jest.fn(), set href(v) {}, set download(v) {}, remove() {} }));
+        // Setup a persistent mock element for createElement
+        const mockElement = { click: jest.fn(), set href(v) {}, set download(v) {}, remove: jest.fn() };
+        document.createElement = jest.fn(() => mockElement);
+        window._mockElement = mockElement;
         document.body.appendChild = jest.fn();
         document.body.removeChild = jest.fn();
+        // Reset mock between tests
+        if (mockElement.click.mockClear) mockElement.click.mockClear();
     });
 
     it('Export Raw Configuration button downloads raw config as JSON', () => {
@@ -360,7 +367,8 @@ describe('Configuration Testing Tab Buttons', () => {
         require('../testing.ui.js');
         document.getElementById('exportRawConfigBtn').onclick();
         expect(window.URL.createObjectURL).toHaveBeenCalled();
-        expect(document.createElement().click).toHaveBeenCalled();
+        // Assert the click method on the mock element was called
+        expect(window._mockElement.click).toHaveBeenCalled();
     });
 
     it('Import Raw Configuration button imports raw config from JSON', () => {
@@ -395,7 +403,8 @@ describe('Configuration Testing Tab Buttons', () => {
         require('../testing.ui.js');
         document.getElementById('exportDetailedConfigBtn').onclick();
         expect(window.URL.createObjectURL).toHaveBeenCalled();
-        expect(document.createElement().click).toHaveBeenCalled();
+        // Assert the click method on the mock element was called
+        expect(window._mockElement.click).toHaveBeenCalled();
         expect(window.Configuration.constructor.CopyToJSON).toHaveBeenCalledWith(window.Configuration);
     });
 
@@ -424,5 +433,7 @@ describe('Configuration Testing Tab Buttons', () => {
         expect(window.Configuration._storageObj).toEqual({ type: 'mockStorage' });
         expect(window.alert).toHaveBeenCalledWith('Detailed configuration import successful.');
         window.FileReader = origFileReader;
+
     });
+});
 });

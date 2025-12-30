@@ -137,7 +137,7 @@ export async function renderConfigurationTable(storageObj) {
         // Flatten config for hierarchical display
         const flat = configInstance.FlattenObject(configInstance.Config);
         // Log to console in hierarchical form
-        // console.log('Hierarchical Configuration Data:', flat);
+        console.log('Hierarchical Configuration Data:', flat);
         // Build and render tree
         const tree = buildConfigTree(flat);
         renderConfigTreeRows(tree, tbody);
@@ -171,5 +171,7 @@ export function openEditConfiguration() {
     alert('Edit Configuration modal would open here.');
 }
 
-window.renderConfigurationTable = renderConfigurationTable;
-window.openEditConfiguration = openEditConfiguration;
+if (typeof window !== 'undefined') {
+    window.renderConfigurationTable = renderConfigurationTable;
+    window.openEditConfiguration = openEditConfiguration;
+}

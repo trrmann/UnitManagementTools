@@ -31,17 +31,17 @@ export function renderEventScheduleTemplateTable() {
 
 // Placeholder for add/edit/delete actions
 
-if (typeof window !== 'undefined') {
-    window.openAddEventScheduleTemplate = function() {
-        alert("Add Event Schedule Template (not yet implemented)");
-    };
-    window.editEventScheduleTemplate = function(idx) {
-        alert(`Edit Event Schedule Template #${idx} (not yet implemented)`);
-    };
-    window.deleteEventScheduleTemplate = function(idx) {
-        alert(`Delete Event Schedule Template #${idx} (not yet implemented)`);
-    };
-
+    if (typeof window !== 'undefined') {
+        window.openAddEventScheduleTemplate = function() {
+            alert("Add Event Schedule Template (not yet implemented)");
+        };
+        window.editEventScheduleTemplate = function(idx) {
+            alert(`Edit Event Schedule Template #${idx} (not yet implemented)`);
+        };
+        window.deleteEventScheduleTemplate = function(idx) {
+            alert(`Delete Event Schedule Template #${idx} (not yet implemented)`);
+        };
+    
     // --- Toolbar Button Handlers ---
     window.addEventListener('DOMContentLoaded', () => {
         const importBtn = document.getElementById('eventscheduletemplateImportBtn');

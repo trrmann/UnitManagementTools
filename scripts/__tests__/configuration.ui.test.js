@@ -1,4 +1,15 @@
+/**
+ * @jest-environment jsdom
+ */
 describe('Configuration Toolbar Buttons and Search', () => {
+    const testConfig = {
+        'testKey': 'testValue',
+        'nested.inner': 123
+    };
+    const asyncStorageMock = {
+        Get: async () => testConfig,
+        Set: async () => {}
+    };
     beforeEach(() => {
         document.body.innerHTML = `
             <input id="configurationSearch" />
@@ -7,15 +18,13 @@ describe('Configuration Toolbar Buttons and Search', () => {
             <button id="configRekeyBtn"></button>
             <button id="configCloudMigrateBtn"></button>
             <button id="configAddBtn"></button>
-            <table><tbody id="configurationBody">
-                <tr><td>foo</td><td>bar</td><td></td></tr>
-                <tr><td>baz</td><td>qux</td><td></td></tr>
-                <tr><td>heading</td></tr>
-            </tbody></table>
+            <table><tbody id="configurationBody"></tbody></table>
         `;
+        window._storageObj = asyncStorageMock;
     });
     it('calls import handler on Import button click', async () => {
         require('../configuration.ui.js');
+        await window.renderConfigurationTable(window._storageObj);
         const btn = document.getElementById('configImportBtn');
         window.alert = jest.fn();
         btn.click();
@@ -23,6 +32,7 @@ describe('Configuration Toolbar Buttons and Search', () => {
     });
     it('calls export handler on Export button click', async () => {
         require('../configuration.ui.js');
+        await window.renderConfigurationTable(window._storageObj);
         const btn = document.getElementById('configExportBtn');
         window.alert = jest.fn();
         btn.click();
@@ -30,6 +40,7 @@ describe('Configuration Toolbar Buttons and Search', () => {
     });
     it('calls rekey handler on Rekey button click', async () => {
         require('../configuration.ui.js');
+        await window.renderConfigurationTable(window._storageObj);
         const btn = document.getElementById('configRekeyBtn');
         window.alert = jest.fn();
         btn.click();
@@ -37,6 +48,7 @@ describe('Configuration Toolbar Buttons and Search', () => {
     });
     it('calls cloud migrate handler on Cloud Store Migration button click', async () => {
         require('../configuration.ui.js');
+        await window.renderConfigurationTable(window._storageObj);
         const btn = document.getElementById('configCloudMigrateBtn');
         window.alert = jest.fn();
         btn.click();
@@ -44,6 +56,7 @@ describe('Configuration Toolbar Buttons and Search', () => {
     });
     it('calls add handler on Add button click', async () => {
         require('../configuration.ui.js');
+        await window.renderConfigurationTable(window._storageObj);
         const btn = document.getElementById('configAddBtn');
         window.alert = jest.fn();
         btn.click();
@@ -51,19 +64,34 @@ describe('Configuration Toolbar Buttons and Search', () => {
     });
     it('filters configuration rows with search bar', async () => {
         require('../configuration.ui.js');
+        await window.renderConfigurationTable(window._storageObj);
         const search = document.getElementById('configurationSearch');
         const rows = document.querySelectorAll('#configurationBody tr');
-        search.value = 'foo';
+        // Find value rows by their first cell contents
+        const valueRows = Array.from(rows).filter(row => row.children.length === 3);
+        // Log DOM for debugging
+        // eslint-disable-next-line no-console
+        console.log('Rendered rows:', Array.from(rows).map(row => row.textContent));
+        const testKeyRow = valueRows.find(row => row.children[0].textContent.trim() === 'testKey');
+        const innerRow = valueRows.find(row => row.children[0].textContent.trim() === 'inner');
+        if (!testKeyRow || !innerRow) {
+            throw new Error('Expected configuration value rows not found in DOM. Rendered rows: ' + Array.from(rows).map(row => row.textContent).join(' | '));
+        }
+        // Search for 'testKey' (should show testKeyRow, hide innerRow)
+        search.value = 'testKey';
         search.dispatchEvent(new Event('input'));
-        expect(rows[0].style.display).toBe('');
-        expect(rows[1].style.display).toBe('none');
-        search.value = 'qux';
+        expect(testKeyRow.style.display).toBe('');
+        expect(innerRow.style.display).toBe('none');
+        // Search for 'inner' (should show innerRow, hide testKeyRow)
+        search.value = 'inner';
         search.dispatchEvent(new Event('input'));
-        expect(rows[0].style.display).toBe('none');
-        expect(rows[1].style.display).toBe('');
+        expect(testKeyRow.style.display).toBe('none');
+        expect(innerRow.style.display).toBe('');
+        // Clear search (should show both)
         search.value = '';
         search.dispatchEvent(new Event('input'));
-        expect(rows[0].style.display).toBe('');
+        expect(testKeyRow.style.display).toBe('');
+        expect(innerRow.style.display).toBe('');
         expect(rows[1].style.display).toBe('');
     });
 });
@@ -77,6 +105,10 @@ import { Configuration } from '../../modules/configuration.mjs';
 describe('Configuration Table UI', () => {
     let tbody;
     let originalConsoleLog;
+    const asyncStorageMock = {
+        Get: async () => ({}),
+        Set: async () => {}
+    };
     beforeEach(() => {
         document.body.innerHTML = `
             <table><tbody id="configurationBody"></tbody></table>
@@ -84,15 +116,18 @@ describe('Configuration Table UI', () => {
         tbody = document.getElementById('configurationBody');
         // Mock Configuration
         jest.spyOn(Configuration.prototype, 'Fetch').mockImplementation(async function() {
+            this._storageObj = asyncStorageMock;
             this.configuration = {
                 testKey: 'testValue',
                 nested: { inner: 123 }
             };
         });
         jest.spyOn(Configuration.prototype, 'HasConfig').mockImplementation(function() {
+            this._storageObj = asyncStorageMock;
             return !!this.configuration;
         });
         jest.spyOn(Configuration.prototype, 'FlattenObject').mockImplementation(function(obj) {
+            this._storageObj = asyncStorageMock;
             return {
                 testKey: 'testValue',
                 'nested.inner': 123
@@ -106,7 +141,7 @@ describe('Configuration Table UI', () => {
         console.log = originalConsoleLog;
     });
     it('renders configuration data in hierarchical rows and logs to console', async () => {
-        await renderConfigurationTable();
+        await renderConfigurationTable(window._storageObj);
         expect(tbody.innerHTML).toContain('testKey');
         expect(tbody.innerHTML).toContain('testValue');
         expect(tbody.innerHTML).toContain('nested.inner');
@@ -117,7 +152,7 @@ describe('Configuration Table UI', () => {
         );
     });
     it('renders edit and delete buttons for each row', async () => {
-        await renderConfigurationTable();
+        await renderConfigurationTable(window._storageObj);
         expect(tbody.querySelectorAll('.config-edit-btn').length).toBeGreaterThan(0);
         expect(tbody.querySelectorAll('.config-delete-btn').length).toBeGreaterThan(0);
     });
@@ -125,12 +160,12 @@ describe('Configuration Table UI', () => {
         jest.spyOn(Configuration.prototype, 'Fetch').mockImplementation(async function() {
             throw new Error('fail');
         });
-        await renderConfigurationTable();
+        await renderConfigurationTable(window._storageObj);
         expect(tbody.innerHTML).toContain('Error loading configuration');
     });
     it('shows no data message if config is empty', async () => {
         jest.spyOn(Configuration.prototype, 'HasConfig').mockImplementation(() => false);
-        await renderConfigurationTable();
+        await renderConfigurationTable(window._storageObj);
         expect(tbody.innerHTML).toContain('No configuration data found.');
     });
 });

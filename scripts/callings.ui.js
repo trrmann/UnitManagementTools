@@ -47,15 +47,17 @@ export function openAddCalling() {
 }
 
 if (typeof window !== 'undefined') {
-    window.renderCallingsTable = renderCallingsTable;
-    window.renderCallingsFromClass = renderCallingsFromClass;
-    window.openAddCalling = openAddCalling;
-    window.editCalling = function(id) {
-        alert('Edit calling: ' + id);
-    };
-    window.deleteCalling = function(id) {
-        alert('Delete calling: ' + id);
-    };
+    if (typeof window !== 'undefined') {
+        window.renderCallingsTable = renderCallingsTable;
+        window.renderCallingsFromClass = renderCallingsFromClass;
+        window.openAddCalling = openAddCalling;
+        window.editCalling = function(id) {
+            alert('Edit calling: ' + id);
+        };
+        window.deleteCalling = function(id) {
+            alert('Delete calling: ' + id);
+        };
+    }
 
     // --- Toolbar Button Handlers ---
     window.addEventListener('DOMContentLoaded', () => {

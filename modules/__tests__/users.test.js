@@ -65,13 +65,13 @@ describe('Users Class', () => {
     });
     test('UserById returns correct user', async () => {
       const result = await users.UserById('1');
-      expect(result.length).toBe(1);
-      expect(result[0].fullname).toBe('John Doe');
+      expect(result).not.toBeNull();
+      expect(result.fullname).toBe('John Doe');
     });
     test('UserByEmail returns correct user', async () => {
       const result = await users.UserByEmail('jane@example.com');
-      expect(result.length).toBe(1);
-      expect(result[0].fullname).toBe('Jane Smith');
+      expect(result).not.toBeNull();
+      expect(result.fullname).toBe('Jane Smith');
     });
     test('HasUserById returns true for existing user', async () => {
       const exists = await users.HasUserById('1');

@@ -22,8 +22,19 @@ describe('Org Class', () => {
       }
     ]
   };
+  class MockStorage {
+    constructor() {
+      this.data = {};
+      this.Cache = { Set: jest.fn(), Get: jest.fn() };
+      this.SessionStorage = { Set: jest.fn(), Get: jest.fn() };
+      this.LocalStorage = { Set: jest.fn(), Get: jest.fn() };
+      this.Get = jest.fn(async (filename) => this.data[filename] || undefined);
+      this.Set = jest.fn(async (filename, value) => { this.data[filename] = value; });
+    }
+  }
+
   beforeEach(() => {
-    mockStorage = {};
+    mockStorage = new MockStorage();
     org = new Org({ _storageObj: mockStorage });
     org.organization = mockOrgData;
   });

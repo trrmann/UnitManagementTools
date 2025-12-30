@@ -231,18 +231,17 @@ describe('CacheStore', () => {
 
   test('Set does not perform unnecessary writes if value and expiration are unchanged', () => {
     const cache = new CacheStore();
-    cache.Set('a', 1, 1000);
-    const entry = cache._store.get('a');
     const spyDelete = jest.spyOn(cache, 'Delete');
     const spySet = jest.spyOn(cache._store, 'set');
+    cache.Set('a', 1, 1000);
     // Call Set with same value and expiration
     cache.Set('a', 1, 1000);
     expect(spyDelete).not.toHaveBeenCalled();
-    expect(spySet).not.toHaveBeenCalled();
+    expect(spySet).toHaveBeenCalledTimes(1); // Only the initial set
     // Call Set with different value
     cache.Set('a', 2, 1000);
     expect(spyDelete).toHaveBeenCalledWith('a');
-    expect(spySet).toHaveBeenCalled();
+    expect(spySet).toHaveBeenCalledTimes(2); // Initial + update
     spyDelete.mockRestore();
     spySet.mockRestore();
   });

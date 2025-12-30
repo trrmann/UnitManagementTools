@@ -1,16 +1,40 @@
+
+/**
+ * @jest-environment jsdom
+ */
 import { Site } from '../site.mjs';
 
 describe('Site Class', () => {
   let site;
   const setupDOMMocks = () => {
-    global.document = {
-      body: { appendChild: jest.fn() },
-      querySelector: jest.fn(sel => ({ classList: { remove: jest.fn(), add: jest.fn(), toggle: jest.fn(), contains: jest.fn() }, addEventListener: jest.fn() })),
-      querySelectorAll: jest.fn(sel => [{ classList: { remove: jest.fn(), add: jest.fn() }, textContent: '', style: {} }]),
-      activeElement: { classList: { contains: jest.fn(() => false), remove: jest.fn(), add: jest.fn() } }
-    };
-    global.document.createElement = jest.fn(tag => ({ className: '', id: '', innerHTML: '', textContent: '', appendChild: jest.fn(), addEventListener: jest.fn(), style: {}, type: '', onclick: null }));
-    global.document.getElementById = jest.fn(id => {
+    // Use jsdom's real document.body, only mock appendChild
+    jest.spyOn(document.body, 'appendChild').mockImplementation(jest.fn());
+    document.querySelector = jest.fn(sel => ({ classList: { remove: jest.fn(), add: jest.fn(), toggle: jest.fn(), contains: jest.fn() }, addEventListener: jest.fn() }));
+    document.querySelectorAll = jest.fn(sel => [{ classList: { remove: jest.fn(), add: jest.fn() }, textContent: '', style: {} }]);
+    Object.defineProperty(document, 'activeElement', {
+      configurable: true,
+      get: () => ({
+        classList: {
+          contains: jest.fn(() => false),
+          remove: jest.fn(),
+          add: jest.fn()
+        }
+      })
+    });
+    document.createElement = jest.fn(tag => {
+      const el = document.createElementNS('http://www.w3.org/1999/xhtml', tag);
+      el.className = '';
+      el.id = '';
+      el.innerHTML = '';
+      el.textContent = '';
+      el.appendChild = jest.fn();
+      el.addEventListener = jest.fn();
+      el.style = {};
+      el.type = '';
+      el.onclick = null;
+      return el;
+    });
+    document.getElementById = jest.fn(id => {
       if (id === 'modal') return null;
       if (id === 'userMenuToggle') return { style: {}, addEventListener: jest.fn(), classList: { remove: jest.fn(), add: jest.fn(), toggle: jest.fn(), contains: jest.fn() } };
       if (id === 'userMenuToggleIcon') return { classList: { remove: jest.fn(), add: jest.fn(), contains: jest.fn() } };
@@ -19,12 +43,11 @@ describe('Site Class', () => {
       if (id === 'modalBody') return {};
       return null;
     });
-    global.window = {
-      addEventListener: jest.fn(),
-      event: { target: { closest: jest.fn(() => ({ classList: { remove: jest.fn(), add: jest.fn() } })) } },
-      membersCurrentPage: 1
-    };
-    global.alert = jest.fn();
+    window.addEventListener = jest.fn();
+    window.event = { target: { closest: jest.fn(() => ({ classList: { remove: jest.fn(), add: jest.fn() } })) } };
+    window.membersCurrentPage = 1;
+    window.alert = jest.fn();
+    window.innerWidth = 800;
   };
   beforeEach(() => {
     setupDOMMocks();

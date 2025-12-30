@@ -1,3 +1,4 @@
+/** @jest-environment jsdom */
 // Unit tests for Workflows tab UI logic
 import { renderWorkflowsTable, openAddWorkflow } from '../workflows.ui.js';
 
@@ -19,6 +20,8 @@ describe('Workflows Tab UI', () => {
         `;
         window.alert = jest.fn();
         require('../workflows.ui.js');
+        // Manually dispatch DOMContentLoaded to attach handlers
+        document.dispatchEvent(new window.Event('DOMContentLoaded', { bubbles: true }));
     });
     it('import button triggers import handler', () => {
         document.getElementById('workflowsImportBtn').click();
@@ -31,7 +34,7 @@ describe('Workflows Tab UI', () => {
     });
 
     it('add button triggers openAddWorkflow', () => {
-        document.getElementById('workflowsAddBtn').onclick();
+        document.getElementById('workflowsAddBtn').click();
         expect(window.alert).toHaveBeenCalled();
     });
 
