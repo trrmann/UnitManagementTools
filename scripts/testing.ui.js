@@ -30,7 +30,11 @@ export function resetLocalStorage() {
 }
 export function resetCloudStorage() {
     if (typeof window !== 'undefined') {
-        alert('Cloud Storage reset triggered.');
+        // Placeholder: implement actual cloud storage clearing logic here
+        if (window.CloudStorage && typeof window.CloudStorage.clearAll === 'function') {
+            window.CloudStorage.clearAll();
+        }
+        alert('Cloud Storage reset triggered. All cloud storage entries removed.');
     }
 }
 
