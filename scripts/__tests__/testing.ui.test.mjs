@@ -16,6 +16,96 @@ class MockCacheStore {
 // --- Begin migrated test logic ---
 
 describe('Testing Tab UI', () => {
+                        describe('Users Import/Export Buttons', () => {
+                            beforeEach(() => {
+                                document.body.innerHTML = `
+                                    <button id="exportRawUsersBtn"></button>
+                                    <button id="importRawUsersBtn"></button>
+                                    <input type="file" id="importRawUsersInput">
+                                    <button id="exportDetailedUsersBtn"></button>
+                                    <button id="importDetailedUsersBtn"></button>
+                                    <input type="file" id="importDetailedUsersInput">
+                                `;
+                                window.alert = jest.fn();
+                                window.URL.createObjectURL = jest.fn(() => 'blob:url');
+                                window.URL.revokeObjectURL = jest.fn();
+                                document.createElement = jest.fn((tag) => {
+                                    if (tag === 'a') {
+                                        return { click: jest.fn(), set href(v) {}, set download(v) {}, remove() {} };
+                                    }
+                                    return document.createElement._orig(tag);
+                                });
+                                document.createElement._orig = document.createElement.bind(document);
+                                document.body.appendChild = jest.fn();
+                                document.body.removeChild = jest.fn();
+                            });
+
+                            afterEach(() => {
+                                jest.resetModules();
+                            });
+
+                            it('Export Raw Users button downloads users as JSON', () => {
+                                window.Users = { users: { foo: 'bar' } };
+                                const { attachTestingTabHandlers } = require('../testing.ui.js');
+                                attachTestingTabHandlers();
+                                document.getElementById('exportRawUsersBtn').dispatchEvent(new window.Event('click'));
+                                expect(window.URL.createObjectURL).toHaveBeenCalled();
+                            });
+
+                            it('Import Raw Users button imports users from JSON', () => {
+                                window.Users = { users: {} };
+                                const { attachTestingTabHandlers } = require('../testing.ui.js');
+                                attachTestingTabHandlers();
+                                // Simulate FileReader
+                                const origFileReader = window.FileReader;
+                                function MockFileReader() {
+                                    this.readAsText = function(f) { this.onload({ target: { result: '{ "foo": "bar" }' } }); };
+                                }
+                                window.FileReader = MockFileReader;
+                                const input = document.getElementById('importRawUsersInput');
+                                const file = new Blob([JSON.stringify({ foo: 'bar' })], { type: 'application/json' });
+                                file.name = 'test.json';
+                                Object.defineProperty(input, 'files', { value: [file] });
+                                input.dispatchEvent(new window.Event('change'));
+                                expect(window.Users.users).toEqual({ foo: 'bar' });
+                                expect(window.alert).toHaveBeenCalledWith('Raw users import successful.');
+                                window.FileReader = origFileReader;
+                            });
+
+                            it('Export Detailed Users button downloads detailed users as JSON', () => {
+                                const copyToJSON = jest.fn(() => ({ foo: 'detailed' }));
+                                window.Users = { constructor: { CopyToJSON: copyToJSON } };
+                                const { attachTestingTabHandlers } = require('../testing.ui.js');
+                                attachTestingTabHandlers();
+                                document.getElementById('exportDetailedUsersBtn').dispatchEvent(new window.Event('click'));
+                                expect(window.URL.createObjectURL).toHaveBeenCalled();
+                                expect(copyToJSON).toHaveBeenCalledWith(window.Users);
+                            });
+
+                            it('Import Detailed Users button imports detailed users from JSON', () => {
+                                const copyFromObject = jest.fn((dest, src) => { dest.users = src.users; dest._storageObj = src._storageObj; });
+                                window.Users = { users: {}, _storageObj: {}, constructor: { CopyFromObject: copyFromObject } };
+                                window.alert = jest.fn();
+                                const { attachTestingTabHandlers } = require('../testing.ui.js');
+                                attachTestingTabHandlers();
+                                // Simulate FileReader
+                                const origFileReader = window.FileReader;
+                                function MockFileReader() {
+                                    this.readAsText = function(f) { this.onload({ target: { result: '{ "users": { "foo": "bar" }, "_storageObj": { "type": "mockStorage" } }' } }); };
+                                }
+                                window.FileReader = MockFileReader;
+                                const input = document.getElementById('importDetailedUsersInput');
+                                const file = new Blob([JSON.stringify({ users: { foo: 'bar' }, _storageObj: { type: 'mockStorage' } })], { type: 'application/json' });
+                                file.name = 'test.json';
+                                Object.defineProperty(input, 'files', { value: [file] });
+                                input.dispatchEvent(new window.Event('change'));
+                                expect(copyFromObject).toHaveBeenCalled();
+                                expect(window.Users.users).toEqual({ foo: 'bar' });
+                                expect(window.Users._storageObj).toEqual({ type: 'mockStorage' });
+                                expect(window.alert).toHaveBeenCalledWith('Detailed users import successful.');
+                                window.FileReader = origFileReader;
+                            });
+                        });
                     describe('Members Import/Export Buttons', () => {
                         beforeEach(() => {
                             document.body.innerHTML = `

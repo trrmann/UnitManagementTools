@@ -40,6 +40,113 @@ export function resetCloudStorage() {
 
 // Only assign to window in browser context
 export function attachTestingTabHandlers() {
+                                            // --- Users ---
+                                            function getUsersInstance() {
+                                                if (window.Users && typeof window.Users === 'object') {
+                                                    return window.Users;
+                                                }
+                                                if (window.Storage && window.Storage.Users && typeof window.Storage.Users === 'object') {
+                                                    return window.Storage.Users;
+                                                }
+                                                return null;
+                                            }
+
+                                            const importRawUsersInput = document.getElementById('importRawUsersInput');
+                                            const exportRawUsersBtn = document.getElementById('exportRawUsersBtn');
+                                            const importRawUsersBtn = document.getElementById('importRawUsersBtn');
+                                            const exportDetailedUsersBtn = document.getElementById('exportDetailedUsersBtn');
+                                            const importDetailedUsersInput = document.getElementById('importDetailedUsersInput');
+                                            const importDetailedUsersBtn = document.getElementById('importDetailedUsersBtn');
+
+                                            // Export Raw: export users as-is
+                                            if (exportRawUsersBtn) exportRawUsersBtn.onclick = () => {
+                                                const usersInstance = getUsersInstance();
+                                                if (!usersInstance || !usersInstance.users) {
+                                                    alert('No users found to export.');
+                                                    return;
+                                                }
+                                                const blob = new Blob([JSON.stringify(usersInstance.users, null, 2)], { type: 'application/json' });
+                                                const url = URL.createObjectURL(blob);
+                                                const a = document.createElement('a');
+                                                a.href = url;
+                                                a.download = 'users.raw.json';
+                                                document.body.appendChild(a);
+                                                a.click();
+                                                document.body.removeChild(a);
+                                                URL.revokeObjectURL(url);
+                                            };
+
+                                            // Import Raw: import users as-is
+                                            if (importRawUsersInput) importRawUsersInput.onchange = (e) => {
+                                                const file = e.target.files[0];
+                                                if (!file) return;
+                                                const reader = new FileReader();
+                                                reader.onload = function(evt) {
+                                                    try {
+                                                        const data = JSON.parse(evt.target.result);
+                                                        const usersInstance = getUsersInstance();
+                                                        if (usersInstance) {
+                                                            usersInstance.users = data;
+                                                            alert('Raw users import successful.');
+                                                        } else {
+                                                            alert('No users instance found.');
+                                                        }
+                                                    } catch (err) {
+                                                        alert('Raw users import failed: ' + err.message);
+                                                    }
+                                                };
+                                                reader.readAsText(file);
+                                            };
+
+                                            // Export Detailed: export full users object (including storageObj)
+                                            if (exportDetailedUsersBtn) exportDetailedUsersBtn.onclick = () => {
+                                                const usersInstance = getUsersInstance();
+                                                if (!usersInstance) {
+                                                    alert('No users found to export.');
+                                                    return;
+                                                }
+                                                const detailed = (typeof usersInstance.constructor.CopyToJSON === 'function')
+                                                    ? usersInstance.constructor.CopyToJSON(usersInstance)
+                                                    : usersInstance;
+                                                const blob = new Blob([JSON.stringify(detailed, null, 2)], { type: 'application/json' });
+                                                const url = URL.createObjectURL(blob);
+                                                const a = document.createElement('a');
+                                                a.href = url;
+                                                a.download = 'users.detailed.json';
+                                                document.body.appendChild(a);
+                                                a.click();
+                                                document.body.removeChild(a);
+                                                URL.revokeObjectURL(url);
+                                            };
+
+                                            // Import Detailed: import full users object (including storageObj)
+                                            if (importDetailedUsersInput) importDetailedUsersInput.onchange = (e) => {
+                                                const file = e.target.files[0];
+                                                if (!file) return;
+                                                const reader = new FileReader();
+                                                reader.onload = function(evt) {
+                                                    try {
+                                                        const data = JSON.parse(evt.target.result);
+                                                        let usersInstance = getUsersInstance();
+                                                        if (usersInstance && typeof usersInstance.constructor.CopyFromObject === 'function') {
+                                                            usersInstance.constructor.CopyFromObject(usersInstance, data);
+                                                            alert('Detailed users import successful.');
+                                                        } else if (usersInstance) {
+                                                            Object.assign(usersInstance, data);
+                                                            alert('Detailed users import successful (fallback).');
+                                                        } else {
+                                                            alert('No users instance found.');
+                                                        }
+                                                    } catch (err) {
+                                                        alert('Detailed users import failed: ' + err.message);
+                                                    }
+                                                };
+                                                reader.readAsText(file);
+                                            };
+
+                                            // Button triggers file input for import
+                                            if (importRawUsersBtn && importRawUsersInput) importRawUsersBtn.onclick = () => importRawUsersInput.click();
+                                            if (importDetailedUsersBtn && importDetailedUsersInput) importDetailedUsersBtn.onclick = () => importDetailedUsersInput.click();
                                     // --- Members ---
                                     function getMembersInstance() {
                                         if (window.Members && typeof window.Members === 'object') {
