@@ -144,32 +144,47 @@ export class Roles {
         }
         // 1. Try to get from cache
         let rolesObj = await this.Callings.storage.Get(Roles.RolesFilename, { ...Roles.StorageConfig, cacheTtlMs: Roles.RolesCacheExpireMS });
+        let foundIn = null;
+        if (rolesObj !== undefined && rolesObj !== null) foundIn = 'cache';
         // 2. If not found, try session storage
-        if (!rolesObj) {
+        if (rolesObj === undefined || rolesObj === null) {
             rolesObj = await this.Callings.storage.Get(Roles.RolesFilename, { ...Roles.StorageConfig, cacheTtlMs: null, sessionTtlMs: Roles.RolesSessionExpireMS });
-            if (rolesObj && this.Callings.storage.Cache && typeof this.Callings.storage.Cache.Set === 'function') {
-                this.Callings.storage.Cache.Set(Roles.RolesFilename, rolesObj, Roles.RolesCacheExpireMS);
-            }
+            if (rolesObj !== undefined && rolesObj !== null) foundIn = 'session';
         }
         // 3. If still not found, try local storage
-        if (!rolesObj) {
+        if (rolesObj === undefined || rolesObj === null) {
             rolesObj = await this.Callings.storage.Get(Roles.RolesFilename, { ...Roles.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: Roles.RolesLocalExpireMS });
-            if (rolesObj) {
-                if (this.Callings.storage.SessionStorage && typeof this.Callings.storage.SessionStorage.Set === 'function') {
-                    this.Callings.storage.SessionStorage.Set(Roles.RolesFilename, rolesObj, Roles.RolesSessionExpireMS);
-                }
-                if (this.Callings.storage.Cache && typeof this.Callings.storage.Cache.Set === 'function') {
-                    this.Callings.storage.Cache.Set(Roles.RolesFilename, rolesObj, Roles.RolesCacheExpireMS);
-                }
-            }
+            if (rolesObj !== undefined && rolesObj !== null) foundIn = 'local';
         }
         // 4. If still not found, use GoogleDrive for read/write priority
-        if (!rolesObj && this.Callings.storage && typeof this.Callings.storage.Get === 'function' && this.Callings.storage.constructor.name === 'GoogleDrive') {
+        if ((rolesObj === undefined || rolesObj === null) && this.Callings.storage && typeof this.Callings.storage.Get === 'function' && this.Callings.storage.constructor.name === 'GoogleDrive') {
             rolesObj = await this.Callings.storage.Get(Roles.RolesFilename, { ...Roles.StorageConfig });
+            if (rolesObj !== undefined && rolesObj !== null) foundIn = 'google';
         }
         // 5. If still not found, fallback to GitHubDataObj for read-only
-        if (!rolesObj && this.Callings.storage && typeof this.Callings.storage._gitHubDataObj === 'object' && typeof this.Callings.storage._gitHubDataObj.fetchJsonFile === 'function') {
+        if ((rolesObj === undefined || rolesObj === null) && this.Callings.storage && typeof this.Callings.storage._gitHubDataObj === 'object' && typeof this.Callings.storage._gitHubDataObj.fetchJsonFile === 'function') {
             rolesObj = await this.Callings.storage._gitHubDataObj.fetchJsonFile(Roles.RolesFilename);
+            if (rolesObj !== undefined && rolesObj !== null) foundIn = 'github';
+        }
+
+        // Write to all storage tiers if missing
+        if (rolesObj !== undefined && rolesObj !== null) {
+            // Only write to Google Drive if config was found in GitHub or GoogleDrive tier (not if found in local/session/cache)
+            if (this.Callings.storage.constructor.name === 'GoogleDrive' && (foundIn === 'github' || foundIn === 'google') && typeof this.Callings.storage.Set === 'function') {
+                await this.Callings.storage.Set(Roles.RolesFilename, rolesObj, { ...Roles.StorageConfig });
+            }
+            // Write to local storage if not found there
+            if (foundIn !== 'local' && this.Callings.storage.LocalStorage && typeof this.Callings.storage.LocalStorage.Set === 'function') {
+                this.Callings.storage.LocalStorage.Set(Roles.RolesFilename, rolesObj, Roles.RolesLocalExpireMS);
+            }
+            // Write to session storage if not found there
+            if (foundIn !== 'session' && this.Callings.storage.SessionStorage && typeof this.Callings.storage.SessionStorage.Set === 'function') {
+                this.Callings.storage.SessionStorage.Set(Roles.RolesFilename, rolesObj, Roles.RolesSessionExpireMS);
+            }
+            // Write to cache if not found there
+            if (foundIn !== 'cache' && this.Callings.storage.Cache && typeof this.Callings.storage.Cache.Set === 'function') {
+                this.Callings.storage.Cache.Set(Roles.RolesFilename, rolesObj, Roles.RolesCacheExpireMS);
+            }
         }
         this.roles = rolesObj ? rolesObj : undefined;
     }
