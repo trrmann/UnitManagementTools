@@ -60,21 +60,34 @@ function buildConfigTree(flat) {
 function renderConfigTreeRows(node, tbody, path = [], depth = 0) {
     for (const key in node) {
         if (typeof node[key] === 'object' && node[key] !== null && !Array.isArray(node[key])) {
-            // Heading/subheading row
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td colspan="3" style="font-weight:bold;padding-left:${depth * 20}px;background:#f6f6f6;">${key}</td>`;
-            tbody.appendChild(tr);
-            renderConfigTreeRows(node[key], tbody, path.concat(key), depth + 1);
-        } else {
-            // Value row
+            // Heading/subheading row with action buttons (flex only for button group)
             const fullKey = path.concat(key).join('.');
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td style="padding-left:${depth * 20 + 10}px;">${key}</td>
-                <td>${node[key]}</td>
-                <td>
-                    <button class="config-edit-btn" data-key="${fullKey}">Edit</button>
-                    <button class="config-delete-btn" data-key="${fullKey}">Delete</button>
+                <td colspan="100" class="config-heading-cell" style="font-weight:bold;padding-left:${depth * 20}px;background:#f6f6f6;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:1em;flex-wrap:wrap;">
+                        <span style="vertical-align:middle;">${key}</span>
+                        <span class="config-heading-actions">
+                            <button class="config-edit-btn" data-key="${fullKey}" title="Edit heading">Edit</button>
+                            <button class="config-delete-btn" data-key="${fullKey}" title="Delete heading">Delete</button>
+                            <button class="config-add-btn" data-key="${fullKey}" title="Add entry">Add</button>
+                        </span>
+                    </div>
+                </td>`;
+            tbody.appendChild(tr);
+            renderConfigTreeRows(node[key], tbody, path.concat(key), depth + 1);
+        } else {
+            // Value row (buttons always in a row, never stack, never overflow)
+            const fullKey = path.concat(key).join('.');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="padding-left:${depth * 20 + 10}px;max-width:30vw;overflow-wrap:break-word;">${key}</td>
+                <td style="max-width:40vw;overflow-wrap:break-word;">${node[key]}</td>
+                <td style="min-width:110px;max-width:20vw;">
+                    <span class="config-row-actions" style="display:flex;flex-direction:row;gap:0.4em;flex-wrap:nowrap;overflow-x:auto;">
+                        <button class="config-edit-btn" data-key="${fullKey}">Edit</button>
+                        <button class="config-delete-btn" data-key="${fullKey}">Delete</button>
+                    </span>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -139,6 +152,12 @@ export async function renderConfigurationTable(storageObj) {
             btn.onclick = e => {
                 const key = e.target.getAttribute('data-key');
                 alert('Delete: ' + key);
+            };
+        });
+        tbody.querySelectorAll('.config-add-btn').forEach(btn => {
+            btn.onclick = e => {
+                const key = e.target.getAttribute('data-key');
+                alert('Add under: ' + key);
             };
         });
     } catch (err) {

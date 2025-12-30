@@ -1,9 +1,22 @@
+.configuration-table .config-row-actions {
+        display: inline-flex;
+        gap: 0.4em;
+        flex-wrap: wrap;
+        max-width: 100%;
+}
+
+@media (max-width: 600px) {
+    .configuration-table .config-row-actions {
+        gap: 0.2em;
+    }
+}
 /* Configuration Table Styles */
+/* Reduced scroll and padding for configuration table */
 .configuration-table {
     width: 100%;
     max-width: 900px;
     margin: 2em auto 2em auto;
-    padding: 1.5em 2em;
+    padding: 1em 0.5em;
     background: #fff;
     border-radius: 1em;
     box-shadow: 0 2px 12px 0 rgba(60,80,120,0.07);
@@ -13,11 +26,11 @@
     width: 100%;
     border-collapse: separate;
     border-spacing: 0 0.5em;
-    min-width: 600px;
+    min-width: 400px;
 }
 .configuration-table th, .configuration-table td {
-    padding: 0.8em 1em;
-    font-size: 1.05em;
+    padding: 0.6em 0.7em;
+    font-size: 1.03em;
     text-align: left;
 }
 .configuration-table th {
@@ -49,11 +62,34 @@
 }
 /* Heading/subheading row style */
 .configuration-table tr > td[colspan="3"] {
-    font-size: 1.08em;
-    font-weight: bold;
+    font-size: 1.10em;
+    font-weight: 600;
     background: #f0f4fa;
     color: #234;
     border-radius: 0.5em;
-    padding-top: 1.2em;
-    padding-bottom: 0.6em;
+    padding: 1em 1em 0.7em 0.7em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #e3e8f0;
+    margin-bottom: 0.2em;
+    gap: 1em;
+}
+.configuration-table .config-heading-actions {
+        display: flex;
+        flex-direction: row;
+        gap: 0.4em;
+}
+
+@media (max-width: 600px) {
+    .configuration-table .config-heading-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.3em;
+    }
+}
+.configuration-table .config-heading-actions button {
+    margin: 0;
+    padding: 0.25em 0.7em;
+    font-size: 0.97em;
 }
