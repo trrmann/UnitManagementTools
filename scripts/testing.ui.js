@@ -40,6 +40,113 @@ export function resetCloudStorage() {
 
 // Only assign to window in browser context
 export function attachTestingTabHandlers() {
+                    // --- Callings ---
+                    function getCallingsInstance() {
+                        if (window.Callings && typeof window.Callings === 'object') {
+                            return window.Callings;
+                        }
+                        if (window.Storage && window.Storage.Callings && typeof window.Storage.Callings === 'object') {
+                            return window.Storage.Callings;
+                        }
+                        return null;
+                    }
+
+                    const importRawCallingsInput = document.getElementById('importRawCallingsInput');
+                    const exportRawCallingsBtn = document.getElementById('exportRawCallingsBtn');
+                    const importRawCallingsBtn = document.getElementById('importRawCallingsBtn');
+                    const exportDetailedCallingsBtn = document.getElementById('exportDetailedCallingsBtn');
+                    const importDetailedCallingsInput = document.getElementById('importDetailedCallingsInput');
+                    const importDetailedCallingsBtn = document.getElementById('importDetailedCallingsBtn');
+
+                    // Export Raw: export callings as-is
+                    if (exportRawCallingsBtn) exportRawCallingsBtn.onclick = () => {
+                        const callingsInstance = getCallingsInstance();
+                        if (!callingsInstance || !callingsInstance.callings) {
+                            alert('No callings found to export.');
+                            return;
+                        }
+                        const blob = new Blob([JSON.stringify(callingsInstance.callings, null, 2)], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'callings.raw.json';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    };
+
+                    // Import Raw: import callings as-is
+                    if (importRawCallingsInput) importRawCallingsInput.onchange = (e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = function(evt) {
+                            try {
+                                const data = JSON.parse(evt.target.result);
+                                const callingsInstance = getCallingsInstance();
+                                if (callingsInstance) {
+                                    callingsInstance.callings = data;
+                                    alert('Raw callings import successful.');
+                                } else {
+                                    alert('No callings instance found.');
+                                }
+                            } catch (err) {
+                                alert('Raw callings import failed: ' + err.message);
+                            }
+                        };
+                        reader.readAsText(file);
+                    };
+
+                    // Export Detailed: export full callings object (including storageObj)
+                    if (exportDetailedCallingsBtn) exportDetailedCallingsBtn.onclick = () => {
+                        const callingsInstance = getCallingsInstance();
+                        if (!callingsInstance) {
+                            alert('No callings found to export.');
+                            return;
+                        }
+                        const detailed = (typeof callingsInstance.constructor.CopyToJSON === 'function')
+                            ? callingsInstance.constructor.CopyToJSON(callingsInstance)
+                            : callingsInstance;
+                        const blob = new Blob([JSON.stringify(detailed, null, 2)], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'callings.detailed.json';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    };
+
+                    // Import Detailed: import full callings object (including storageObj)
+                    if (importDetailedCallingsInput) importDetailedCallingsInput.onchange = (e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = function(evt) {
+                            try {
+                                const data = JSON.parse(evt.target.result);
+                                let callingsInstance = getCallingsInstance();
+                                if (callingsInstance && typeof callingsInstance.constructor.CopyFromObject === 'function') {
+                                    callingsInstance.constructor.CopyFromObject(callingsInstance, data);
+                                    alert('Detailed callings import successful.');
+                                } else if (callingsInstance) {
+                                    Object.assign(callingsInstance, data);
+                                    alert('Detailed callings import successful (fallback).');
+                                } else {
+                                    alert('No callings instance found.');
+                                }
+                            } catch (err) {
+                                alert('Detailed callings import failed: ' + err.message);
+                            }
+                        };
+                        reader.readAsText(file);
+                    };
+
+                    // Button triggers file input for import
+                    if (importRawCallingsBtn && importRawCallingsInput) importRawCallingsBtn.onclick = () => importRawCallingsInput.click();
+                    if (importDetailedCallingsBtn && importDetailedCallingsInput) importDetailedCallingsBtn.onclick = () => importDetailedCallingsInput.click();
             // --- Organization ---
             function getOrgInstance() {
                 if (window.Organization && typeof window.Organization === 'object') {
