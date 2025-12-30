@@ -58,4 +58,60 @@ if (typeof window !== 'undefined') {
     window.deleteCalling = function(id) {
         alert('Delete calling: ' + id);
     };
+
+    // --- Toolbar Button Handlers ---
+    window.addEventListener('DOMContentLoaded', () => {
+        const importBtn = document.getElementById('callingsImportBtn');
+        const exportBtn = document.getElementById('callingsExportBtn');
+        const syncBtn = document.getElementById('callingsSyncBtn');
+        const searchInput = document.getElementById('callingsSearch');
+        let allCallings = [];
+
+        // Fetch and store all callings for search
+        async function fetchAndRenderCallings() {
+            const callingsInstance = new Callings({ _storageObj: window.Storage });
+            if (typeof callingsInstance.Fetch === 'function') {
+                await callingsInstance.Fetch();
+            }
+            allCallings = callingsInstance.CallingsDetails || [];
+            renderCallingsTable(allCallings);
+        }
+
+        // Initial load
+        if (document.getElementById('callings')) {
+            fetchAndRenderCallings();
+        }
+
+        // Import
+        if (importBtn) {
+            importBtn.onclick = () => {
+                alert('Import Callings functionality goes here.');
+            };
+        }
+        // Export
+        if (exportBtn) {
+            exportBtn.onclick = () => {
+                alert('Export Callings functionality goes here.');
+            };
+        }
+        // Sync
+        if (syncBtn) {
+            syncBtn.onclick = async () => {
+                await fetchAndRenderCallings();
+                alert('Callings synced!');
+            };
+        }
+        // Search
+        if (searchInput) {
+            searchInput.addEventListener('input', e => {
+                const val = e.target.value.toLowerCase();
+                const filtered = allCallings.filter(calling =>
+                    (calling.name || calling.calling || '').toLowerCase().includes(val) ||
+                    (calling.member || '').toLowerCase().includes(val) ||
+                    (calling.status || '').toLowerCase().includes(val)
+                );
+                renderCallingsTable(filtered);
+            });
+        }
+    });
 }
