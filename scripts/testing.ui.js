@@ -1,32 +1,49 @@
+import { CacheStore } from '../modules/cacheStore.mjs';
+
 // Testing tab UI logic
-
-
 export function resetCache() {
-    alert('Cache reset triggered.');
+    // Remove all cache entries regardless of expire time
+    if (typeof window !== 'undefined') {
+        if (window.Storage && window.Storage.Cache && typeof window.Storage.Cache.clearAll === 'function') {
+            window.Storage.Cache.clearAll();
+        } else if (window.CacheStore && typeof window.CacheStore.clearAll === 'function') {
+            window.CacheStore.clearAll();
+        }
+        alert('Cache reset triggered.');
+    }
 }
 export function resetSessionStorage() {
-    alert('Session Storage reset triggered.');
+    if (typeof window !== 'undefined') {
+        alert('Session Storage reset triggered.');
+    }
 }
 export function resetLocalStorage() {
-    alert('Local Storage reset triggered.');
+    if (typeof window !== 'undefined') {
+        alert('Local Storage reset triggered.');
+    }
 }
 export function resetCloudStorage() {
-    alert('Cloud Storage reset triggered.');
+    if (typeof window !== 'undefined') {
+        alert('Cloud Storage reset triggered.');
+    }
 }
 
-window.resetCache = resetCache;
-window.resetSessionStorage = resetSessionStorage;
-window.resetLocalStorage = resetLocalStorage;
-window.resetCloudStorage = resetCloudStorage;
+// Only assign to window in browser context
+if (typeof window !== 'undefined') {
+    window.resetCache = resetCache;
+    window.resetSessionStorage = resetSessionStorage;
+    window.resetLocalStorage = resetLocalStorage;
+    window.resetCloudStorage = resetCloudStorage;
 
-// Attach button handlers on DOMContentLoaded
-window.addEventListener('DOMContentLoaded', () => {
-    const resetCacheBtn = document.getElementById('resetCacheBtn');
-    const resetSessionStorageBtn = document.getElementById('resetSessionStorageBtn');
-    const resetLocalStorageBtn = document.getElementById('resetLocalStorageBtn');
-    const resetCloudStorageBtn = document.getElementById('resetCloudStorageBtn');
-    if (resetCacheBtn) resetCacheBtn.onclick = resetCache;
-    if (resetSessionStorageBtn) resetSessionStorageBtn.onclick = resetSessionStorage;
-    if (resetLocalStorageBtn) resetLocalStorageBtn.onclick = resetLocalStorage;
-    if (resetCloudStorageBtn) resetCloudStorageBtn.onclick = resetCloudStorage;
-});
+    // Attach button handlers on DOMContentLoaded
+    window.addEventListener('DOMContentLoaded', () => {
+        const resetCacheBtn = document.getElementById('resetCacheBtn');
+        const resetSessionStorageBtn = document.getElementById('resetSessionStorageBtn');
+        const resetLocalStorageBtn = document.getElementById('resetLocalStorageBtn');
+        const resetCloudStorageBtn = document.getElementById('resetCloudStorageBtn');
+        if (resetCacheBtn) resetCacheBtn.onclick = resetCache;
+        if (resetSessionStorageBtn) resetSessionStorageBtn.onclick = resetSessionStorage;
+        if (resetLocalStorageBtn) resetLocalStorageBtn.onclick = resetLocalStorage;
+        if (resetCloudStorageBtn) resetCloudStorageBtn.onclick = resetCloudStorage;
+    });
+}

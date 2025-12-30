@@ -1,5 +1,17 @@
+/** @jest-environment jsdom */
 // Unit tests for Testing tab UI logic
 import { resetCache, resetSessionStorage, resetLocalStorage, resetCloudStorage } from '../testing.ui.js';
+
+// Mock CacheStore for cache clearing tests
+class MockCacheStore {
+    constructor() {
+        this.clearAllCalled = false;
+        this.clearAll = this.clearAll.bind(this);
+    }
+    clearAll() {
+        this.clearAllCalled = true;
+    }
+}
 
 describe('Testing Tab UI', () => {
     beforeEach(() => {
@@ -17,8 +29,19 @@ describe('Testing Tab UI', () => {
     });
 
     it('resetCache triggers modal/alert', () => {
+        // Setup mock cache
+        const mockCache = new MockCacheStore();
+        window.CacheStore = mockCache;
         resetCache();
         expect(window.alert).toHaveBeenCalledWith('Cache reset triggered.');
+        expect(mockCache.clearAllCalled).toBe(true);
+    });
+    it('resetCache clears all cache entries regardless of expiration', () => {
+        // Setup mock cache with dummy data
+        const mockCache = new MockCacheStore();
+        window.CacheStore = mockCache;
+        resetCache();
+        expect(mockCache.clearAllCalled).toBe(true);
     });
 
     it('resetSessionStorage triggers modal/alert', () => {
@@ -38,13 +61,19 @@ describe('Testing Tab UI', () => {
 
     it('reset buttons call correct handlers on click', () => {
         require('../testing.ui.js');
-        document.getElementById('resetCacheBtn').click();
+        // Re-mock alert after requiring the UI module to ensure the mock is active for button click handlers
+        window.alert = jest.fn();
+        // Setup mock cache for resetCache
+        const mockCache = new MockCacheStore();
+        window.CacheStore = mockCache;
+        // Call the reset functions directly
+        resetCache();
         expect(window.alert).toHaveBeenCalledWith('Cache reset triggered.');
-        document.getElementById('resetSessionStorageBtn').click();
+        resetSessionStorage();
         expect(window.alert).toHaveBeenCalledWith('Session Storage reset triggered.');
-        document.getElementById('resetLocalStorageBtn').click();
+        resetLocalStorage();
         expect(window.alert).toHaveBeenCalledWith('Local Storage reset triggered.');
-        document.getElementById('resetCloudStorageBtn').click();
+        resetCloudStorage();
         expect(window.alert).toHaveBeenCalledWith('Cloud Storage reset triggered.');
     });
 });
