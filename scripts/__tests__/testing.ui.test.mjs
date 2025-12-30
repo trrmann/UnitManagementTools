@@ -16,6 +16,104 @@ class MockCacheStore {
 // --- Begin migrated test logic ---
 
 describe('Testing Tab UI', () => {
+                                describe('Workflows Import/Export Buttons (Mock)', () => {
+                                    beforeEach(() => {
+                                        document.body.innerHTML = `
+                                            <button id="exportRawWorkflowsBtn"></button>
+                                            <button id="importRawWorkflowsBtn"></button>
+                                            <input type="file" id="importRawWorkflowsInput">
+                                            <button id="exportDetailedWorkflowsBtn"></button>
+                                            <button id="importDetailedWorkflowsBtn"></button>
+                                            <input type="file" id="importDetailedWorkflowsInput">
+                                        `;
+                                        window.alert = jest.fn();
+                                    });
+
+                                    afterEach(() => {
+                                        jest.resetModules();
+                                    });
+
+                                    it('Export Raw Workflows button triggers mock alert', () => {
+                                        const { attachTestingTabHandlers } = require('../testing.ui.js');
+                                        attachTestingTabHandlers();
+                                        document.getElementById('exportRawWorkflowsBtn').dispatchEvent(new window.Event('click'));
+                                        expect(window.alert).toHaveBeenCalledWith('Mock: Export Raw Workflows triggered.');
+                                    });
+
+                                    it('Import Raw Workflows input triggers mock alert', () => {
+                                        const { attachTestingTabHandlers } = require('../testing.ui.js');
+                                        attachTestingTabHandlers();
+                                        document.getElementById('importRawWorkflowsInput').dispatchEvent(new window.Event('change'));
+                                        expect(window.alert).toHaveBeenCalledWith('Mock: Import Raw Workflows triggered.');
+                                    });
+
+                                    it('Export Detailed Workflows button triggers mock alert', () => {
+                                        const { attachTestingTabHandlers } = require('../testing.ui.js');
+                                        attachTestingTabHandlers();
+                                        document.getElementById('exportDetailedWorkflowsBtn').dispatchEvent(new window.Event('click'));
+                                        expect(window.alert).toHaveBeenCalledWith('Mock: Export Detailed Workflows triggered.');
+                                    });
+
+                                    it('Import Detailed Workflows input triggers mock alert', () => {
+                                        const { attachTestingTabHandlers } = require('../testing.ui.js');
+                                        attachTestingTabHandlers();
+                                        document.getElementById('importDetailedWorkflowsInput').dispatchEvent(new window.Event('change'));
+                                        expect(window.alert).toHaveBeenCalledWith('Mock: Import Detailed Workflows triggered.');
+                                    });
+                                });
+                            describe('Workflows Import/Export Buttons (Mock)', () => {
+                                beforeEach(() => {
+                                    document.body.innerHTML = `
+                                        <button id="exportRawWorkflowsBtn"></button>
+                                        <button id="importRawWorkflowsBtn"></button>
+                                        <input type="file" id="importRawWorkflowsInput">
+                                        <button id="exportDetailedWorkflowsBtn"></button>
+                                        <button id="importDetailedWorkflowsBtn"></button>
+                                        <input type="file" id="importDetailedWorkflowsInput">
+                                    `;
+                                    window.alert = jest.fn();
+                                });
+
+                                afterEach(() => {
+                                    jest.resetModules();
+                                });
+
+                                it('Export Raw Workflows button triggers mock alert', () => {
+                                    const { attachTestingTabHandlers } = require('../testing.ui.js');
+                                    attachTestingTabHandlers();
+                                    document.getElementById('exportRawWorkflowsBtn').dispatchEvent(new window.Event('click'));
+                                    expect(window.alert).toHaveBeenCalledWith('Mock: Export Raw Workflows triggered.');
+                                });
+
+                                it('Import Raw Workflows button triggers mock alert', () => {
+                                    const { attachTestingTabHandlers } = require('../testing.ui.js');
+                                    attachTestingTabHandlers();
+                                    const input = document.getElementById('importRawWorkflowsInput');
+                                    const file = new Blob([JSON.stringify({ foo: 'bar' })], { type: 'application/json' });
+                                    file.name = 'test.json';
+                                    Object.defineProperty(input, 'files', { value: [file] });
+                                    input.dispatchEvent(new window.Event('change'));
+                                    expect(window.alert).toHaveBeenCalledWith('Mock: Import Raw Workflows triggered.');
+                                });
+
+                                it('Export Detailed Workflows button triggers mock alert', () => {
+                                    const { attachTestingTabHandlers } = require('../testing.ui.js');
+                                    attachTestingTabHandlers();
+                                    document.getElementById('exportDetailedWorkflowsBtn').dispatchEvent(new window.Event('click'));
+                                    expect(window.alert).toHaveBeenCalledWith('Mock: Export Detailed Workflows triggered.');
+                                });
+
+                                it('Import Detailed Workflows button triggers mock alert', () => {
+                                    const { attachTestingTabHandlers } = require('../testing.ui.js');
+                                    attachTestingTabHandlers();
+                                    const input = document.getElementById('importDetailedWorkflowsInput');
+                                    const file = new Blob([JSON.stringify({ foo: 'bar' })], { type: 'application/json' });
+                                    file.name = 'test.json';
+                                    Object.defineProperty(input, 'files', { value: [file] });
+                                    input.dispatchEvent(new window.Event('change'));
+                                    expect(window.alert).toHaveBeenCalledWith('Mock: Import Detailed Workflows triggered.');
+                                });
+                            });
                         describe('Users Import/Export Buttons', () => {
                             beforeEach(() => {
                                 document.body.innerHTML = `

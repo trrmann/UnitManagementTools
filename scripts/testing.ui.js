@@ -40,6 +40,50 @@ export function resetCloudStorage() {
 
 // Only assign to window in browser context
 export function attachTestingTabHandlers() {
+                                                            // --- Workflows (Mock, unique vars) ---
+                                                            const wf_importRawInput = document.getElementById('importRawWorkflowsInput');
+                                                            const wf_exportRawBtn = document.getElementById('exportRawWorkflowsBtn');
+                                                            const wf_importRawBtn = document.getElementById('importRawWorkflowsBtn');
+                                                            const wf_exportDetailedBtn = document.getElementById('exportDetailedWorkflowsBtn');
+                                                            const wf_importDetailedInput = document.getElementById('importDetailedWorkflowsInput');
+                                                            const wf_importDetailedBtn = document.getElementById('importDetailedWorkflowsBtn');
+
+                                                            if (wf_exportRawBtn) wf_exportRawBtn.onclick = () => {
+                                                                alert('Mock: Export Raw Workflows triggered.');
+                                                            };
+                                                            if (wf_importRawInput) wf_importRawInput.onchange = () => {
+                                                                alert('Mock: Import Raw Workflows triggered.');
+                                                            };
+                                                            if (wf_exportDetailedBtn) wf_exportDetailedBtn.onclick = () => {
+                                                                alert('Mock: Export Detailed Workflows triggered.');
+                                                            };
+                                                            if (wf_importDetailedInput) wf_importDetailedInput.onchange = () => {
+                                                                alert('Mock: Import Detailed Workflows triggered.');
+                                                            };
+                                                            if (wf_importRawBtn && wf_importRawInput) wf_importRawBtn.onclick = () => wf_importRawInput.click();
+                                                            if (wf_importDetailedBtn && wf_importDetailedInput) wf_importDetailedBtn.onclick = () => wf_importDetailedInput.click();
+                                                    // --- Workflows (Mock) ---
+                                                    const importRawWorkflowsInput = document.getElementById('importRawWorkflowsInput');
+                                                    const exportRawWorkflowsBtn = document.getElementById('exportRawWorkflowsBtn');
+                                                    const importRawWorkflowsBtn = document.getElementById('importRawWorkflowsBtn');
+                                                    const exportDetailedWorkflowsBtn = document.getElementById('exportDetailedWorkflowsBtn');
+                                                    const importDetailedWorkflowsInput = document.getElementById('importDetailedWorkflowsInput');
+                                                    const importDetailedWorkflowsBtn = document.getElementById('importDetailedWorkflowsBtn');
+
+                                                    if (exportRawWorkflowsBtn) exportRawWorkflowsBtn.onclick = () => {
+                                                        alert('Mock: Export Raw Workflows triggered.');
+                                                    };
+                                                    if (importRawWorkflowsInput) importRawWorkflowsInput.onchange = (e) => {
+                                                        alert('Mock: Import Raw Workflows triggered.');
+                                                    };
+                                                    if (exportDetailedWorkflowsBtn) exportDetailedWorkflowsBtn.onclick = () => {
+                                                        alert('Mock: Export Detailed Workflows triggered.');
+                                                    };
+                                                    if (importDetailedWorkflowsInput) importDetailedWorkflowsInput.onchange = (e) => {
+                                                        alert('Mock: Import Detailed Workflows triggered.');
+                                                    };
+                                                    if (importRawWorkflowsBtn && importRawWorkflowsInput) importRawWorkflowsBtn.onclick = () => importRawWorkflowsInput.click();
+                                                    if (importDetailedWorkflowsBtn && importDetailedWorkflowsInput) importDetailedWorkflowsBtn.onclick = () => importDetailedWorkflowsInput.click();
                                             // --- Users ---
                                             function getUsersInstance() {
                                                 if (window.Users && typeof window.Users === 'object') {
