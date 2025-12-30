@@ -26,14 +26,13 @@ export async function renderOrganizationTable(storageObj) {
     tbody.innerHTML = '';
     let rowIndex = 0;
     for (const stake of stakes) {
-        // Stake row
+        // Stake header row: name (with unit number label) and add unit button, spanning all columns
         const stakeTr = document.createElement('tr');
         stakeTr.innerHTML = `
-            <td colspan="3" style="font-weight:bold; background:#e3e8f0; color:#234; font-size:1.1em; border-top:2px solid #bcd;">${stake.name} <span style="font-weight:normal; font-size:0.95em; color:#789;">(Stake)</span></td>
-            <td style="background:#e3e8f0; text-align:right;">
-                <button class="edit-stake-btn" data-stake="${stake.unitNumber}" style="font-size:0.98em; margin-right:0.5em;">Edit Stake</button>
-                <button class="delete-stake-btn" data-stake="${stake.unitNumber}" style="font-size:0.98em; margin-right:0.5em;">Delete Stake</button>
-                <button class="add-unit-btn" data-stake="${stake.unitNumber}" style="font-size:0.98em; padding:0.4em 1em;">Add Unit</button>
+            <td colspan="4" style="font-weight:bold; background:#e3e8f0; color:#234; font-size:1.1em; border-top:2px solid #bcd;">
+                ${stake.name} <span style="font-weight:normal; font-size:0.95em; color:#789;">(Stake)</span>
+                <span style="font-weight:normal; font-size:0.95em; color:#789; margin-left:1em;">Unit Number: ${stake.unitNumber}</span>
+                <button class="add-unit-btn" data-stake="${stake.unitNumber}" style="font-size:0.98em; padding:0.4em 1em; float:right;">Add Unit</button>
             </td>
         `;
         tbody.appendChild(stakeTr);
@@ -45,7 +44,7 @@ export async function renderOrganizationTable(storageObj) {
                 const bg = rowIndex % 2 === 0 ? '#f9fbfd' : '#f3f6fa';
                 tr.innerHTML = `
                     <td style="padding-left:2.5em; background:${bg};">${unit.name}</td>
-                    <td style="background:${bg}; color:#567;">${stake.name}</td>
+                    <td style="background:${bg}; color:#567;">${unit.unitNumber}</td>
                     <td style="background:${bg}; text-transform:capitalize; color:#468;">${unit.type}</td>
                     <td style="background:${bg};">
                         <button class="org-edit-btn" data-unit="${unit.unitNumber}" style="margin-right:0.5em;">Edit</button>

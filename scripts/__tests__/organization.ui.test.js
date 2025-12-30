@@ -45,17 +45,24 @@ describe('Organization Tab UI', () => {
         `;
     });
 
-    it('renders hierarchical organization table with Edit/Delete/Add Unit buttons', async () => {
+    it('renders hierarchical organization table with stake unit number in header and no stake number column in data rows', async () => {
         await renderOrganizationTable();
         const rows = document.querySelectorAll('#organizationBody tr');
-        // Stake heading
+        // Stake heading row
         expect(rows[0].innerHTML).toContain('Stake');
-        // Add Unit button
-        expect(rows[0].querySelector('.add-unit-btn')).toBeTruthy();
+        expect(rows[0].innerHTML).toContain('add-unit-btn');
+        expect(rows[0].innerHTML).toContain('Add Unit');
+        expect(rows[0].innerHTML).toContain('Unit Number: 2'); // stake unit number in header
         // Child units
         expect(rows[1].innerHTML).toContain('Ward');
+        expect(rows[1].innerHTML).toContain('3');
+        expect(rows[1].innerHTML).toContain('ward');
+        expect(rows[1].innerHTML).not.toContain('Unit Number: 2'); // no stake number in data row
         expect(rows[2].innerHTML).toContain('Branch');
-        // Edit/Delete buttons
+        expect(rows[2].innerHTML).toContain('4');
+        expect(rows[2].innerHTML).toContain('branch');
+        expect(rows[2].innerHTML).not.toContain('Unit Number: 2');
+        // Edit/Delete buttons for units
         expect(rows[1].querySelector('.org-edit-btn')).toBeTruthy();
         expect(rows[1].querySelector('.org-delete-btn')).toBeTruthy();
         expect(rows[2].querySelector('.org-edit-btn')).toBeTruthy();
@@ -90,15 +97,13 @@ describe('Organization Tab UI', () => {
         expect(tbody.innerHTML).toContain('No organization data found.');
     });
 
-    it('Edit/Delete/Add Unit buttons trigger alerts', async () => {
+    it('Edit/Delete buttons for units trigger alerts', async () => {
         window.alert = jest.fn();
         await renderOrganizationTable();
         document.querySelector('.org-edit-btn').click();
         expect(window.alert).toHaveBeenCalledWith(expect.stringMatching(/Edit unit/));
         document.querySelector('.org-delete-btn').click();
         expect(window.alert).toHaveBeenCalledWith(expect.stringMatching(/Delete unit/));
-        document.querySelector('.add-unit-btn').click();
-        expect(window.alert).toHaveBeenCalledWith(expect.stringMatching(/Add unit/));
     });
 
     it('openEditOrganization triggers modal/alert', () => {
