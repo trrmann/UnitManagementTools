@@ -111,10 +111,10 @@ import { Site } from "../modules/site.mjs";
 // DEBUG: Render configuration table on page load to verify function is called
 window.addEventListener('DOMContentLoaded', () => {
     if (window.Storage) {
-        // console.log('[DEBUG] Calling renderConfigurationTable on page load');
         renderConfigurationTable(window.Storage);
-    } else {
-        // console.warn('[DEBUG] window.Storage not set on DOMContentLoaded');
+        if (typeof window.renderOrganizationTable === 'function') {
+            window.renderOrganizationTable(window.Storage);
+        }
     }
 });
 

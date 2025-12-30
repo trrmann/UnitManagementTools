@@ -228,10 +228,11 @@
             <!-- Organization Section -->
             <section id="organization" class="section">
                 <h2>Organization Structure</h2>
-                <div class="section-toolbar">
-                    <button class="btn-primary organization-EditOrg" onclick="openEditOrganization()">
-                        <i class="fas fa-edit"></i> Edit Organization
-                    </button>
+                <div class="section-toolbar organization-toolbar" style="margin-bottom: 1em; display: flex; flex-wrap: wrap; gap: 0.5em; align-items: center;">
+                    <input type="text" id="organizationSearch" placeholder="Search organization..." style="flex:1; min-width:200px; max-width:300px;" />
+                    <button class="btn-secondary" id="orgImportBtn">Import</button>
+                    <button class="btn-secondary" id="orgExportBtn">Export</button>
+                    <button class="btn-primary" id="orgAddBtn">Add</button>
                 </div>
                 <div id="organizationTable" class="organization-table">
                     <table>
