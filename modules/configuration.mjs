@@ -80,32 +80,47 @@ export class Configuration {
     async Fetch() {
         // 1. Try to get from cache
         let configObj = await this._storageObj.Get(Configuration.ConfigFilename, { ...Configuration.StorageConfig, cacheTtlMs: Configuration.ConfigCacheExpireMS });
+        let foundIn = null;
+        if (configObj !== undefined) foundIn = 'cache';
         // 2. If not found, try session storage
         if (configObj === undefined) {
             configObj = await this._storageObj.Get(Configuration.ConfigFilename, { ...Configuration.StorageConfig, cacheTtlMs: null, sessionTtlMs: Configuration.ConfigSessionExpireMS });
-            if (configObj !== undefined && this._storageObj.Cache && typeof this._storageObj.Cache.Set === 'function') {
-                this._storageObj.Cache.Set(Configuration.ConfigFilename, configObj, Configuration.ConfigCacheExpireMS);
-            }
+            if (configObj !== undefined) foundIn = 'session';
         }
         // 3. If still not found, try local storage
         if (configObj === undefined) {
             configObj = await this._storageObj.Get(Configuration.ConfigFilename, { ...Configuration.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: Configuration.ConfigLocalExpireMS });
-            if (configObj !== undefined) {
-                if (this._storageObj.SessionStorage && typeof this._storageObj.SessionStorage.Set === 'function') {
-                    this._storageObj.SessionStorage.Set(Configuration.ConfigFilename, configObj, Configuration.ConfigSessionExpireMS);
-                }
-                if (this._storageObj.Cache && typeof this._storageObj.Cache.Set === 'function') {
-                    this._storageObj.Cache.Set(Configuration.ConfigFilename, configObj, Configuration.ConfigCacheExpireMS);
-                }
-            }
+            if (configObj !== undefined) foundIn = 'local';
         }
         // 4. If still not found, use GoogleDrive for read/write priority
         if (configObj === undefined && this._storageObj && typeof this._storageObj.Get === 'function' && this._storageObj.constructor.name === 'GoogleDrive') {
             configObj = await this._storageObj.Get(Configuration.ConfigFilename, { ...Configuration.StorageConfig });
+            if (configObj !== undefined) foundIn = 'google';
         }
         // 5. If still not found, fallback to GitHubDataObj for read-only
         if (configObj === undefined && this._storageObj && typeof this._storageObj._gitHubDataObj === 'object' && typeof this._storageObj._gitHubDataObj.fetchJsonFile === 'function') {
             configObj = await this._storageObj._gitHubDataObj.fetchJsonFile(Configuration.ConfigFilename);
+            if (configObj !== undefined) foundIn = 'github';
+        }
+
+        // Write to all storage tiers if missing
+        if (configObj !== undefined) {
+            // Only write to Google Drive if config was found in GitHub or GoogleDrive tier (not if found in local/session/cache)
+            if (this._storageObj.constructor.name === 'GoogleDrive' && (foundIn === 'github' || foundIn === 'google') && typeof this._storageObj.Set === 'function') {
+                await this._storageObj.Set(Configuration.ConfigFilename, configObj, { ...Configuration.StorageConfig });
+            }
+            // Write to local storage if not found there
+            if (foundIn !== 'local' && this._storageObj.LocalStorage && typeof this._storageObj.LocalStorage.Set === 'function') {
+                this._storageObj.LocalStorage.Set(Configuration.ConfigFilename, configObj, Configuration.ConfigLocalExpireMS);
+            }
+            // Write to session storage if not found there
+            if (foundIn !== 'session' && this._storageObj.SessionStorage && typeof this._storageObj.SessionStorage.Set === 'function') {
+                this._storageObj.SessionStorage.Set(Configuration.ConfigFilename, configObj, Configuration.ConfigSessionExpireMS);
+            }
+            // Write to cache if not found there
+            if (foundIn !== 'cache' && this._storageObj.Cache && typeof this._storageObj.Cache.Set === 'function') {
+                this._storageObj.Cache.Set(Configuration.ConfigFilename, configObj, Configuration.ConfigCacheExpireMS);
+            }
         }
         this.configuration = configObj !== undefined ? configObj : undefined;
     }
