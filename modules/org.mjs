@@ -91,32 +91,47 @@ export class Org {
     async Fetch() {
         // 1. Try to get from cache
         let orgObj = await this.Storage.Get(Org.OrgFilename, { ...Org.StorageConfig, cacheTtlMs: Org.OrgCacheExpireMS });
+        let foundIn = null;
+        if (orgObj !== undefined) foundIn = 'cache';
         // 2. If not found, try session storage
         if (orgObj === undefined) {
             orgObj = await this.Storage.Get(Org.OrgFilename, { ...Org.StorageConfig, cacheTtlMs: null, sessionTtlMs: Org.OrgSessionExpireMS });
-            if (orgObj !== undefined && this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
-                this.Storage.Cache.Set(Org.OrgFilename, orgObj, Org.OrgCacheExpireMS);
-            }
+            if (orgObj !== undefined) foundIn = 'session';
         }
         // 3. If still not found, try local storage
         if (orgObj === undefined) {
             orgObj = await this.Storage.Get(Org.OrgFilename, { ...Org.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: Org.OrgLocalExpireMS });
-            if (orgObj !== undefined) {
-                if (this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
-                    this.Storage.SessionStorage.Set(Org.OrgFilename, orgObj, Org.OrgSessionExpireMS);
-                }
-                if (this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
-                    this.Storage.Cache.Set(Org.OrgFilename, orgObj, Org.OrgCacheExpireMS);
-                }
-            }
+            if (orgObj !== undefined) foundIn = 'local';
         }
         // 4. If still not found, use GoogleDrive for read/write priority
         if (orgObj === undefined && this.Storage && typeof this.Storage.Get === 'function' && this.Storage.constructor.name === 'GoogleDrive') {
             orgObj = await this.Storage.Get(Org.OrgFilename, { ...Org.StorageConfig });
+            if (orgObj !== undefined) foundIn = 'google';
         }
         // 5. If still not found, fallback to GitHubDataObj for read-only
         if (orgObj === undefined && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.fetchJsonFile === 'function') {
             orgObj = await this.Storage._gitHubDataObj.fetchJsonFile(Org.OrgFilename);
+            if (orgObj !== undefined) foundIn = 'github';
+        }
+
+        // Write to all storage tiers if missing
+        if (orgObj !== undefined) {
+            // Only write to Google Drive if config was found in GitHub or GoogleDrive tier (not if found in local/session/cache)
+            if (this.Storage.constructor.name === 'GoogleDrive' && (foundIn === 'github' || foundIn === 'google') && typeof this.Storage.Set === 'function') {
+                await this.Storage.Set(Org.OrgFilename, orgObj, { ...Org.StorageConfig });
+            }
+            // Write to local storage if not found there
+            if (foundIn !== 'local' && this.Storage.LocalStorage && typeof this.Storage.LocalStorage.Set === 'function') {
+                this.Storage.LocalStorage.Set(Org.OrgFilename, orgObj, Org.OrgLocalExpireMS);
+            }
+            // Write to session storage if not found there
+            if (foundIn !== 'session' && this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
+                this.Storage.SessionStorage.Set(Org.OrgFilename, orgObj, Org.OrgSessionExpireMS);
+            }
+            // Write to cache if not found there
+            if (foundIn !== 'cache' && this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
+                this.Storage.Cache.Set(Org.OrgFilename, orgObj, Org.OrgCacheExpireMS);
+            }
         }
         this.organization = orgObj !== undefined ? orgObj : undefined;
     }
