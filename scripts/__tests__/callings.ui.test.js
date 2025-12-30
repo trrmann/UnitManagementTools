@@ -14,6 +14,25 @@ describe('Callings Tab UI', () => {
         global.deleteCalling = jest.fn((id) => alert('Delete calling: ' + id));
     });
 
+    it('displays callings data from the Callings class (integration)', async () => {
+        // Mock Storage with callings data
+        const mockCallings = [
+            { id: 201, name: 'President', member: 'Alice', active: true },
+            { id: 202, name: 'Secretary', member: 'Bob', active: true }
+        ];
+        const mockStorage = {
+            Get: jest.fn(async () => mockCallings),
+            Cache: { Set: jest.fn() },
+            SessionStorage: { Set: jest.fn() },
+            _gitHubDataObj: { fetchJsonFile: jest.fn() }
+        };
+        await renderCallingsFromClass(mockStorage);
+        const rows = document.querySelectorAll('#callingsBody tr');
+        expect(rows.length).toBe(2);
+        expect(rows[0].innerHTML).toContain('President');
+        expect(rows[1].innerHTML).toContain('Secretary');
+    });
+
     it('renders callings from Callings class (integration)', async () => {
         // Mock Storage with callings data
         const mockCallings = [
