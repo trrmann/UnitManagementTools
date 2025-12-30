@@ -1,0 +1,59 @@
+/* Configuration Table Styles */
+.configuration-table {
+    width: 100%;
+    max-width: 900px;
+    margin: 2em auto 2em auto;
+    padding: 1.5em 2em;
+    background: #fff;
+    border-radius: 1em;
+    box-shadow: 0 2px 12px 0 rgba(60,80,120,0.07);
+    overflow-x: auto;
+}
+.configuration-table table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 0.5em;
+    min-width: 600px;
+}
+.configuration-table th, .configuration-table td {
+    padding: 0.8em 1em;
+    font-size: 1.05em;
+    text-align: left;
+}
+.configuration-table th {
+    background: #f5f7fa;
+    color: #234;
+    border-bottom: 2px solid #e3e8f0;
+    font-weight: 600;
+}
+.configuration-table tr {
+    transition: background 0.2s;
+}
+.configuration-table tr:hover td {
+    background: #f0f4fa !important;
+}
+.configuration-table td button {
+    margin-right: 0.5em;
+    padding: 0.3em 0.8em;
+    border-radius: 0.3em;
+    border: 1px solid #c3c8d0;
+    background: #f7f9fc;
+    color: #234;
+    cursor: pointer;
+    font-size: 0.98em;
+    transition: background 0.2s, border 0.2s;
+}
+.configuration-table td button:hover {
+    background: #e3e8f0;
+    border-color: #a3b0c0;
+}
+/* Heading/subheading row style */
+.configuration-table tr > td[colspan="3"] {
+    font-size: 1.08em;
+    font-weight: bold;
+    background: #f0f4fa;
+    color: #234;
+    border-radius: 0.5em;
+    padding-top: 1.2em;
+    padding-bottom: 0.6em;
+}
