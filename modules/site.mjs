@@ -60,7 +60,7 @@ export class Site {
     }
 
     _setupEventListeners() {
-        document.addEventListener('DOMContentLoaded', () => {
+        const setup = () => {
             this._toggleBtn = document.getElementById('userMenuToggle');
             this._navBar = document.querySelector('.navbar');
             this._icon = document.getElementById('userMenuToggleIcon');
@@ -69,7 +69,12 @@ export class Site {
                 window.addEventListener('resize', () => this._updateToggleVisibility());
                 this._toggleBtn.addEventListener('click', () => this._toggleMenu());
             }
-        });
+        };
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setup);
+        } else {
+            setup();
+        }
         // Section navigation
         window.showSection = this.showSection.bind(this);
         // Pagination
