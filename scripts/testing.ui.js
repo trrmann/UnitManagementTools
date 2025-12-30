@@ -14,7 +14,10 @@ export function resetCache() {
 }
 export function resetSessionStorage() {
     if (typeof window !== 'undefined') {
-        alert('Session Storage reset triggered.');
+        if (window.sessionStorage && typeof window.sessionStorage.clear === 'function') {
+            window.sessionStorage.clear();
+        }
+        alert('Session Storage reset triggered. All session storage entries removed.');
     }
 }
 export function resetLocalStorage() {

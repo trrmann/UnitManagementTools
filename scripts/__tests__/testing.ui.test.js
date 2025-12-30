@@ -44,9 +44,25 @@ describe('Testing Tab UI', () => {
         expect(mockCache.clearAllCalled).toBe(true);
     });
 
-    it('resetSessionStorage triggers modal/alert', () => {
+    it('resetSessionStorage triggers modal/alert and clears all session storage', () => {
+        // Mock sessionStorage using defineProperty for robustness
+        const clearMock = jest.fn();
+        const origSessionStorage = window.sessionStorage;
+        Object.defineProperty(window, 'sessionStorage', {
+            configurable: true,
+            enumerable: true,
+            writable: true,
+            value: { clear: clearMock }
+        });
         resetSessionStorage();
-        expect(window.alert).toHaveBeenCalledWith('Session Storage reset triggered.');
+        expect(clearMock).toHaveBeenCalled();
+        expect(window.alert).toHaveBeenCalledWith('Session Storage reset triggered. All session storage entries removed.');
+        Object.defineProperty(window, 'sessionStorage', {
+            configurable: true,
+            enumerable: true,
+            writable: true,
+            value: origSessionStorage
+        });
     });
 
     it('resetLocalStorage triggers modal/alert', () => {
@@ -69,8 +85,13 @@ describe('Testing Tab UI', () => {
         // Call the reset functions directly
         resetCache();
         expect(window.alert).toHaveBeenCalledWith('Cache reset triggered.');
+        // Mock sessionStorage for this test as well
+        const clearMock = jest.fn();
+        const origSessionStorage = window.sessionStorage;
+        window.sessionStorage = { clear: clearMock };
         resetSessionStorage();
-        expect(window.alert).toHaveBeenCalledWith('Session Storage reset triggered.');
+        expect(window.alert).toHaveBeenCalledWith('Session Storage reset triggered. All session storage entries removed.');
+        window.sessionStorage = origSessionStorage;
         resetLocalStorage();
         expect(window.alert).toHaveBeenCalledWith('Local Storage reset triggered.');
         resetCloudStorage();
