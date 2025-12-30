@@ -1,3 +1,4 @@
+import { attachTestingTabHandlers } from '../testing.ui.js';
 /** @jest-environment jsdom */
 // Unit tests for Testing tab UI logic
 import { resetCache, resetSessionStorage, resetLocalStorage, resetCloudStorage } from '../testing.ui.js';
@@ -21,6 +22,30 @@ describe('Testing Tab UI', () => {
     });
     afterEach(() => {
         jest.resetModules();
+    });
+
+    describe('Superuser Button', () => {
+        beforeEach(() => {
+            document.body.innerHTML = `
+                <div class="users-toolbar-buttons">
+                    <button class="btn-warning" id="superuserBtn"><i class="fas fa-user-shield"></i> Superuser</button>
+                </div>
+            `;
+            window.alert = jest.fn();
+        });
+
+        it('should exist in the DOM', () => {
+            const btn = document.getElementById('superuserBtn');
+            expect(btn).not.toBeNull();
+            expect(btn.textContent).toContain('Superuser');
+        });
+
+        it('should trigger mock functionality on click', () => {
+            attachTestingTabHandlers();
+            const btn = document.getElementById('superuserBtn');
+            btn.click();
+            expect(window.alert).toHaveBeenCalledWith('Superuser mock functionality triggered.');
+        });
     });
 
     it('resetCache triggers modal/alert', () => {

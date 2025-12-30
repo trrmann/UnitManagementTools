@@ -41,6 +41,13 @@ export function resetCloudStorage() {
 // Only assign to window in browser context
 export function attachTestingTabHandlers() {
     // CONFIGURATION
+        // --- Superuser Button (mock functionality) ---
+        const superuserBtn = document.getElementById('superuserBtn');
+        if (superuserBtn) {
+            superuserBtn.onclick = () => {
+                alert('Superuser mock functionality triggered.');
+            };
+        }
     const resetConfigBtn = document.getElementById('resetConfigBtn');
     const viewConfigBtn = document.getElementById('viewConfigBtn');
     const importConfigBtn = document.getElementById('importConfigBtn');
