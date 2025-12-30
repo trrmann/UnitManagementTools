@@ -1,3 +1,19 @@
+.add-unit-btn {
+    min-width: 120px;
+    font-size: 1.01em;
+    padding: 0.5em 1.1em;
+    border-radius: 0.3em;
+    border: 1px solid #c3c8d0;
+    background: #f7f9fc;
+    color: #234;
+    cursor: pointer;
+    transition: background 0.2s, border 0.2s;
+    margin-right: 0.2em;
+}
+.add-unit-btn:hover {
+    background: #e3e8f0;
+    border-color: #a3b0c0;
+}
 /* Improved configuration toolbar layout */
 .improved-toolbar {
     margin-bottom: 1.2em;
