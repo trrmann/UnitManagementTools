@@ -40,3 +40,47 @@ window.editRole = function(id) {
 window.deleteRole = function(id) {
     alert('Delete role: ' + id);
 };
+
+// --- Toolbar Button Handlers ---
+window.addEventListener('DOMContentLoaded', () => {
+    const importBtn = document.getElementById('rolesImportBtn');
+    const exportBtn = document.getElementById('rolesExportBtn');
+    const searchInput = document.getElementById('rolesSearch');
+    let allRoles = [];
+
+    // Fetch and store all roles for search
+    async function fetchAndRenderRoles() {
+        const rolesInstance = await Roles.Factory({ _storageObj: window.Storage });
+        allRoles = rolesInstance.RolesDetails || [];
+        renderRolesTable(allRoles);
+    }
+
+    // Initial load
+    if (document.getElementById('roles')) {
+        fetchAndRenderRoles();
+    }
+
+    // Import
+    if (importBtn) {
+        importBtn.onclick = () => {
+            alert('Import Roles functionality goes here.');
+        };
+    }
+    // Export
+    if (exportBtn) {
+        exportBtn.onclick = () => {
+            alert('Export Roles functionality goes here.');
+        };
+    }
+    // Search
+    if (searchInput) {
+        searchInput.addEventListener('input', e => {
+            const val = e.target.value.toLowerCase();
+            const filtered = allRoles.filter(role =>
+                (role.name || '').toLowerCase().includes(val) ||
+                (role.callingName || '').toLowerCase().includes(val)
+            );
+            renderRolesTable(filtered);
+        });
+    }
+});

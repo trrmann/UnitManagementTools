@@ -7,11 +7,60 @@ import { renderRolesTable, openAddRole, renderRolesFromClass } from '../roles.ui
 describe('Roles Tab UI', () => {
     beforeEach(() => {
         document.body.innerHTML = `
+            <div class="section-toolbar roles-toolbar improved-toolbar">
+                <div class="roles-toolbar-row">
+                    <input type="text" id="rolesSearch" class="roles-search" placeholder="Search roles..." />
+                    <div class="roles-toolbar-buttons">
+                        <button class="btn-secondary" id="rolesImportBtn">Import</button>
+                        <button class="btn-secondary" id="rolesExportBtn">Export</button>
+                        <button class="btn-primary roles-AddRole" id="rolesAddBtn">Add</button>
+                    </div>
+                </div>
+            </div>
             <table><tbody id="rolesBody"></tbody></table>
         `;
         global.alert = jest.fn();
         global.editRole = jest.fn((id) => alert('Edit role: ' + id));
         global.deleteRole = jest.fn((id) => alert('Delete role: ' + id));
+    });
+    it('import button triggers import handler', () => {
+        require('../roles.ui.js'); // Ensure event listeners are attached
+        const importBtn = document.getElementById('rolesImportBtn');
+        importBtn.click();
+        expect(global.alert).toHaveBeenCalledWith(expect.stringMatching(/Import Roles/));
+    });
+
+    it('export button triggers export handler', () => {
+        require('../roles.ui.js');
+        const exportBtn = document.getElementById('rolesExportBtn');
+        exportBtn.click();
+        expect(global.alert).toHaveBeenCalledWith(expect.stringMatching(/Export Roles/));
+    });
+
+    it('add button triggers openAddRole', () => {
+        require('../roles.ui.js');
+        const addBtn = document.getElementById('rolesAddBtn');
+        addBtn.onclick = () => openAddRole();
+        addBtn.click();
+        expect(global.alert).toHaveBeenCalled();
+    });
+
+    it('search bar filters roles table', () => {
+        // Setup table and roles
+        const { renderRolesTable } = require('../roles.ui.js');
+        const roles = [
+            { id: 1, name: 'Bishop', callingName: 'Bishop', active: true },
+            { id: 2, name: 'Clerk', callingName: 'Clerk', active: true }
+        ];
+        renderRolesTable(roles);
+        const searchInput = document.getElementById('rolesSearch');
+        searchInput.value = 'bishop';
+        const event = new Event('input', { bubbles: true });
+        searchInput.dispatchEvent(event);
+        // Only Bishop row should be visible
+        const rows = document.querySelectorAll('#rolesBody tr');
+        expect(rows.length).toBe(1);
+        expect(rows[0].innerHTML).toContain('Bishop');
     });
 
     it('displays roles data from the Roles class (integration)', async () => {
