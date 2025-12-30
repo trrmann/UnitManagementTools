@@ -13,8 +13,99 @@ class MockCacheStore {
     }
 }
 
+// --- Begin migrated test logic ---
 
 describe('Testing Tab UI', () => {
+        describe('Organization Import/Export Buttons', () => {
+            beforeEach(() => {
+                document.body.innerHTML = `
+                    <button id="exportRawOrgBtn"></button>
+                    <button id="importRawOrgBtn"></button>
+                    <input type="file" id="importRawOrgInput">
+                    <button id="exportDetailedOrgBtn"></button>
+                    <button id="importDetailedOrgBtn"></button>
+                    <input type="file" id="importDetailedOrgInput">
+                `;
+                window.alert = jest.fn();
+                window.URL.createObjectURL = jest.fn(() => 'blob:url');
+                window.URL.revokeObjectURL = jest.fn();
+                document.createElement = jest.fn((tag) => {
+                    if (tag === 'a') {
+                        return { click: jest.fn(), set href(v) {}, set download(v) {}, remove() {} };
+                    }
+                    return document.createElement._orig(tag);
+                });
+                document.createElement._orig = document.createElement.bind(document);
+                document.body.appendChild = jest.fn();
+                document.body.removeChild = jest.fn();
+            });
+
+            afterEach(() => {
+                jest.resetModules();
+            });
+
+            it('Export Raw Organization button downloads organization as JSON', () => {
+                window.Organization = { organization: { foo: 'bar' } };
+                const { attachTestingTabHandlers } = require('../testing.ui.js');
+                attachTestingTabHandlers();
+                document.getElementById('exportRawOrgBtn').dispatchEvent(new window.Event('click'));
+                expect(window.URL.createObjectURL).toHaveBeenCalled();
+            });
+
+            it('Import Raw Organization button imports organization from JSON', () => {
+                window.Organization = { organization: {} };
+                const { attachTestingTabHandlers } = require('../testing.ui.js');
+                attachTestingTabHandlers();
+                // Simulate FileReader
+                const origFileReader = window.FileReader;
+                function MockFileReader() {
+                    this.readAsText = function(f) { this.onload({ target: { result: '{ "foo": "bar" }' } }); };
+                }
+                window.FileReader = MockFileReader;
+                const input = document.getElementById('importRawOrgInput');
+                const file = new Blob([JSON.stringify({ foo: 'bar' })], { type: 'application/json' });
+                file.name = 'test.json';
+                Object.defineProperty(input, 'files', { value: [file] });
+                input.dispatchEvent(new window.Event('change'));
+                expect(window.Organization.organization).toEqual({ foo: 'bar' });
+                expect(window.alert).toHaveBeenCalledWith('Raw organization import successful.');
+                window.FileReader = origFileReader;
+            });
+
+            it('Export Detailed Organization button downloads detailed org as JSON', () => {
+                const copyToJSON = jest.fn(() => ({ foo: 'detailed' }));
+                window.Organization = { constructor: { CopyToJSON: copyToJSON } };
+                const { attachTestingTabHandlers } = require('../testing.ui.js');
+                attachTestingTabHandlers();
+                document.getElementById('exportDetailedOrgBtn').dispatchEvent(new window.Event('click'));
+                expect(window.URL.createObjectURL).toHaveBeenCalled();
+                expect(copyToJSON).toHaveBeenCalledWith(window.Organization);
+            });
+
+            it('Import Detailed Organization button imports detailed org from JSON', () => {
+                const copyFromObject = jest.fn((dest, src) => { dest.organization = src.organization; dest._storageObj = src._storageObj; });
+                window.Organization = { organization: {}, _storageObj: {}, constructor: { CopyFromObject: copyFromObject } };
+                window.alert = jest.fn();
+                const { attachTestingTabHandlers } = require('../testing.ui.js');
+                attachTestingTabHandlers();
+                // Simulate FileReader
+                const origFileReader = window.FileReader;
+                function MockFileReader() {
+                    this.readAsText = function(f) { this.onload({ target: { result: '{ "organization": { "foo": "bar" }, "_storageObj": { "type": "mockStorage" } }' } }); };
+                }
+                window.FileReader = MockFileReader;
+                const input = document.getElementById('importDetailedOrgInput');
+                const file = new Blob([JSON.stringify({ organization: { foo: 'bar' }, _storageObj: { type: 'mockStorage' } })], { type: 'application/json' });
+                file.name = 'test.json';
+                Object.defineProperty(input, 'files', { value: [file] });
+                input.dispatchEvent(new window.Event('change'));
+                expect(copyFromObject).toHaveBeenCalled();
+                expect(window.Organization.organization).toEqual({ foo: 'bar' });
+                expect(window.Organization._storageObj).toEqual({ type: 'mockStorage' });
+                expect(window.alert).toHaveBeenCalledWith('Detailed organization import successful.');
+                window.FileReader = origFileReader;
+            });
+        });
     beforeEach(() => {
         document.body.innerHTML = '';
         window.alert = jest.fn();
@@ -31,8 +122,8 @@ describe('Testing Tab UI', () => {
         expect(window.alert).toHaveBeenCalledWith('Cache reset triggered.');
         expect(mockCache.clearAllCalled).toBe(true);
     });
+
     it('resetCache clears all cache entries regardless of expiration', () => {
-        // Setup mock cache with dummy data
         const mockCache = new MockCacheStore();
         window.CacheStore = mockCache;
         resetCache();
@@ -40,7 +131,6 @@ describe('Testing Tab UI', () => {
     });
 
     it('resetSessionStorage triggers modal/alert and clears all session storage', () => {
-        // Mock sessionStorage using defineProperty for robustness
         const clearMock = jest.fn();
         const origSessionStorage = window.sessionStorage;
         Object.defineProperty(window, 'sessionStorage', {
@@ -61,7 +151,6 @@ describe('Testing Tab UI', () => {
     });
 
     it('resetLocalStorage triggers modal/alert and clears all local storage', () => {
-        // Mock localStorage using defineProperty for robustness
         const clearMock = jest.fn();
         const origLocalStorage = window.localStorage;
         Object.defineProperty(window, 'localStorage', {
@@ -82,7 +171,6 @@ describe('Testing Tab UI', () => {
     });
 
     it('resetCloudStorage triggers modal/alert and clears all cloud storage', () => {
-        // Mock CloudStorage using defineProperty for robustness
         const clearMock = jest.fn();
         const origCloudStorage = window.CloudStorage;
         Object.defineProperty(window, 'CloudStorage', {
@@ -104,15 +192,11 @@ describe('Testing Tab UI', () => {
 
     it('reset buttons call correct handlers on click', () => {
         require('../testing.ui.js');
-        // Re-mock alert after requiring the UI module to ensure the mock is active for button click handlers
         window.alert = jest.fn();
-        // Setup mock cache for resetCache
         const mockCache = new MockCacheStore();
         window.CacheStore = mockCache;
-        // Call the reset functions directly
         resetCache();
         expect(window.alert).toHaveBeenCalledWith('Cache reset triggered.');
-        // Mock sessionStorage for this test as well
         const clearMock = jest.fn();
         const origSessionStorage = window.sessionStorage;
         window.sessionStorage = { clear: clearMock };
@@ -124,6 +208,7 @@ describe('Testing Tab UI', () => {
         resetCloudStorage();
         expect(window.alert).toHaveBeenCalledWith('Cloud Storage reset triggered. All cloud storage entries removed.');
     });
+
     it('viewCacheBtn shows cache entries', () => {
         window.CacheStore = {
             entries: () => [['foo', 'bar'], ['baz', 123]]
@@ -177,7 +262,6 @@ describe('Testing Tab UI', () => {
         window.FileReader = origFileReader;
     });
 
-    // Repeat for sessionStorage, localStorage, cloudStorage...
     it('viewSessionStorageBtn shows session storage entries', () => {
         window.sessionStorage = {
             length: 1,
@@ -342,6 +426,7 @@ describe('Testing Tab UI', () => {
         expect(window.alert).toHaveBeenCalledWith('Cloud Storage import successful.');
         window.FileReader = origFileReader;
     });
+});
 
 describe('Configuration Testing Tab Buttons', () => {
     beforeEach(() => {
@@ -354,36 +439,48 @@ describe('Configuration Testing Tab Buttons', () => {
         document.body.removeChild = jest.fn();
     });
 
+    // --- Fix configuration button tests ---
     it('Export Raw Configuration button downloads raw config as JSON', () => {
         window.Configuration = { configuration: { foo: 'bar', baz: 123 } };
         document.body.innerHTML += '<button id="exportRawConfigBtn"></button>';
         require('../testing.ui.js');
-        document.getElementById('exportRawConfigBtn').onclick();
+        window.URL.createObjectURL = jest.fn(() => 'blob:url');
+        const a = document.createElement('a');
+        a.click = jest.fn();
+        document.createElement = jest.fn(() => a);
+        document.body.appendChild = jest.fn();
+        document.body.removeChild = jest.fn();
+        document.getElementById('exportRawConfigBtn').dispatchEvent(new window.Event('click'));
         expect(window.URL.createObjectURL).toHaveBeenCalled();
-        expect(document.createElement().click).toHaveBeenCalled();
+        expect(a.click).toHaveBeenCalled();
     });
 
     it('Import Raw Configuration button imports raw config from JSON', () => {
+            jest.resetModules();
         window.Configuration = { configuration: {} };
+        window.Configuration = { configuration: {} };
+        window.alert = jest.fn();
         document.body.innerHTML += '<input type="file" id="importRawConfigInput">';
-        require('../testing.ui.js');
-        const input = document.getElementById('importRawConfigInput');
-        const file = new Blob([JSON.stringify({ foo: 'bar', baz: 123 })], { type: 'application/json' });
-        file.name = 'test.json';
-        const event = { target: { files: [file] } };
         // Simulate FileReader
         const origFileReader = window.FileReader;
         function MockFileReader() {
             this.readAsText = function(f) { this.onload({ target: { result: '{ "foo": "bar", "baz": 123 }' } }); };
         }
         window.FileReader = MockFileReader;
-        input.onchange(event);
+        const { attachTestingTabHandlers } = require('../testing.ui.js');
+        attachTestingTabHandlers();
+        const input = document.getElementById('importRawConfigInput');
+        const file = new Blob([JSON.stringify({ foo: 'bar', baz: 123 })], { type: 'application/json' });
+        file.name = 'test.json';
+        Object.defineProperty(input, 'files', { value: [file] });
+        input.dispatchEvent(new window.Event('change'));
         expect(window.Configuration.configuration).toEqual({ foo: 'bar', baz: 123 });
         expect(window.alert).toHaveBeenCalledWith('Raw configuration import successful.');
         window.FileReader = origFileReader;
     });
 
     it('Export Detailed Configuration button downloads detailed config as JSON', () => {
+            jest.resetModules();
         window.Configuration = {
             configuration: { foo: 'bar' },
             _storageObj: { type: 'mockStorage' },
@@ -391,34 +488,44 @@ describe('Configuration Testing Tab Buttons', () => {
                 CopyToJSON: jest.fn((instance) => ({ _storageObj: instance._storageObj, configuration: instance.configuration }))
             }
         };
+        window.URL.createObjectURL = jest.fn(() => 'blob:url');
+        const a = document.createElement('a');
+        a.click = jest.fn();
+        document.createElement = jest.fn(() => a);
+        document.body.appendChild = jest.fn();
+        document.body.removeChild = jest.fn();
         document.body.innerHTML += '<button id="exportDetailedConfigBtn"></button>';
-        require('../testing.ui.js');
-        document.getElementById('exportDetailedConfigBtn').onclick();
+        const { attachTestingTabHandlers } = require('../testing.ui.js');
+        attachTestingTabHandlers();
+        document.getElementById('exportDetailedConfigBtn').dispatchEvent(new window.Event('click'));
         expect(window.URL.createObjectURL).toHaveBeenCalled();
-        expect(document.createElement().click).toHaveBeenCalled();
+        expect(a.click).toHaveBeenCalled();
         expect(window.Configuration.constructor.CopyToJSON).toHaveBeenCalledWith(window.Configuration);
     });
 
     it('Import Detailed Configuration button imports detailed config from JSON', () => {
+            jest.resetModules();
         const copyFromObjectMock = jest.fn((dest, src) => { dest.configuration = src.configuration; dest._storageObj = src._storageObj; });
         window.Configuration = {
             configuration: {},
             _storageObj: {},
             constructor: { CopyFromObject: copyFromObjectMock }
         };
+        window.alert = jest.fn();
         document.body.innerHTML += '<input type="file" id="importDetailedConfigInput">';
-        require('../testing.ui.js');
-        const input = document.getElementById('importDetailedConfigInput');
-        const file = new Blob([JSON.stringify({ configuration: { foo: 'bar' }, _storageObj: { type: 'mockStorage' } })], { type: 'application/json' });
-        file.name = 'test.json';
-        const event = { target: { files: [file] } };
         // Simulate FileReader
         const origFileReader = window.FileReader;
         function MockFileReader() {
             this.readAsText = function(f) { this.onload({ target: { result: '{ "configuration": { "foo": "bar" }, "_storageObj": { "type": "mockStorage" } }' } }); };
         }
         window.FileReader = MockFileReader;
-        input.onchange(event);
+        const { attachTestingTabHandlers } = require('../testing.ui.js');
+        attachTestingTabHandlers();
+        const input = document.getElementById('importDetailedConfigInput');
+        const file = new Blob([JSON.stringify({ configuration: { foo: 'bar' }, _storageObj: { type: 'mockStorage' } })], { type: 'application/json' });
+        file.name = 'test.json';
+        Object.defineProperty(input, 'files', { value: [file] });
+        input.dispatchEvent(new window.Event('change'));
         expect(copyFromObjectMock).toHaveBeenCalled();
         expect(window.Configuration.configuration).toEqual({ foo: 'bar' });
         expect(window.Configuration._storageObj).toEqual({ type: 'mockStorage' });
@@ -426,3 +533,5 @@ describe('Configuration Testing Tab Buttons', () => {
         window.FileReader = origFileReader;
     });
 });
+
+// --- End migrated test logic ---

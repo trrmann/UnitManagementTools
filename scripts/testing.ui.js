@@ -39,13 +39,119 @@ export function resetCloudStorage() {
 }
 
 // Only assign to window in browser context
-if (typeof window !== 'undefined') {
-    window.resetCache = resetCache;
-    window.resetSessionStorage = resetSessionStorage;
-    window.resetLocalStorage = resetLocalStorage;
-    window.resetCloudStorage = resetCloudStorage;
+export function attachTestingTabHandlers() {
+            // --- Organization ---
+            function getOrgInstance() {
+                if (window.Organization && typeof window.Organization === 'object') {
+                    return window.Organization;
+                }
+                if (window.Storage && window.Storage.Organization && typeof window.Storage.Organization === 'object') {
+                    return window.Storage.Organization;
+                }
+                return null;
+            }
 
-    function attachTestingTabHandlers() {
+            const importRawOrgInput = document.getElementById('importRawOrgInput');
+            const exportRawOrgBtn = document.getElementById('exportRawOrgBtn');
+            const importRawOrgBtn = document.getElementById('importRawOrgBtn');
+            const exportDetailedOrgBtn = document.getElementById('exportDetailedOrgBtn');
+            const importDetailedOrgInput = document.getElementById('importDetailedOrgInput');
+            const importDetailedOrgBtn = document.getElementById('importDetailedOrgBtn');
+
+            // Export Raw: export organization as-is
+            if (exportRawOrgBtn) exportRawOrgBtn.onclick = () => {
+                const orgInstance = getOrgInstance();
+                if (!orgInstance || !orgInstance.organization) {
+                    alert('No organization found to export.');
+                    return;
+                }
+                const blob = new Blob([JSON.stringify(orgInstance.organization, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'organization.raw.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            };
+
+            // Import Raw: import organization as-is
+            if (importRawOrgInput) importRawOrgInput.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    try {
+                        const data = JSON.parse(evt.target.result);
+                        const orgInstance = getOrgInstance();
+                        if (orgInstance) {
+                            orgInstance.organization = data;
+                            alert('Raw organization import successful.');
+                        } else {
+                            alert('No organization instance found.');
+                        }
+                    } catch (err) {
+                        alert('Raw organization import failed: ' + err.message);
+                    }
+                };
+                reader.readAsText(file);
+            };
+
+            // Export Detailed: export full org object (including storageObj)
+            if (exportDetailedOrgBtn) exportDetailedOrgBtn.onclick = () => {
+                const orgInstance = getOrgInstance();
+                if (!orgInstance) {
+                    alert('No organization found to export.');
+                    return;
+                }
+                const detailed = (typeof orgInstance.constructor.CopyToJSON === 'function')
+                    ? orgInstance.constructor.CopyToJSON(orgInstance)
+                    : orgInstance;
+                const blob = new Blob([JSON.stringify(detailed, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'organization.detailed.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            };
+
+            // Import Detailed: import full org object (including storageObj)
+            if (importDetailedOrgInput) importDetailedOrgInput.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    try {
+                        const data = JSON.parse(evt.target.result);
+                        let orgInstance = getOrgInstance();
+                        if (orgInstance && typeof orgInstance.constructor.CopyFromObject === 'function') {
+                            orgInstance.constructor.CopyFromObject(orgInstance, data);
+                            alert('Detailed organization import successful.');
+                        } else if (orgInstance) {
+                            Object.assign(orgInstance, data);
+                            alert('Detailed organization import successful (fallback).');
+                        } else {
+                            alert('No organization instance found.');
+                        }
+                    } catch (err) {
+                        alert('Detailed organization import failed: ' + err.message);
+                    }
+                };
+                reader.readAsText(file);
+            };
+
+            // Button triggers file input for import
+            if (importRawOrgBtn && importRawOrgInput) importRawOrgBtn.onclick = () => importRawOrgInput.click();
+            if (importDetailedOrgBtn && importDetailedOrgInput) importDetailedOrgBtn.onclick = () => importDetailedOrgInput.click();
+    if (typeof window !== 'undefined') {
+        window.resetCache = resetCache;
+        window.resetSessionStorage = resetSessionStorage;
+        window.resetLocalStorage = resetLocalStorage;
+        window.resetCloudStorage = resetCloudStorage;
         // --- Cache ---
         const resetCacheBtn = document.getElementById('resetCacheBtn');
         const viewCacheBtn = document.getElementById('viewCacheBtn');
@@ -241,8 +347,115 @@ if (typeof window !== 'undefined') {
             };
             reader.readAsText(file);
         };
-    }
 
+        // --- Configuration ---
+        const importRawConfigInput = document.getElementById('importRawConfigInput');
+        const exportRawConfigBtn = document.getElementById('exportRawConfigBtn');
+        const importDetailedConfigInput = document.getElementById('importDetailedConfigInput');
+        const exportDetailedConfigBtn = document.getElementById('exportDetailedConfigBtn');
+
+        // Helper to get config instance
+        function getConfigInstance() {
+            if (window.Configuration && typeof window.Configuration === 'object') {
+                return window.Configuration;
+            }
+            if (window.Storage && window.Storage.Configuration && typeof window.Storage.Configuration === 'object') {
+                return window.Storage.Configuration;
+            }
+            return null;
+        }
+
+        // Export Raw: export configuration as-is
+        if (exportRawConfigBtn) exportRawConfigBtn.onclick = () => {
+            const configInstance = getConfigInstance();
+            if (!configInstance || !configInstance.configuration) {
+                alert('No configuration found to export.');
+                return;
+            }
+            const blob = new Blob([JSON.stringify(configInstance.configuration, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'configuration.raw.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+
+        // Import Raw: import configuration as-is
+        if (importRawConfigInput) importRawConfigInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const data = JSON.parse(evt.target.result);
+                    const configInstance = getConfigInstance();
+                    if (configInstance) {
+                        configInstance.configuration = data;
+                        alert('Raw configuration import successful.');
+                    } else {
+                        alert('No configuration instance found.');
+                    }
+                } catch (err) {
+                    alert('Raw configuration import failed: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        // Export Detailed: export full config object (including storageObj)
+        if (exportDetailedConfigBtn) exportDetailedConfigBtn.onclick = () => {
+            const configInstance = getConfigInstance();
+            if (!configInstance) {
+                alert('No configuration found to export.');
+                return;
+            }
+            // Use static method to get full object
+            const detailed = (typeof configInstance.constructor.CopyToJSON === 'function')
+                ? configInstance.constructor.CopyToJSON(configInstance)
+                : configInstance;
+            const blob = new Blob([JSON.stringify(detailed, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'configuration.detailed.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+
+        // Import Detailed: import full config object (including storageObj)
+        if (importDetailedConfigInput) importDetailedConfigInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const data = JSON.parse(evt.target.result);
+                    let configInstance = getConfigInstance();
+                    if (configInstance && typeof configInstance.constructor.CopyFromObject === 'function') {
+                        configInstance.constructor.CopyFromObject(configInstance, data);
+                        alert('Detailed configuration import successful.');
+                    } else if (configInstance) {
+                        // fallback: assign properties
+                        Object.assign(configInstance, data);
+                        alert('Detailed configuration import successful (fallback).');
+                    } else {
+                        alert('No configuration instance found.');
+                    }
+                } catch (err) {
+                    alert('Detailed configuration import failed: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        };
+    }
+}
+
+if (typeof window !== 'undefined') {
     if (document.readyState !== 'loading') {
         attachTestingTabHandlers();
     } else {
