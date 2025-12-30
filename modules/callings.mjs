@@ -109,32 +109,47 @@ export class Callings {
         }
         // 1. Try to get from cache
         let callingsObj = await this.Storage.Get(Callings.CallingsFilename, { ...Callings.StorageConfig, cacheTtlMs: Callings.CallingsCacheExpireMS });
+        let foundIn = null;
+        if (callingsObj !== undefined && callingsObj !== null) foundIn = 'cache';
         // 2. If not found, try session storage
-        if (!callingsObj) {
+        if (callingsObj === undefined || callingsObj === null) {
             callingsObj = await this.Storage.Get(Callings.CallingsFilename, { ...Callings.StorageConfig, cacheTtlMs: null, sessionTtlMs: Callings.CallingsSessionExpireMS });
-            if (callingsObj && this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
-                this.Storage.Cache.Set(Callings.CallingsFilename, callingsObj, Callings.CallingsCacheExpireMS);
-            }
+            if (callingsObj !== undefined && callingsObj !== null) foundIn = 'session';
         }
         // 3. If still not found, try local storage
-        if (!callingsObj) {
+        if (callingsObj === undefined || callingsObj === null) {
             callingsObj = await this.Storage.Get(Callings.CallingsFilename, { ...Callings.StorageConfig, cacheTtlMs: null, sessionTtlMs: null, localTtlMs: Callings.CallingsLocalExpireMS });
-            if (callingsObj) {
-                if (this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
-                    this.Storage.SessionStorage.Set(Callings.CallingsFilename, callingsObj, Callings.CallingsSessionExpireMS);
-                }
-                if (this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
-                    this.Storage.Cache.Set(Callings.CallingsFilename, callingsObj, Callings.CallingsCacheExpireMS);
-                }
-            }
+            if (callingsObj !== undefined && callingsObj !== null) foundIn = 'local';
         }
         // 4. If still not found, use GoogleDrive for read/write priority
-        if (!callingsObj && this.Storage && typeof this.Storage.Get === 'function' && this.Storage.constructor.name === 'GoogleDrive') {
+        if ((callingsObj === undefined || callingsObj === null) && this.Storage && typeof this.Storage.Get === 'function' && this.Storage.constructor.name === 'GoogleDrive') {
             callingsObj = await this.Storage.Get(Callings.CallingsFilename, { ...Callings.StorageConfig });
+            if (callingsObj !== undefined && callingsObj !== null) foundIn = 'google';
         }
         // 5. If still not found, fallback to GitHubDataObj for read-only
-        if (!callingsObj && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.fetchJsonFile === 'function') {
+        if ((callingsObj === undefined || callingsObj === null) && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.fetchJsonFile === 'function') {
             callingsObj = await this.Storage._gitHubDataObj.fetchJsonFile(Callings.CallingsFilename);
+            if (callingsObj !== undefined && callingsObj !== null) foundIn = 'github';
+        }
+
+        // Write to all storage tiers if missing
+        if (callingsObj !== undefined && callingsObj !== null) {
+            // Only write to Google Drive if config was found in GitHub or GoogleDrive tier (not if found in local/session/cache)
+            if (this.Storage.constructor.name === 'GoogleDrive' && (foundIn === 'github' || foundIn === 'google') && typeof this.Storage.Set === 'function') {
+                await this.Storage.Set(Callings.CallingsFilename, callingsObj, { ...Callings.StorageConfig });
+            }
+            // Write to local storage if not found there
+            if (foundIn !== 'local' && this.Storage.LocalStorage && typeof this.Storage.LocalStorage.Set === 'function') {
+                this.Storage.LocalStorage.Set(Callings.CallingsFilename, callingsObj, Callings.CallingsLocalExpireMS);
+            }
+            // Write to session storage if not found there
+            if (foundIn !== 'session' && this.Storage.SessionStorage && typeof this.Storage.SessionStorage.Set === 'function') {
+                this.Storage.SessionStorage.Set(Callings.CallingsFilename, callingsObj, Callings.CallingsSessionExpireMS);
+            }
+            // Write to cache if not found there
+            if (foundIn !== 'cache' && this.Storage.Cache && typeof this.Storage.Cache.Set === 'function') {
+                this.Storage.Cache.Set(Callings.CallingsFilename, callingsObj, Callings.CallingsCacheExpireMS);
+            }
         }
         this.callings = callingsObj ? callingsObj : undefined;
     }
