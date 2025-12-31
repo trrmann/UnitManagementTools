@@ -1149,8 +1149,8 @@ export function attachTestingTabHandlers() {
         };
         if (exportCacheBtn) exportCacheBtn.onclick = () => {
             let entries = [];
-            if (window.CacheStore && typeof window.CacheStore.entries === 'function') {
-                entries = window.CacheStore.entries();
+            if (window.Storage && window.Storage.Cache && typeof window.Storage.Cache.entries === 'function') {
+                entries = window.Storage.Cache.entries();
             }
             const blob = new Blob([JSON.stringify(entries, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);

@@ -167,8 +167,10 @@ describe('Testing Tab UI', () => {
     });
 
     it('exportCacheBtn downloads cache entries as JSON', () => {
-        window.CacheStore = {
-            entries: () => [['foo', 'bar']]
+        window.Storage = {
+            Cache: {
+                entries: () => [['foo', 'bar']]
+            }
         };
         document.body.innerHTML += '<button id="exportCacheBtn"></button>';
         require('../testing.ui.js');
