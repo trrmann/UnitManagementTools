@@ -642,20 +642,52 @@ export function attachTestingTabHandlers() {
 
                                             // Export Raw: export users as-is
                                             if (exportRawUsersBtn) exportRawUsersBtn.onclick = () => {
-                                                const usersInstance = getUsersInstance();
-                                                if (!usersInstance || !usersInstance.users) {
-                                                    alert('No users found to export.');
-                                                    return;
-                                                }
-                                                const blob = new Blob([JSON.stringify(usersInstance.users, null, 2)], { type: 'application/json' });
-                                                const url = URL.createObjectURL(blob);
-                                                const a = document.createElement('a');
-                                                a.href = url;
-                                                a.download = 'users.raw.json';
-                                                document.body.appendChild(a);
-                                                a.click();
-                                                document.body.removeChild(a);
-                                                URL.revokeObjectURL(url);
+                                                (async () => {
+                                                    let usersData = [];
+                                                    if (window.Storage && window.Storage.Users && typeof window.Storage.Users.UsersDetails === 'function') {
+                                                        try {
+                                                            usersData = await window.Storage.Users.UsersDetails();
+                                                        } catch (err) {
+                                                            usersData = [{ error: 'Failed to get UsersDetails: ' + err.message }];
+                                                        }
+                                                    } else if (window.Users && typeof window.Users.UsersDetails === 'function') {
+                                                        try {
+                                                            usersData = await window.Users.UsersDetails();
+                                                        } catch (err) {
+                                                            usersData = [{ error: 'Failed to get UsersDetails: ' + err.message }];
+                                                        }
+                                                    } else if (window.Storage && window.Storage.Users && Array.isArray(window.Storage.Users.UserEntries)) {
+                                                        usersData = window.Storage.Users.UserEntries;
+                                                    } else if (window.Storage && window.Storage.Users && Array.isArray(window.Storage.Users.users)) {
+                                                        usersData = window.Storage.Users.users;
+                                                    } else if (window.Users && Array.isArray(window.Users.UserEntries)) {
+                                                        usersData = window.Users.UserEntries;
+                                                    } else if (window.Users && Array.isArray(window.Users.users)) {
+                                                        usersData = window.Users.users;
+                                                    } else if (window.Storage && typeof window.Storage.Get === 'function') {
+                                                        try {
+                                                            const raw = await window.Storage.Get('users.json');
+                                                            if (raw && Array.isArray(raw.users)) {
+                                                                usersData = raw.users;
+                                                            }
+                                                        } catch (err) {
+                                                            usersData = [{ error: 'Failed to fetch users.json: ' + err.message }];
+                                                        }
+                                                    }
+                                                    if (!usersData || usersData.length === 0) {
+                                                        alert('No users found to export.');
+                                                        return;
+                                                    }
+                                                    const blob = new Blob([JSON.stringify(usersData, null, 2)], { type: 'application/json' });
+                                                    const url = URL.createObjectURL(blob);
+                                                    const a = document.createElement('a');
+                                                    a.href = url;
+                                                    a.download = 'users.raw.json';
+                                                    document.body.appendChild(a);
+                                                    a.click();
+                                                    document.body.removeChild(a);
+                                                    URL.revokeObjectURL(url);
+                                                })();
                                             };
 
                                             // Import Raw: import users as-is

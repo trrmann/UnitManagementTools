@@ -1,3 +1,25 @@
+    it('exportRawUsersBtn downloads users class user entries as JSON', () => {
+        jest.resetModules();
+        window.Storage = { Users: { users: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }] } };
+        document.body.innerHTML += '<button id="exportRawUsersBtn"></button>';
+        const createObjectURL = jest.fn(() => 'blob:url');
+        const revokeObjectURL = jest.fn();
+        window.URL.createObjectURL = createObjectURL;
+        window.URL.revokeObjectURL = revokeObjectURL;
+        // Mock Blob to capture the data passed for export
+        let blobData = null;
+        window.Blob = function(data, options) { blobData = data[0]; return {}; };
+        // Setup a persistent mock element for createElement
+        const mockElement = { click: jest.fn(), set href(v) {}, set download(v) {}, remove() {} };
+        document.createElement = jest.fn(() => mockElement);
+        window._mockElement = mockElement;
+        document.body.appendChild = jest.fn();
+        document.body.removeChild = jest.fn();
+        require('../testing.ui.js');
+        document.getElementById('exportRawUsersBtn').click();
+        expect(blobData).toEqual(JSON.stringify(window.Storage.Users.users, null, 2));
+        expect(window._mockElement.click).toHaveBeenCalled();
+    });
 import { attachTestingTabHandlers } from '../testing.ui.js';
 /** @jest-environment jsdom */
 // Unit tests for Testing tab UI logic
