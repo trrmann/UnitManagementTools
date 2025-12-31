@@ -133,9 +133,44 @@ export function attachTestingTabHandlers() {
                                                                                     }
                                                                                 } catch (err) { alert('Reset failed: ' + err.message); }
                                                                             };
-                                                                            if (viewRawUsersBtn) viewRawUsersBtn.onclick = () => {
-                                                                                const usersInstance = getUsersInstance();
-                                                                                alert('Users (Raw):\n' + JSON.stringify(usersInstance?.users, null, 2));
+                                                                            if (viewRawUsersBtn) viewRawUsersBtn.onclick = async () => {
+                                                                                let usersData = [];
+                                                                                if (window.Storage && window.Storage.Users && typeof window.Storage.Users.UsersDetails === 'function') {
+                                                                                    try {
+                                                                                        usersData = await window.Storage.Users.UsersDetails();
+                                                                                    } catch (err) {
+                                                                                        usersData = [{ error: 'Failed to get UsersDetails: ' + err.message }];
+                                                                                    }
+                                                                                } else if (window.Users && typeof window.Users.UsersDetails === 'function') {
+                                                                                    try {
+                                                                                        usersData = await window.Users.UsersDetails();
+                                                                                    } catch (err) {
+                                                                                        usersData = [{ error: 'Failed to get UsersDetails: ' + err.message }];
+                                                                                    }
+                                                                                } else if (window.Storage && window.Storage.Users && Array.isArray(window.Storage.Users.UserEntries)) {
+                                                                                    usersData = window.Storage.Users.UserEntries;
+                                                                                } else if (window.Storage && window.Storage.Users && Array.isArray(window.Storage.Users.users)) {
+                                                                                    usersData = window.Storage.Users.users;
+                                                                                } else if (window.Users && Array.isArray(window.Users.UserEntries)) {
+                                                                                    usersData = window.Users.UserEntries;
+                                                                                } else if (window.Users && Array.isArray(window.Users.users)) {
+                                                                                    usersData = window.Users.users;
+                                                                                } else if (window.Storage && typeof window.Storage.Get === 'function') {
+                                                                                    try {
+                                                                                        const raw = await window.Storage.Get('users.json');
+                                                                                        if (raw && Array.isArray(raw.users)) {
+                                                                                            usersData = raw.users;
+                                                                                        }
+                                                                                    } catch (err) {
+                                                                                        usersData = [{ error: 'Failed to fetch users.json: ' + err.message }];
+                                                                                    }
+                                                                                }
+                                                                                const pretty = `<pre style=\"max-height:400px;overflow:auto;\">${JSON.stringify(usersData, null, 2)}</pre>`;
+                                                                                if (typeof window.openModal === 'function') {
+                                                                                    window.openModal('Users (Raw)', pretty);
+                                                                                } else {
+                                                                                    alert('Users (Raw):\n' + JSON.stringify(usersData, null, 2));
+                                                                                }
                                                                             };
                                                                             if (viewDetailedUsersBtn) viewDetailedUsersBtn.onclick = () => {
                                                                                 const usersInstance = getUsersInstance();
