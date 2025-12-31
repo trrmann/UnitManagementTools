@@ -1169,9 +1169,11 @@ export function attachTestingTabHandlers() {
             reader.onload = function(evt) {
                 try {
                     const data = JSON.parse(evt.target.result);
-                    if (Array.isArray(data) && window.CacheStore && typeof window.CacheStore.Set === 'function') {
-                        data.forEach(([key, value]) => window.CacheStore.Set(key, value));
+                    if (Array.isArray(data) && window.Storage && window.Storage.Cache && typeof window.Storage.Cache.Set === 'function') {
+                        data.forEach(([key, value]) => window.Storage.Cache.Set(key, value));
                         alert('Cache import successful.');
+                    } else {
+                        alert('Cache import failed: Storage class not available.');
                     }
                 } catch (err) {
                     alert('Cache import failed: ' + err.message);

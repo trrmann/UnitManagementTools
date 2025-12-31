@@ -191,12 +191,12 @@ describe('Testing Tab UI', () => {
 
     it('importCacheInput imports cache entries from JSON', () => {
         const setMock = jest.fn();
-        window.CacheStore = { Set: setMock };
+        window.Storage = { Cache: { Set: setMock } };
         document.body.innerHTML += '<input type="file" id="importCacheInput">';
         require('../testing.ui.js');
         window.alert = jest.fn();
         const input = document.getElementById('importCacheInput');
-        const file = new Blob([JSON.stringify([['foo', 'bar']])], { type: 'application/json' });
+        const file = new Blob([JSON.stringify([["foo", "bar"]])], { type: 'application/json' });
         file.name = 'test.json';
         const event = { target: { files: [file] } };
         // Simulate FileReader
