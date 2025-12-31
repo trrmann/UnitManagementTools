@@ -7,6 +7,36 @@ import { renderUsersTable, renderUsersFromClass, openAddUser } from '../users.ui
 import { Users } from '../../modules/users.mjs';
 
 describe('Users Tab UI', () => {
+
+        it('renders Reset Password and Superuser buttons for each user', () => {
+            const users = [
+                { memberNumber: '123', name: 'John Doe', email: 'john@example.com', roles: ['Admin'] },
+            ];
+            renderUsersTable(users);
+            const resetBtn = document.querySelector('.users-reset-btn');
+            const superuserBtn = document.querySelector('.users-superuser-btn');
+            expect(resetBtn).toBeTruthy();
+            expect(superuserBtn).toBeTruthy();
+            expect(resetBtn.textContent.toLowerCase()).toContain('reset');
+            expect(superuserBtn.textContent.toLowerCase()).toContain('superuser');
+        });
+
+        it('Reset Password and Superuser button handlers are called', () => {
+            // Remove any previous global functions so our mocks are used
+            delete window.resetUserPassword;
+            delete window.makeSuperuser;
+            window.resetUserPassword = jest.fn();
+            window.makeSuperuser = jest.fn();
+            const users = [
+                { memberNumber: '123', name: 'John Doe', email: 'john@example.com', roles: ['Admin'] },
+            ];
+            document.getElementById('usersBody').innerHTML = '';
+            renderUsersTable(users);
+            document.querySelector('.users-reset-btn').click();
+            document.querySelector('.users-superuser-btn').click();
+            expect(window.resetUserPassword).toHaveBeenCalledWith('123');
+            expect(window.makeSuperuser).toHaveBeenCalledWith('123');
+        });
     beforeEach(() => {
         // Inject a mock async Storage object for modules that require it
         window.Storage = {

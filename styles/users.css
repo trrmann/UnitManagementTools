@@ -30,7 +30,39 @@
   background: #f0f4fa !important;
 }
 .users-table td:last-child {
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
+  max-width: 220px;
+  padding: 1em 0.5em;
+}
+
+/* Action buttons in users table should wrap and match style */
+.users-table .users-edit-btn,
+.users-table .users-delete-btn,
+.users-table .users-reset-btn,
+.users-table .users-superuser-btn {
+  display: inline-block;
+  margin: 2px 2px 2px 0;
+  padding: 0.4em 1em;
+  font-size: 1em;
+  border-radius: 0.4em;
+  border: 1px solid #e3e8f0;
+  background: #f5f7fa;
+  color: #234;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.users-table .users-edit-btn:hover,
+.users-table .users-delete-btn:hover,
+.users-table .users-reset-btn:hover,
+.users-table .users-superuser-btn:hover {
+  background: #e3e8f0;
+  color: #0056b3;
+}
+.users-table .users-superuser-btn {
+  font-weight: bold;
+}
 }
 .users-table button {
   margin-right: 0.5em;

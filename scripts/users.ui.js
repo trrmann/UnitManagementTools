@@ -8,17 +8,32 @@ export function renderUsersTable(users) {
     users.forEach(user => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>${user.memberNumber}</td>
             <td>${user.fullname || user.name || ''}</td>
             <td>${user.email || ''}</td>
+            <td>${user.memberNumber || ''}</td>
             <td>${Array.isArray(user.roleNames) ? user.roleNames.join(', ') : (Array.isArray(user.roles) ? user.roles.join(', ') : '')}</td>
-            <td>
-                <button class="users-edit-btn" onclick="editUser('${user.memberNumber}')">Edit</button>
-                <button class="users-delete-btn" onclick="deleteUser('${user.memberNumber}')">Delete</button>
+            <td>${user.active ? 'Active' : 'Inactive'}</td>
+            <td style="white-space:normal;">
+                <div style="display:flex; flex-wrap:wrap; gap:0.25em;">
+                    <button class="users-edit-btn btn-secondary" onclick="editUser('${user.memberNumber}')">Edit</button>
+                    <button class="users-delete-btn btn-secondary" onclick="deleteUser('${user.memberNumber}')">Delete</button>
+                    <button class="users-reset-btn btn-secondary" onclick="resetUserPassword('${user.memberNumber}')">Reset Password</button>
+                    <button class="users-superuser-btn btn-secondary" onclick="makeSuperuser('${user.memberNumber}')">Superuser</button>
+                </div>
             </td>
         `;
         tbody.appendChild(tr);
     });
+if (!window.resetUserPassword) {
+    window.resetUserPassword = function(memberNumber) {
+        alert('Reset password for user: ' + memberNumber);
+    };
+}
+if (!window.makeSuperuser) {
+    window.makeSuperuser = function(memberNumber) {
+        alert('Superuser privileges granted to user: ' + memberNumber);
+    };
+}
 }
 
 import { Users } from '../modules/users.mjs';
