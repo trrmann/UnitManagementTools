@@ -125,12 +125,19 @@ export function attachTestingTabHandlers() {
                                                                             const viewDetailedUsersBtn = document.getElementById('viewDetailedUsersBtn');
                                                                             if (resetUsersBtn) resetUsersBtn.onclick = async () => {
                                                                                 try {
-                                                                                    const data = await fetchGithubJson('users.json');
+                                                                                    // Clear users class data
                                                                                     const usersInstance = getUsersInstance();
                                                                                     if (usersInstance) {
-                                                                                        usersInstance.users = data;
-                                                                                        alert('Users reset to GitHub values.');
+                                                                                        usersInstance.users = [];
                                                                                     }
+                                                                                    // Clear cache, session, local, Google Drive via Storage class
+                                                                                    if (window.Storage && typeof window.Storage.Set === 'function') {
+                                                                                        await window.Storage.Set('users.json', [], { cacheTtlMs: window.Storage._cache_default_value_expireMS });
+                                                                                        await window.Storage.Set('users.json', [], { sessionTtlMs: window.Storage._sessionStorage_default_value_expireMS });
+                                                                                        await window.Storage.Set('users.json', [], { localTtlMs: window.Storage._localStorage_default_value_expireMS });
+                                                                                        await window.Storage.Set('users.json', [], { googleId: 'users.json' });
+                                                                                    }
+                                                                                    alert('Users data cleared from all storage layers.');
                                                                                 } catch (err) { alert('Reset failed: ' + err.message); }
                                                                             };
                                                                             if (viewRawUsersBtn) viewRawUsersBtn.onclick = async () => {
