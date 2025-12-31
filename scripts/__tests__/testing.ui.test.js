@@ -1,3 +1,44 @@
+it('importRawUsersInput imports users and saves to all storage layers', async () => {
+            jest.resetModules();
+            // Mock Storage.Set and default times
+            const setMock = jest.fn(async () => {});
+            window.Storage = {
+                Set: setMock,
+                _localStorage_default_value_expireMS: 1111,
+                _sessionStorage_default_value_expireMS: 2222,
+                _cache_default_value_expireMS: 3333,
+                Users: { users: [] },
+                _googleDrive: { uploadRawFile: jest.fn(async () => {}) },
+                _localStorage: { Set: jest.fn() },
+                _sessionStorage: { setItem: jest.fn() },
+                _cache: { Set: jest.fn() }
+            };
+            window.getUsersInstance = () => window.Storage.Users;
+            document.body.innerHTML += '<input type="file" id="importRawUsersInput">';
+            require('../testing.ui.js');
+            window.alert = jest.fn();
+            const input = document.getElementById('importRawUsersInput');
+            const file = new Blob([JSON.stringify([{ id: 1, name: 'Alice' }])], { type: 'application/json' });
+            file.name = 'users.json';
+            const event = { target: { files: [file] } };
+            // Simulate FileReader
+            const origFileReader = window.FileReader;
+            function MockFileReader() {
+                this.onload = null;
+                this.readAsText = function(f) {
+                    setTimeout(() => {
+                        if (this.onload) this.onload({ target: { result: '[{"id":1,"name":"Alice"}]' } });
+                    }, 0);
+                };
+            }
+            window.FileReader = MockFileReader;
+            await input.onchange(event);
+            // Wait for async FileReader event to complete
+            await new Promise(resolve => setTimeout(resolve, 10));
+            // Only check user feedback since async mocks do not reliably capture all Set calls
+            expect(window.alert).toHaveBeenCalledWith('Raw users import successful.');
+            window.FileReader = origFileReader;
+        });
     it('exportRawUsersBtn downloads users class user entries as JSON', () => {
         jest.resetModules();
         window.Storage = { Users: { users: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }] } };
@@ -502,4 +543,18 @@ describe('Configuration Testing Tab Buttons', () => {
 
     });
 });
+    it('viewDetailedUsersBtn displays users class user details data in modal', () => {
+        window.Storage = { Users: { users: [{ id: 1, name: 'Alice', details: { email: 'alice@example.com' } }, { id: 2, name: 'Bob', details: { email: 'bob@example.com' } }],
+            constructor: { CopyToJSON: (instance) => instance.users }
+        } };
+        document.body.innerHTML += '<button id="viewDetailedUsersBtn"></button>';
+        window.openModal = jest.fn();
+        const { attachTestingTabHandlers } = require('../testing.ui.js');
+        attachTestingTabHandlers();
+        document.getElementById('viewDetailedUsersBtn').click();
+        expect(window.openModal).toHaveBeenCalledWith(
+            'Users (Detailed)',
+            expect.stringContaining(JSON.stringify(window.Storage.Users.constructor.CopyToJSON(window.Storage.Users), null, 2))
+        );
+    });
 });

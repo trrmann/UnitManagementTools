@@ -175,7 +175,7 @@ export function attachTestingTabHandlers() {
                                                                                 let detailed = usersInstance;
                                                                                 if (usersInstance && typeof usersInstance.constructor.CopyToJSON === 'function')
                                                                                     detailed = usersInstance.constructor.CopyToJSON(usersInstance);
-                                                                                alert('Users (Detailed):\n' + JSON.stringify(detailed, null, 2));
+                                                                                window.openModal('Users (Detailed)', JSON.stringify(detailed, null, 2));
                                                                             };
 
                                                                             // MEMBERS
@@ -695,12 +695,23 @@ export function attachTestingTabHandlers() {
                                                 const file = e.target.files[0];
                                                 if (!file) return;
                                                 const reader = new FileReader();
-                                                reader.onload = function(evt) {
+                                                reader.onload = async function(evt) {
                                                     try {
                                                         const data = JSON.parse(evt.target.result);
                                                         const usersInstance = getUsersInstance();
                                                         if (usersInstance) {
                                                             usersInstance.users = data;
+                                                            // Save to all storage layers via Storage class
+                                                            if (window.Storage && typeof window.Storage.Set === 'function') {
+                                                                // Save to Google Drive
+                                                                await window.Storage.Set('users.json', data, { googleId: 'users.json' });
+                                                                // Save to local storage with default expire time
+                                                                await window.Storage.Set('users.json', data, { localTtlMs: window.Storage._localStorage_default_value_expireMS });
+                                                                // Save to session storage with default storage time
+                                                                await window.Storage.Set('users.json', data, { sessionTtlMs: window.Storage._sessionStorage_default_value_expireMS });
+                                                                // Save to cache storage with default expire time
+                                                                await window.Storage.Set('users.json', data, { cacheTtlMs: window.Storage._cache_default_value_expireMS });
+                                                            }
                                                             alert('Raw users import successful.');
                                                         } else {
                                                             alert('No users instance found.');
