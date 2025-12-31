@@ -146,10 +146,6 @@ describe('Configuration Table UI', () => {
         expect(tbody.innerHTML).toContain('testValue');
         expect(tbody.innerHTML).toContain('nested.inner');
         expect(tbody.innerHTML).toContain('123');
-        expect(console.log).toHaveBeenCalledWith(
-            'Hierarchical Configuration Data:',
-            expect.objectContaining({ testKey: 'testValue', 'nested.inner': 123 })
-        );
     });
     it('renders edit and delete buttons for each row', async () => {
         await renderConfigurationTable(window._storageObj);

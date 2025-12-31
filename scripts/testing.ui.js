@@ -40,6 +40,15 @@ export function resetCloudStorage() {
 
 // Only assign to window in browser context
 export function attachTestingTabHandlers() {
+    // Ensure Users instance is available for all handlers
+    import('../modules/users.mjs').then(async ({ Users }) => {
+        if (!window.Users) {
+            // Use window.Storage if available, else fallback to empty config
+            let config = {};
+            if (window.Storage) config._storageObj = window.Storage;
+            window.Users = await Users.Factory(config);
+        }
+    });
     // CONFIGURATION
         // --- Superuser Button (mock functionality) ---
         const superuserBtn = document.getElementById('superuserBtn');
@@ -179,21 +188,11 @@ export function attachTestingTabHandlers() {
                                                                                     alert('Users data cleared from all storage layers.');
                                                                                 } catch (err) { alert('Reset failed: ' + err.message); }
                                                                             };
+
                                                                             if (viewRawUsersBtn) viewRawUsersBtn.onclick = async () => {
                                                                                 let usersData = [];
-                                                                                if (window.Storage && window.Storage.Users && typeof window.Storage.Users.UsersDetails === 'function') {
-                                                                                    try {
-                                                                                        usersData = await window.Storage.Users.UsersDetails();
-                                                                                    } catch (err) {
-                                                                                        usersData = [{ error: 'Failed to get UsersDetails: ' + err.message }];
-                                                                                    }
-                                                                                } else if (window.Users && typeof window.Users.UsersDetails === 'function') {
-                                                                                    try {
-                                                                                        usersData = await window.Users.UsersDetails();
-                                                                                    } catch (err) {
-                                                                                        usersData = [{ error: 'Failed to get UsersDetails: ' + err.message }];
-                                                                                    }
-                                                                                } else if (window.Storage && window.Storage.Users && Array.isArray(window.Storage.Users.UserEntries)) {
+                                                                                // Prefer UserEntries for raw entries
+                                                                                if (window.Storage && window.Storage.Users && Array.isArray(window.Storage.Users.UserEntries)) {
                                                                                     usersData = window.Storage.Users.UserEntries;
                                                                                 } else if (window.Storage && window.Storage.Users && Array.isArray(window.Storage.Users.users)) {
                                                                                     usersData = window.Storage.Users.users;
@@ -216,12 +215,29 @@ export function attachTestingTabHandlers() {
                                                                                     window.openModal('Users (Raw)', pretty);
                                                                                 }
                                                                             };
-                                                                            if (viewDetailedUsersBtn) viewDetailedUsersBtn.onclick = () => {
+
+                                                                            if (viewDetailedUsersBtn) viewDetailedUsersBtn.onclick = async () => {
+                                                                                let detailed = null;
                                                                                 const usersInstance = getUsersInstance();
-                                                                                let detailed = usersInstance;
-                                                                                if (usersInstance && typeof usersInstance.constructor.CopyToJSON === 'function')
-                                                                                    detailed = usersInstance.constructor.CopyToJSON(usersInstance);
-                                                                                window.openModal('Users (Detailed)', JSON.stringify(detailed, null, 2));
+                                                                                if (usersInstance) {
+                                                                                    // Try to get details via UsersDetails if async
+                                                                                    if (typeof usersInstance.UsersDetails === 'function') {
+                                                                                        try {
+                                                                                            detailed = await usersInstance.UsersDetails();
+                                                                                        } catch (err) {
+                                                                                            detailed = { error: 'Failed to get UsersDetails: ' + err.message };
+                                                                                        }
+                                                                                    } else if (typeof usersInstance.constructor.CopyToJSON === 'function') {
+                                                                                        detailed = usersInstance.constructor.CopyToJSON(usersInstance);
+                                                                                    } else {
+                                                                                        detailed = usersInstance;
+                                                                                    }
+                                                                                } else {
+                                                                                    detailed = { error: 'No users instance found' };
+                                                                                }
+                                                                                if (typeof window.openModal === 'function') {
+                                                                                    window.openModal('Users (Detailed)', `<pre style=\"max-height:400px;overflow:auto;\">${JSON.stringify(detailed, null, 2)}</pre>`);
+                                                                                }
                                                                             };
 
                                                                             // MEMBERS

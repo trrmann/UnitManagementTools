@@ -16,6 +16,69 @@ class MockCacheStore {
 // --- Begin migrated test logic ---
 
 describe('Testing Tab UI', () => {
+                                        describe('Cache UI Handlers', () => {
+                                            beforeEach(() => {
+                                                // Reset DOM and mocks before each test
+                                                document.body.innerHTML = '';
+                                                jest.resetModules();
+                                            });
+
+                                            it('viewCacheBtn shows cache entries', () => {
+                                                window.Storage = {
+                                                    Cache: {
+                                                        entries: () => [
+                                                            ['foo', 'bar'],
+                                                            ['baz', 123]
+                                                        ]
+                                                    }
+                                                };
+                                                document.body.innerHTML = '<button id="viewCacheBtn"></button>';
+                                                window.alert = jest.fn();
+                                                require('../testing.ui.js');
+                                                document.getElementById('viewCacheBtn').onclick();
+                                                expect(window.alert).toHaveBeenCalledWith(
+                                                    'Cache Entries:\n' + JSON.stringify([
+                                                        ['foo', 'bar'],
+                                                        ['baz', 123]
+                                                    ], null, 2)
+                                                );
+                                            });
+
+                                            it('importCacheInput imports cache entries from JSON', () => {
+                                                const setMock = jest.fn();
+                                                window.Storage = {
+                                                    Cache: {
+                                                        Set: setMock
+                                                    }
+                                                };
+                                                document.body.innerHTML = '<input type="file" id="importCacheInput">';
+                                                window.alert = jest.fn();
+                                                require('../testing.ui.js');
+                                                const input = document.getElementById('importCacheInput');
+                                                // Prepare file as array of pairs
+                                                const file = new Blob([
+                                                    JSON.stringify([
+                                                        ['foo', 'bar'],
+                                                        ['baz', 123]
+                                                    ])
+                                                ], { type: 'application/json' });
+                                                file.name = 'test.json';
+                                                Object.defineProperty(input, 'files', { value: [file] });
+                                                // Simulate FileReader
+                                                const origFileReader = window.FileReader;
+                                                function MockFileReader() {
+                                                    this.readAsText = function(f) {
+                                                        this.onload({ target: { result: '[ ["foo", "bar"], ["baz", 123] ]' } });
+                                                    };
+                                                }
+                                                window.FileReader = MockFileReader;
+                                                input.dispatchEvent(new window.Event('change'));
+                                                expect(setMock).toHaveBeenCalledWith('foo', 'bar');
+                                                expect(setMock).toHaveBeenCalledWith('baz', 123);
+                                                expect(window.alert).toHaveBeenCalledWith('Cache import successful.');
+                                                window.FileReader = origFileReader;
+                                            });
+                                        });
                                     describe('Event Schedule Templates Import/Export Buttons (Mock)', () => {
                                         beforeEach(() => {
                                             document.body.innerHTML = `
@@ -188,7 +251,12 @@ describe('Testing Tab UI', () => {
                             });
 
                             it('Export Raw Users button downloads users as JSON', () => {
-                                window.Users = { users: { foo: 'bar' } };
+                                window.Users = { users: [{ foo: 'bar' }] };
+                                window.URL.createObjectURL = jest.fn(() => 'blob:url');
+                                window.URL.revokeObjectURL = jest.fn();
+                                document.createElement = jest.fn(() => ({ click: jest.fn(), set href(v) {}, set download(v) {}, remove() {} }));
+                                document.body.appendChild = jest.fn();
+                                document.body.removeChild = jest.fn();
                                 const { attachTestingTabHandlers } = require('../testing.ui.js');
                                 attachTestingTabHandlers();
                                 document.getElementById('exportRawUsersBtn').dispatchEvent(new window.Event('click'));
@@ -713,15 +781,24 @@ describe('Testing Tab UI', () => {
     });
 
     it('viewCacheBtn shows cache entries', () => {
-        window.CacheStore = {
-            entries: () => [['foo', 'bar'], ['baz', 123]]
+        window.Storage = {
+            Cache: {
+                entries: () => [
+                    ['foo', 'bar'],
+                    ['baz', 123]
+                ]
+            }
         };
         document.body.innerHTML += '<button id="viewCacheBtn"></button>';
-        require('../testing.ui.js');
         window.alert = jest.fn();
+        require('../testing.ui.js');
         document.getElementById('viewCacheBtn').onclick();
-        expect(window.alert).toHaveBeenCalledWith(expect.stringContaining('Cache Entries'));
-        expect(window.alert).toHaveBeenCalledWith(expect.stringContaining('foo'));
+        expect(window.alert).toHaveBeenCalledWith(
+            'Cache Entries:\n' + JSON.stringify([
+                ['foo', 'bar'],
+                ['baz', 123]
+            ], null, 2)
+        );
     });
 
     it('exportCacheBtn downloads cache entries as JSON', () => {
@@ -745,22 +822,35 @@ describe('Testing Tab UI', () => {
 
     it('importCacheInput imports cache entries from JSON', () => {
         const setMock = jest.fn();
-        window.CacheStore = { Set: setMock };
+        window.Storage = {
+            Cache: {
+                Set: setMock
+            }
+        };
         document.body.innerHTML += '<input type="file" id="importCacheInput">';
-        require('../testing.ui.js');
         window.alert = jest.fn();
+        require('../testing.ui.js');
         const input = document.getElementById('importCacheInput');
-        const file = new Blob([JSON.stringify([['foo', 'bar']])], { type: 'application/json' });
+        // Prepare file as array of pairs
+        const file = new Blob([
+            JSON.stringify([
+                ['foo', 'bar'],
+                ['baz', 123]
+            ])
+        ], { type: 'application/json' });
         file.name = 'test.json';
         const event = { target: { files: [file] } };
         // Simulate FileReader
         const origFileReader = window.FileReader;
         function MockFileReader() {
-            this.readAsText = function(f) { this.onload({ target: { result: '[ ["foo", "bar"] ]' } }); };
+            this.readAsText = function(f) {
+                this.onload({ target: { result: '[ ["foo", "bar"], ["baz", 123] ]' } });
+            };
         }
         window.FileReader = MockFileReader;
         input.onchange(event);
         expect(setMock).toHaveBeenCalledWith('foo', 'bar');
+        expect(setMock).toHaveBeenCalledWith('baz', 123);
         expect(window.alert).toHaveBeenCalledWith('Cache import successful.');
         window.FileReader = origFileReader;
     });

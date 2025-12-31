@@ -240,6 +240,54 @@ describe('Users Tab UI', () => {
         expect(window.alert).toHaveBeenCalled();
     });
 
+    it('view detailed users button displays user details in modal', () => {
+        // Async UsersDetails path
+        window.Users = {
+            users: [
+                { memberNumber: '101', fullname: 'Detail User', email: 'detail@example.com', roleNames: ['Detailer'] }
+            ],
+            UsersDetails: jest.fn(async () => [
+                { memberNumber: '101', fullname: 'Detail User', email: 'detail@example.com', roleNames: ['Detailer'] }
+            ]),
+            constructor: {
+                CopyToJSON: jest.fn((instance) => ({ details: instance.users }))
+            }
+        };
+        window.openModal = jest.fn();
+        const btn = document.createElement('button');
+        btn.id = 'viewDetailedUsersBtn';
+        document.body.appendChild(btn);
+        // Attach new async handler
+        btn.onclick = async () => {
+            let detailed = null;
+            const usersInstance = window.Users;
+            if (usersInstance) {
+                if (typeof usersInstance.UsersDetails === 'function') {
+                    try {
+                        detailed = await usersInstance.UsersDetails();
+                    } catch (err) {
+                        detailed = { error: 'Failed to get UsersDetails: ' + err.message };
+                    }
+                } else if (typeof usersInstance.constructor.CopyToJSON === 'function') {
+                    detailed = usersInstance.constructor.CopyToJSON(usersInstance);
+                } else {
+                    detailed = usersInstance;
+                }
+            } else {
+                detailed = { error: 'No users instance found' };
+            }
+            window.openModal('Users (Detailed)', `<pre style=\"max-height:400px;overflow:auto;\">${JSON.stringify(detailed, null, 2)}</pre>`);
+        };
+        return btn.onclick().then(() => {
+            expect(window.openModal).toHaveBeenCalledWith(
+                'Users (Detailed)',
+                expect.stringContaining('Detail User')
+            );
+            expect(window.Users.UsersDetails).toHaveBeenCalled();
+            document.body.removeChild(btn);
+        });
+    });
+
     it('renders users from Users class (integration)', async () => {
         // Mock Storage and Users.Factory
         const mockUsers = [

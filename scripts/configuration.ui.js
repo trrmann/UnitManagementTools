@@ -136,8 +136,7 @@ export async function renderConfigurationTable(storageObj) {
         }
         // Flatten config for hierarchical display
         const flat = configInstance.FlattenObject(configInstance.Config);
-        // Log to console in hierarchical form
-        // Build and render tree
+        // ...existing code...
         const tree = buildConfigTree(flat);
         renderConfigTreeRows(tree, tbody);
         // Attach button handlers (for demo, just log)

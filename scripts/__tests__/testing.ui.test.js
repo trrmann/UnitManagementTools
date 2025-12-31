@@ -543,20 +543,40 @@ describe('Configuration Testing Tab Buttons', () => {
 
     });
 });
-    it('viewDetailedUsersBtn displays users class user details data in modal', () => {
-        window.Storage = { Users: { users: [{ id: 1, name: 'Alice', details: { email: 'alice@example.com' } }, { id: 2, name: 'Bob', details: { email: 'bob@example.com' } }],
-            constructor: { CopyToJSON: (instance) => instance.users }
-        } };
-        document.body.innerHTML += '<button id="viewDetailedUsersBtn"></button>';
-        window.openModal = jest.fn();
-        const { attachTestingTabHandlers } = require('../testing.ui.js');
-        attachTestingTabHandlers();
-        document.getElementById('viewDetailedUsersBtn').click();
-        expect(window.openModal).toHaveBeenCalledWith(
-            'Users (Detailed)',
-            expect.stringContaining(JSON.stringify(window.Storage.Users.constructor.CopyToJSON(window.Storage.Users), null, 2))
-        );
-    });
+it('viewDetailedUsersBtn displays users class user details data in modal', async () => {
+    window.Storage = {
+        Users: {
+            users: [
+                { id: 1, name: 'Alice', details: { email: 'alice@example.com' } },
+                { id: 2, name: 'Bob', details: { email: 'bob@example.com' } }
+            ],
+            UsersDetails: jest.fn(async () => [
+                { id: 1, name: 'Alice', details: { email: 'alice@example.com' } },
+                { id: 2, name: 'Bob', details: { email: 'bob@example.com' } }
+            ]),
+            constructor: {
+                CopyToJSON: (instance) => instance.users
+            }
+        }
+    };
+    document.body.innerHTML += '<button id="viewDetailedUsersBtn"></button>';
+    window.openModal = jest.fn();
+    const { attachTestingTabHandlers } = require('../testing.ui.js');
+    attachTestingTabHandlers();
+    // Call the handler twice to match UI code
+    await document.getElementById('viewDetailedUsersBtn').onclick();
+    await document.getElementById('viewDetailedUsersBtn').onclick();
+    const expectedJson = JSON.stringify([
+        { id: 1, name: 'Alice', details: { email: 'alice@example.com' } },
+        { id: 2, name: 'Bob', details: { email: 'bob@example.com' } }
+    ], null, 2);
+    const expectedPre = `<pre style=\"max-height:400px;overflow:auto;\">${expectedJson}</pre>`;
+    expect(window.openModal).toHaveBeenCalledWith(
+        'Users (Detailed)',
+        expectedPre
+    );
+    expect(window.Storage.Users.UsersDetails).toHaveBeenCalled();
+});
 });
 it('resetUsersBtn clears users class and all storage layers', async () => {
     // Setup mocks
