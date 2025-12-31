@@ -79,6 +79,13 @@ import { Auth } from "../modules/auth.mjs";
 import { PublicKeyCrypto } from "../modules/crypto.mjs";
 import { Site } from "../modules/site.mjs";
 
+// Instantiate Storage and CacheStore as early as possible for global use
+if (typeof window !== 'undefined') {
+    (async () => {
+        window.Storage = await Storage.Factory();
+    })();
+}
+
 // --- Public/Private Key Encryption Usage Example ---
 (async () => {
     // 1. Generate a key pair
