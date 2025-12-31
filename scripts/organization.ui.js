@@ -44,9 +44,9 @@ export async function renderOrganizationTable(storageObj) {
                 const bg = rowIndex % 2 === 0 ? '#f9fbfd' : '#f3f6fa';
                 tr.innerHTML = `
                     <td style="padding-left:2.5em; background:${bg};">${unit.name}</td>
-                    <td style="background:${bg}; color:#567;">${unit.unitNumber}</td>
-                    <td style="background:${bg}; text-transform:capitalize; color:#468;">${unit.type}</td>
-                    <td style="background:${bg};">
+                    <td style="background:${bg}; color:#567; text-align:center;">${unit.unitNumber}</td>
+                    <td style="background:${bg}; text-transform:capitalize; color:#468; text-align:center;">${unit.type}</td>
+                    <td style="background:${bg}; text-align:center;">
                         <button class="org-edit-btn" data-unit="${unit.unitNumber}" style="margin-right:0.5em;">Edit</button>
                         <button class="org-delete-btn" data-unit="${unit.unitNumber}">Delete</button>
                     </td>
