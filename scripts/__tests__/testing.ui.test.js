@@ -19,12 +19,13 @@ describe('Testing Tab UI', () => {
         it('viewRawUsersBtn displays users class user entries from storage', () => {
             window.Storage = { Users: { users: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }] } };
             document.body.innerHTML += '<button id="viewRawUsersBtn"></button>';
-            window.alert = jest.fn();
+            window.openModal = jest.fn();
             const { attachTestingTabHandlers } = require('../testing.ui.js');
             attachTestingTabHandlers();
             document.getElementById('viewRawUsersBtn').click();
-            expect(window.alert).toHaveBeenCalledWith(
-                'Users (Raw):\n' + JSON.stringify(window.Storage.Users.users, null, 2)
+            expect(window.openModal).toHaveBeenCalledWith(
+                'Users (Raw)',
+                expect.stringContaining(JSON.stringify(window.Storage.Users.users, null, 2))
             );
         });
     beforeEach(() => {

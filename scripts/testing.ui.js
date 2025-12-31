@@ -168,8 +168,6 @@ export function attachTestingTabHandlers() {
                                                                                 const pretty = `<pre style=\"max-height:400px;overflow:auto;\">${JSON.stringify(usersData, null, 2)}</pre>`;
                                                                                 if (typeof window.openModal === 'function') {
                                                                                     window.openModal('Users (Raw)', pretty);
-                                                                                } else {
-                                                                                    alert('Users (Raw):\n' + JSON.stringify(usersData, null, 2));
                                                                                 }
                                                                             };
                                                                             if (viewDetailedUsersBtn) viewDetailedUsersBtn.onclick = () => {
