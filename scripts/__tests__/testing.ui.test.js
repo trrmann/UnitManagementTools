@@ -149,16 +149,19 @@ describe('Testing Tab UI', () => {
         resetCloudStorage();
         expect(window.alert).toHaveBeenCalledWith('Cloud Storage reset triggered. All cloud storage entries removed.');
     });
-    it('viewCacheBtn shows cache entries', () => {
+    it('viewCacheBtn shows cache entries in modal', () => {
         window.CacheStore = {
             entries: () => [['foo', 'bar'], ['baz', 123]]
         };
         document.body.innerHTML += '<button id="viewCacheBtn"></button>';
+        const openModalMock = jest.fn();
+        window.openModal = openModalMock;
         require('../testing.ui.js');
-        window.alert = jest.fn();
         document.getElementById('viewCacheBtn').onclick();
-        expect(window.alert).toHaveBeenCalledWith(expect.stringContaining('Cache Entries'));
-        expect(window.alert).toHaveBeenCalledWith(expect.stringContaining('foo'));
+        expect(openModalMock).toHaveBeenCalledWith(
+            expect.stringContaining('Cache Entries'),
+            expect.stringContaining('foo')
+        );
     });
 
     it('exportCacheBtn downloads cache entries as JSON', () => {

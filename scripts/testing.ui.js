@@ -1140,7 +1140,12 @@ export function attachTestingTabHandlers() {
             if (window.CacheStore && typeof window.CacheStore.entries === 'function') {
                 entries = window.CacheStore.entries();
             }
-            alert('Cache Entries:\n' + JSON.stringify(entries, null, 2));
+            const pretty = `<pre style="max-height:400px;overflow:auto;">${JSON.stringify(entries, null, 2)}</pre>`;
+            if (typeof window.openModal === 'function') {
+                window.openModal('Cache Entries', pretty);
+            } else {
+                alert('Cache Entries:\n' + JSON.stringify(entries, null, 2));
+            }
         };
         if (exportCacheBtn) exportCacheBtn.onclick = () => {
             let entries = [];
