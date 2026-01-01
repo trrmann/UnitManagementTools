@@ -28,7 +28,7 @@ import { ObjectUtils, createStorageConfig } from "./objectUtils.mjs";
 export class Configuration {
     #foundIn = new Set();
     #storage;
-    _initTimeoutMS = 5000; // default max wait time in ms
+    #initTimeoutMS = 5000; // default max wait time in ms
     // ===== Instance Accessors =====
     /**
      * Async accessor for the storage object.
@@ -84,7 +84,7 @@ export class Configuration {
                 await this._Storage = storageObject;
                 resolve();
             } catch (e) {
-                if (Date.now() - start > this._initTimeoutMS) {
+                if (Date.now() - start > this.#initTimeoutMS) {
                     reject(new Error('Configuration: Storage initialization timed out.'));
                 } else {
                     setTimeout(() => tryInit(resolve, reject), 50);
