@@ -164,7 +164,7 @@ export class Roles {
         // 5. If still not found, fallback to GitHubData (read-only, robust API)
         if ((rolesObj === undefined || rolesObj === null) && this.Callings.storage && typeof this.Callings.storage._gitHubDataObj === 'object' && typeof this.Callings.storage._gitHubDataObj.get === 'function') {
             try {
-                rolesObj = await this.Callings.storage._gitHubDataObj.get(Roles.RolesFilename, "json");
+                rolesObj = await this.Callings.storage._gitHubDataObj.get(Roles.RolesFilename, "json", null, {});
                 if (rolesObj !== undefined && rolesObj !== null) foundIn = 'github';
             } catch (e) {
                 // If file not found or error, leave rolesObj undefined

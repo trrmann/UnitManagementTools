@@ -138,7 +138,7 @@ export class Members {
         // 5. If still not found, fallback to GitHubData (read-only, robust API)
         if ((membersObj === undefined || membersObj === null) && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.get === 'function') {
             try {
-                membersObj = await this.Storage._gitHubDataObj.get(Members.MembersFilename, "json");
+                membersObj = await this.Storage._gitHubDataObj.get(Members.MembersFilename, "json", null, {});
                 if (membersObj !== undefined && membersObj !== null) foundIn = 'github';
             } catch (e) {
                 // If file not found or error, leave membersObj undefined

@@ -341,7 +341,7 @@ export class Users {
         // If not found in GoogleDrive, try GitHubData (read-only, robust API)
         if (!usersObj && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.get === 'function') {
             try {
-                usersObj = await this.Storage._gitHubDataObj.get(Users.UsersFilename, "json");
+                usersObj = await this.Storage._gitHubDataObj.get(Users.UsersFilename, "json", null, {});
             } catch (e) {
                 // If file not found or error, leave usersObj undefined
             }

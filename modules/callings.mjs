@@ -129,7 +129,7 @@ export class Callings {
         // 5. If still not found, fallback to GitHubData (read-only, robust API)
         if ((callingsObj === undefined || callingsObj === null) && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.get === 'function') {
             try {
-                callingsObj = await this.Storage._gitHubDataObj.get(Callings.CallingsFilename, "json");
+                callingsObj = await this.Storage._gitHubDataObj.get(Callings.CallingsFilename, "json", null, {});
                 if (callingsObj !== undefined && callingsObj !== null) foundIn = 'github';
             } catch (e) {
                 // If file not found or error, leave callingsObj undefined

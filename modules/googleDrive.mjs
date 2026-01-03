@@ -131,10 +131,10 @@ export class GoogleDrive {
             if (config.name) drive._secretManagerName = config.name;
         } else {
             // Use robust GitHubData API for config and secrets
-            const googleConfig = await drive._gitHubDataObj.get("googleDrive.json", "json");
+            const googleConfig = await drive._gitHubDataObj.get("googleDrive.json", "json", null, {});
             let secrets = null;
             try {
-                secrets = await drive._gitHubDataObj.get("secrets.json", "json");
+                secrets = await drive._gitHubDataObj.get("secrets.json", "json", null, {});
             } catch(error) {
                 try {
                     const response = await fetch("data/secrets.json");

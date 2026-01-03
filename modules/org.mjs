@@ -111,7 +111,7 @@ export class Org {
         // 5. If still not found, fallback to GitHubData (read-only, robust API)
         if (orgObj === undefined && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.get === 'function') {
             try {
-                orgObj = await this.Storage._gitHubDataObj.get(Org.OrgFilename, "json");
+                orgObj = await this.Storage._gitHubDataObj.get(Org.OrgFilename, "json", null, {});
                 if (orgObj !== undefined) foundIn = 'github';
             } catch (e) {
                 // If file not found or error, leave orgObj undefined
