@@ -6,6 +6,10 @@ import { GitHubData } from "./gitHubData.mjs";
 import { PublicKeyCrypto } from "./crypto.mjs";
 import { TimerUtils } from "./objectUtils.mjs";
 export class Storage {
+        // Compatibility getter for modules expecting _gitHubDataObj
+        get _gitHubDataObj() {
+            return this._gitHub;
+        }
     // ===== Private Fields =====
     #initTimeoutMS = 5000; // default max wait time in ms
     #storage;
@@ -25,19 +29,12 @@ export class Storage {
     get Crypto() { return this._crypto; }
     get GoogleDrive() { return this._googleDrive; }
     get GitHub() { return this._gitHub; }
-    /**
-     * Async accessor for the storage object.
-     * @returns {Promise<Object>} The storage object.
-     * @example
-     *   const storage = await storageManager.Storage;
-     */
-    async get Storage() {
-        await this._initPromise;
+    // Synchronous accessor for the storage object (if needed)
+    get Storage() {
         return this.#storage;
     }
-    // Protected async setter for Storage
-    async set _Storage(val) {
-        await this._initPromise;
+    // Synchronous setter for the storage object (if needed)
+    set _Storage(val) {
         if (!val || typeof val.Get !== 'function' || typeof val.Set !== 'function') {
             throw new Error('Storage: storageObject must be provided and implement async Get/Set methods.');
         }
@@ -66,14 +63,7 @@ export class Storage {
         this._sessionStorage_default_value_expireMS = SessionStorage.DefaultSessionStorageValueExpireMS;
         this._googleDrive = null;
         this._gitHub = null;
-        // Async initialization pattern
-        this._initPromise = this._asyncInit();
-    }
-
-    async _asyncInit() {
-        // Add any async initialization logic here if needed in the future
-        // For now, just a placeholder to match Configuration
-        return true;
+        // No async initialization pattern; all async setup is handled in the Factory method
     }
 
     // ===== Static Methods =====

@@ -11,8 +11,7 @@
     <link rel="stylesheet" href="styles/roles.css">
     <link rel="stylesheet" href="styles/users.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script type="module" src="scripts/script.js"></script>
-    <script type="module" src="scripts/members.ui.js"></script>
+    <!-- scripts moved to end of body for proper DOM initialization -->
 </head>
 <body>
     <div class="container" id="mainContainer" style="display: none;">
@@ -858,4 +857,6 @@
     </div>
     </div>
 </body>
+    <script type="module" src="scripts/script.js"></script>
+    <script type="module" src="scripts/members.ui.js"></script>
 </html>

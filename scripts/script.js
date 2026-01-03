@@ -1,3 +1,8 @@
+// Global error handler for debugging
+window.addEventListener('error', function(event) {
+    console.error('[GLOBAL ERROR]', event.message, event.filename, event.lineno, event.colno, event.error);
+});
+console.log('[DEBUG] scripts/script.js loaded and running.');
 // --- Dashboard Quick Actions: Reset Password ---
 document.addEventListener('DOMContentLoaded', () => {
     const resetPasswordBtn = document.getElementById('resetPasswordBtn');
@@ -76,6 +81,7 @@ window.showSection = function(sectionId) {
 
 import { Storage } from "../modules/storage.mjs";
 import { Auth } from "../modules/auth.mjs";
+console.log('[DEBUG] Auth module imported:', typeof Auth);
 import { PublicKeyCrypto } from "../modules/crypto.mjs";
 import { Site } from "../modules/site.mjs";
 
@@ -119,7 +125,9 @@ if (typeof window !== 'undefined') {
     // Render members table on page load
     window.siteInstance.renderMembersTable();
     let authInstance = null;
+    console.log('[DEBUG] Calling Auth.Factory(store) directly after site initialization');
     Auth.Factory(store).then(auth => {
+        console.log('[DEBUG] Auth.Factory(store) resolved');
         authInstance = auth;
         window.authInstance = auth;
         // Ensure role selector is correct on resize
@@ -128,6 +136,8 @@ if (typeof window !== 'undefined') {
                 authInstance.LoadRoleSelector();
             }
         });
+    }).catch(e => {
+        console.error('[DEBUG] Auth.Factory(store) rejected:', e);
     });
 })();
 

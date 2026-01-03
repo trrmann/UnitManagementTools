@@ -24,15 +24,30 @@ export class Auth {
         this.currentUser = null;
     }
     static async Factory(storageObject) {
+        console.log('[DEBUG] Auth.Factory called');
         // Use Configuration.Fetch to leverage hierarchical caching
         const configInstance = await Configuration.Factory(storageObject);
-        await configInstance.Fetch();
+        // Ensure configuration is loaded before passing to Auth
+        let configData = null;
+        if (typeof configInstance.Fetch === 'function') {
+            configData = await configInstance.Fetch();
+        }
+        // Defensive: if configData is not loaded, throw error
+        if (!configData) {
+            throw new Error('Auth.Factory: Configuration could not be loaded.');
+        }
+        // Attach configuration data to configInstance for Auth constructor
+        configInstance.configuration = configData;
+        configInstance._storageObj = storageObject; // Ensure _storageObj is set
         const auth = new Auth(configInstance);
         auth.CreateLoginModalWithSpecs();
         (async function() {
             try {
                 // Always reload users for login page
-                const usersObj = await Users.Factory(configInstance);
+                const usersObj = await Users.Factory({
+                    configuration: configInstance.configuration,
+                    _storageObj: configInstance._storageObj
+                });
                 auth.allUsers = await usersObj.UsersDetails();
                 auth.PopulateEmailList(auth.emailListID);
             } catch (error) {
@@ -54,8 +69,70 @@ export class Auth {
         })();
         return auth;
     }
+
     // Dynamically create and insert the login modal HTML
     CreateLoginModalWithSpecs() {
+        // ...existing code...
+    }
+    // Handle login form submission
+    async HandleLogin(event) {
+        // ...existing code...
+    }
+    // Populate email datalist with users from JSON
+    PopulateEmailList(elementID) {
+        // ...existing code...
+    }
+    ShowLoginForm() {
+        // ...existing code...
+    }
+    // Show dashboard
+    async ShowDashboard() {
+        // ...existing code...
+    }
+    // Load and configure role selector
+    async LoadRoleSelector() {
+        // ...existing code...
+    }
+    // Role display update function
+    UpdateRole() {
+        // ...existing code...
+    }
+    // Get display name for role value
+    GetRoleDisplayName(roleValue) {
+        // ...existing code...
+    }
+    static get SESSION_KEY() { return 'currentUser'; }
+    // Store user session in sessionStorage
+    static setSession(user) {
+        // ...existing code...
+    }
+    // Retrieve user session from sessionStorage
+    static getSession() {
+        // ...existing code...
+    }
+    // Remove user session from sessionStorage
+    static clearSession() {
+        // ...existing code...
+    }
+    // Check if a user is currently authenticated
+    static isAuthenticated() {
+        // ...existing code...
+    }
+    // Handle login (returns user object if successful, null otherwise)
+    static login(email, password, users) {
+        // ...existing code...
+    }
+    // Handle logout
+    static logout() {
+        // ...existing code...
+    }
+    // Render members table (moved from scripts/script.js)
+    async renderMembersTable() {
+        // ...existing code...
+    }
+    // Dynamically create and insert the login modal HTML
+    CreateLoginModalWithSpecs() {
+        console.log('[DEBUG] Entering CreateLoginModalWithSpecs');
         if (document.getElementById(this.destinationID)) return;
         const modal = document.createElement('div');
         const loginFormContainer = document.createElement('div');
@@ -83,6 +160,17 @@ export class Auth {
         passwordInput.id = this.passwordInputID;
 
         modal.className = 'modal active';
+        modal.style.zIndex = '10001'; // Ensure above static modal
+        modal.style.position = 'fixed';
+        modal.style.left = '0';
+        modal.style.top = '0';
+        modal.style.width = '100vw';
+        modal.style.height = '100vh';
+        modal.style.display = 'flex';
+        modal.style.alignItems = 'center';
+        modal.style.justifyContent = 'center';
+        modal.style.background = 'rgba(0,0,0,0.7)';
+
         loginFormContainer.className = 'modal-content login-form-container';
         loginHeader.className = 'login-header';
         churchLogo.className = 'login-logo';
@@ -136,11 +224,13 @@ export class Auth {
         loginFormContainer.appendChild(loginHeader);
         loginFormContainer.appendChild(loginForm);
         modal.appendChild(loginFormContainer);
-        if(this.target==='body:prepend') {
-            document.body.prepend(modal);
-        } else {
-            document.getElementById(this.target).appendChild(modal);
-        }
+        // Always append as last child of body for highest stacking
+        document.body.appendChild(modal);
+        // Hide static modal if present
+        const staticModal = document.getElementById('modal');
+        if (staticModal) staticModal.style.display = 'none';
+        // Debug log
+        console.log('[Auth] Login modal created and appended to body.');
     }
     // Handle login form submission
     async HandleLogin(event) {
@@ -184,15 +274,15 @@ export class Auth {
     ShowLoginForm() {
         const loginModal = document.getElementById(this.destinationID);
         const mainContainer = document.getElementById(this.mainContainerID);
-        if (loginModal) loginModal.classList.add('active');
+        if (loginModal) {
+            loginModal.style.display = '';
+            loginModal.classList.add('active');
+            loginModal.style.zIndex = '9999';
+        }
         if (mainContainer) mainContainer.style.display = 'none';
     }
     // Show dashboard
     async ShowDashboard() {
-        /*const config = {
-            configuration: this.configuration,
-            _storageObj: this._storageObj
-        };/**/
         let config = null;
         if(this.configuration) {
             config = this.configuration;
@@ -204,14 +294,29 @@ export class Auth {
         if (typeof this.renderMembersTable === 'function') {
             this.renderMembersTable();
         }
+
+        // Update the dashboard username/title display
+        const userNameSpan = document.getElementById('userName');
+        if (userNameSpan && this.currentUser) {
+            // Prefer fullname with title if available, fallback to email
+            let displayName = this.currentUser.fullname || this.currentUser.name || this.currentUser.email || '';
+            // If callingTitles exist, append the first title
+            if (Array.isArray(this.currentUser.callingTitles) && this.currentUser.callingTitles.length > 0) {
+                displayName = `${this.currentUser.callingTitles[0]} ${displayName}`;
+            }
+            userNameSpan.textContent = displayName;
+        }
         const loginModal = document.getElementById(this.destinationID);
         const mainContainer = document.getElementById(this.mainContainerID);
         const logoutButton = document.getElementById(this.logoutID);
         const roleSelector = document.getElementById(this.roleSelectorID);
 
-        if (loginModal) loginModal.classList.remove('active');
+        if (loginModal) {
+            loginModal.classList.remove('active');
+            loginModal.style.display = 'none';
+        }
         if (mainContainer) mainContainer.style.display = 'block';
-        if (logoutButton) logoutButton.addEventListener('click', () => { this.Logout(); });
+        if (logoutButton) logoutButton.addEventListener('click', () => { Auth.logout(); });
         // Get selected role from role selector
         let selectedRole = null;
         const roleSelectorEl = document.getElementById(this.roleSelectorID);
@@ -224,7 +329,6 @@ export class Auth {
         // Helper to control menu item and part visibility using only selected role
         // Use unique names to avoid redeclaration errors if ShowDashboard is called multiple times
         const _setMenuAccess = (menuClass, accessConfig) => {
-            const config = this.configuration;
             const menuItem = document.querySelector('.' + menuClass);
             if (!menuItem || !config || !config.access || !config.access[accessConfig] || !Array.isArray(config.access[accessConfig].page)) return;
             const allowedRoleIDs = config.access[accessConfig].page;
@@ -349,101 +453,12 @@ export class Auth {
         _setMenuAccess('reportsmenuitem', 'reports');
 
         // Apply access control to all parts
-        Object.entries(config.configuration.access).forEach(([section, sectionObj]) => {
-            if (sectionObj.parts) {
-                _setPartsAccess(section, sectionObj.parts, section + '-');
-            }
-        });
-        if (roleSelector && !roleSelector._copilotRoleHandlerSet) {
-            // Remove previous event listeners to avoid stacking
-            roleSelector.onchange = null;
-            roleSelector.addEventListener('change', (e) => {
-                // Set the selected role as activeRole on the user
-                if (this.currentUser) {
-                    this.currentUser.activeRole = roleSelector.value;
+        if (config && config.access) {
+            Object.entries(config.access).forEach(([section, sectionObj]) => {
+                if (sectionObj.parts) {
+                    _setPartsAccess(section, sectionObj.parts, section + '-');
                 }
-                this.UpdateRole();
-                this.ShowDashboard();
             });
-            roleSelector._copilotRoleHandlerSet = true;
-        }
-
-
-        // All setMenuAccess and setPartsAccess logic is now handled by _setMenuAccess and _setPartsAccess above
-
-        // Initialize dashboard
-        if (this.currentUser) {
-            this.InitializeDashboard();
-        }
-    }
-    // Logout function
-    Logout() {
-        // Prevent multiple confirmations by using a static flag
-        if (this._logoutConfirming) return;
-        this._logoutConfirming = true;
-        //const confirmed = confirm('Are you sure you want to log out?');
-        const confirmed = true;
-        this._logoutConfirming = false;
-        if (confirmed) {
-            // Clear all session and role info
-            sessionStorage.removeItem('currentUser');
-            sessionStorage.removeItem('activeRole');
-            sessionStorage.removeItem('roles');
-            sessionStorage.removeItem('userRoles');
-            sessionStorage.removeItem('roleSelector');
-            this.currentUser = null;
-            // Also clear any role selector UI
-            const roleSelector = document.getElementById(this.roleSelectorID);
-            if (roleSelector) {
-                roleSelector.style.display = 'none';
-                roleSelector.classList.remove('show-mobile');
-                while (roleSelector.options.length > 1) {
-                    roleSelector.remove(1);
-                }
-            }
-            const selectedRoles = document.getElementById(this.selectedRolesID);
-            if (selectedRoles) selectedRoles.innerHTML = '';
-            // Show login form
-            this.ShowLoginForm();
-            // Clear any form data
-            const form = document.getElementById(this.formID);
-            if (form) form.reset();
-        }
-    }
-    // Initialize dashboard with user data
-    InitializeDashboard() {
-        this.UpdateUserDisplay();
-        this.LoadRoleSelector();
-    }
-    // Update user display in header
-    UpdateUserDisplay() {
-                        // ...existing code...
-                // ...existing code...
-        if (!this.currentUser) return;
-        const userName = document.getElementById('userName');
-        if (userName) {
-            // Show only the user's full name (no unit or stake info)
-            userName.textContent = this.currentUser.fullname;
-        }
-
-        // Update the Management Tools label with the stake name before the unit name and type, with a comma if both are present
-        const subtitleElem = document.querySelector('.subtitle');
-        if (subtitleElem) {
-            let stake = this.currentUser.stakeName || '';
-            let unit = this.currentUser.unitName || '';
-            let unitType = this.currentUser.unitType || '';
-            if (unitType) {
-                unitType = unitType.charAt(0).toUpperCase() + unitType.slice(1);
-            }
-            if (stake && unit) {
-                subtitleElem.textContent = `${stake} Stake, ${unit} ${unitType} Management Tools`;
-            } else if (unit) {
-                subtitleElem.textContent = `${unit} ${unitType} Management Tools`;
-            } else if (stake) {
-                subtitleElem.textContent = `${stake} Stake Management Tools`;
-            } else {
-                subtitleElem.textContent = 'Management Tools';
-            }
         }
     }
 
@@ -610,6 +625,15 @@ export class Auth {
     // Handle logout
     static logout() {
         Auth.clearSession();
+        // Hide main container and show login modal if possible
+        const mainContainer = document.getElementById('mainContainer');
+        const loginModal = document.getElementById('loginModal');
+        if (mainContainer) mainContainer.style.display = 'none';
+        if (loginModal) {
+            loginModal.style.display = '';
+            loginModal.classList.add('active');
+            loginModal.style.zIndex = '9999';
+        }
     }
     // Render members table (moved from scripts/script.js)
     async renderMembersTable() {

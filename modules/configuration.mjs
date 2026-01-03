@@ -27,6 +27,8 @@ import { Storage } from "./storage.mjs";
  *   Always use await with async utility methods to avoid accessing stale or undefined data.
  */
 export class Configuration {
+        // The filename used for configuration storage and GitHub fetches
+        static ConfigFilename = "configuration.json";
     #foundIn = new Set();
     #storage;
     #initTimeoutMS = 5000; // default max wait time in ms
@@ -68,7 +70,7 @@ export class Configuration {
     // Protected setter for Configuration
     // Synchronous setter for Configuration (should only be called after initialization)
     set _Configuration(val) {
-        this.#post(val); // Note: #post is still async, but we do not await it here
+        this.Post(val); // Note: #post is still async, but we do not await it here
         this.InvalidateCache();
     }
 
@@ -84,14 +86,8 @@ export class Configuration {
         this._Storage = storageObject;
     }
 
-    // ===== Static Methods =====
-    /**
-     * Static factory method to create a fully initialized Configuration instance.
-     * @param {Object} storageObject - The storage object used for config persistence and retrieval.
-     * @returns {Promise<Configuration>} A fully initialized Configuration instance.
-     * @example
-     *   const config = await Configuration.Factory(storage);
-     */
+
+
     static async Factory(storageObject) {
         return new Configuration(storageObject);
     }
@@ -111,32 +107,28 @@ export class Configuration {
     static async CopyFromObject(destination, source) {
         await destination._restoreConfigState(source.storage, source.configuration);
     }
+
     // Protected: encapsulate config state restoration for maintainability
     async _restoreConfigState(storageObj, configuration) {
         this._Storage = storageObj;
         this._Configuration = configuration;
         this.InvalidateCache();
     }
-        /**
-         * Invalidates the internal key map cache. Call this after configuration changes to ensure cache is rebuilt.
-         */
-        InvalidateCache() {
-            this._keyMap = undefined;
-        }
+
     /**
-     * Internal fetch method. Attempts to retrieve configuration from all storage layers in priority order.
-     *
-     * When a value is found in any storage layer, this method calls #post(configObj) to asynchronously warm all higher-priority caches.
-     *
-     * **Performance Note:**
-     * The #post calls are intentionally NOT awaited. This means cache warming is performed in the background and does not block the return of the configuration value to the caller.
-     * This design ensures that fetch operations remain fast and responsive, especially when cache warming involves slower storage layers (e.g., Google Drive, GitHub).
-     *
-     * If you require all caches to be up to date before proceeding, you should explicitly await the relevant #post calls outside this method.
-     *
-     * @returns {Promise<any>} The configuration object, or undefined if not found.
+     * Invalidates the internal key map cache. Call this after configuration changes to ensure cache is rebuilt.
      */
-    async #fetch() {
+    InvalidateCache() {
+        this._keyMap = undefined;
+    }
+
+    // Internal fetch method. Attempts to retrieve configuration from all storage layers in priority order.
+    // When a value is found in any storage layer, this method calls #post(configObj) to asynchronously warm all higher-priority caches.
+    // Performance Note: The #post calls are intentionally NOT awaited. This means cache warming is performed in the background and does not block the return of the configuration value to the caller.
+    // This design ensures that fetch operations remain fast and responsive, especially when cache warming involves slower storage layers (e.g., Google Drive, GitHub).
+    // If you require all caches to be up to date before proceeding, you should explicitly await the relevant #post calls outside this method.
+    // Returns: Promise<any> The configuration object, or undefined if not found.
+    async Fetch() {
         await this._initPromise;
         // Use the async Storage accessor
         const storage = await this.Storage;
@@ -145,7 +137,7 @@ export class Configuration {
         if (this.#foundIn.has('cache') && storage && storage.Cache && typeof storage.Cache.Get === 'function') {
             configObj = await storage.Cache.Get(Configuration.ConfigFilename);
             if (configObj !== undefined) {
-                this.#post(configObj);
+                this.Post(configObj);
                 return configObj;
             } else {
                 this.#foundIn.delete('cache');
@@ -155,7 +147,7 @@ export class Configuration {
         if (this.#foundIn.has('session') && storage && storage.SessionStorage && typeof storage.SessionStorage.Get === 'function') {
             configObj = await storage.SessionStorage.Get(Configuration.ConfigFilename);
             if (configObj !== undefined) {
-                this.#post(configObj);
+                this.Post(configObj);
                 return configObj;
             } else {
                 this.#foundIn.delete('session');
@@ -165,7 +157,7 @@ export class Configuration {
         if (this.#foundIn.has('local') && storage && storage.LocalStorage && typeof storage.LocalStorage.Get === 'function') {
             configObj = await storage.LocalStorage.Get(Configuration.ConfigFilename);
             if (configObj !== undefined) {
-                this.#post(configObj);
+                this.Post(configObj);
                 return configObj;
             } else {
                 this.#foundIn.delete('local');
@@ -181,32 +173,31 @@ export class Configuration {
         ) {
             configObj = await storage.Get(Configuration.ConfigFilename, { ...Configuration.StorageConfig });
             if (configObj !== undefined) {
-                this.#post(configObj);
+                this.Post(configObj);
                 return configObj;
             } else {
                 this.#foundIn.delete('google');
             }
         }
         // 5. Try GitHubDataObj (duck-typed: must have fetchJsonFile function)
-        if (
-            storage &&
-            typeof storage._gitHubDataObj === 'object' &&
-            typeof storage._gitHubDataObj.fetchJsonFile === 'function'
-        ) {
-            configObj = await storage._gitHubDataObj.fetchJsonFile(Configuration.ConfigFilename);
-            if (configObj !== undefined) {
-                this.#foundIn.add('github');
-                this.#post(configObj);
-                return configObj;
-            } else {
-                this.#foundIn.delete('github');
+        if (await storage && '_gitHubDataObj' in storage) {
+            const gitHubDataObj = await storage._gitHubDataObj;
+            if (gitHubDataObj && typeof gitHubDataObj.fetchJsonFile === 'function') {
+                configObj = await gitHubDataObj.fetchJsonFile(Configuration.ConfigFilename);
+                if (configObj !== undefined) {
+                    this.#foundIn.add('github');
+                    this.Post(configObj);
+                    return configObj;
+                } else {
+                    this.#foundIn.delete('github');
+                }
             }
         }
         // Not found
         return undefined;
     }
 
-    async #post(configObj) {
+    async Post(configObj) {
         await this._initPromise;
         const storage = await this.Storage;
         // 1. Write to cache if not present

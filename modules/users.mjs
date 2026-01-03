@@ -1,19 +1,19 @@
-<<<<<<< Updated upstream
-=======
+//<<<<<<< Updated upstream
+//=======
 //TODO #01 review the roles module for optimizations of fast paths, performance, memory, consurrency, and API ergonomics, perform only 1 next indiviudal update at a time with any implementations that are required with it to maintain functionality for now for review that no functionality is lost verified with valid unit tests, add new unit tests for any new functionality.  when an update is verfied as passing all valid unit tests continue to the next optimization until there are no more optimizations possible.  to not go into a loop of adding and removing the same optimization in the same module.
 //TODO #02 review the members module for optimizations of fast paths, performance, memory, consurrency, and API ergonomics, perform only 1 next indiviudal update at a time with any implementations that are required with it to maintain functionality for now for review that no functionality is lost verified with valid unit tests, add new unit tests for any new functionality.  when an update is verfied as passing all valid unit tests continue to the next optimization until there are no more optimizations possible.  to not go into a loop of adding and removing the same optimization in the same module.
 //TODO #03 review the users module for optimizations of fast paths, performance, memory, consurrency, and API ergonomics, perform only 1 next indiviudal update at a time with any implementations that are required with it to maintain functionality for now for review that no functionality is lost verified with valid unit tests, add new unit tests for any new functionality.  when an update is verfied as passing all valid unit tests continue to the next optimization until there are no more optimizations possible.  to not go into a loop of adding and removing the same optimization in the same module.
 //TODO #04 review the auth module for optimizations of fast paths, performance, memory, consurrency, and API ergonomics, perform only 1 next indiviudal update at a time with any implementations that are required with it to maintain functionality for now for review that no functionality is lost verified with valid unit tests, add new unit tests for any new functionality.  when an update is verfied as passing all valid unit tests continue to the next optimization until there are no more optimizations possible.  to not go into a loop of adding and removing the same optimization in the same module.
 //TODO #05 review the site module for optimizations of fast paths, performance, memory, consurrency, and API ergonomics, perform only 1 next indiviudal update at a time with any implementations that are required with it to maintain functionality for now for review that no functionality is lost verified with valid unit tests, add new unit tests for any new functionality.  when an update is verfied as passing all valid unit tests continue to the next optimization until there are no more optimizations possible.  to not go into a loop of adding and removing the same optimization in the same module.
 
->>>>>>> Stashed changes
+// Stashed changes
 //TODO #06 read the additional roles from the users record
 //TODO #07 validate the additional roles do not have a calling associated with them
 //TODO #08 add additional roles to the roleIDs in the userDetails output
 //TODO #09 add additional roles to the roleNames in the userDetails output
 //TODO #10 ensure the additional roles are available in the role selector on the dashboard
 
-<<<<<<< Updated upstream
+//<<<<<<< Updated upstream
 //TODO #24 add tasks module - integrate into assignments tab
 //TODO #26 add callings scrape function to callings tab
 //TODO #27 add members scrape function to users tab
@@ -32,7 +32,7 @@
 //TODO #40 sixth repeat event schedule is tithing declaration
 //TODO #41 seventh repeat event schedule is leadership youth training
 //TODO #42 eighth repeat event schedule is leadership church funds training
-=======
+//=======
 //TODO #11 add configuration tab to the UI.
 //TODO #12 add organization tab to the UI.
 //TODO #13 add callings tab to the UI.
@@ -95,7 +95,7 @@
 //TODO #64 sixth repeat event schedule is tithing declaration
 //TODO #65 seventh repeat event schedule is leadership youth training
 //TODO #66 eighth repeat event schedule is leadership church funds training
->>>>>>> Stashed changes
+//>>>>>>> Stashed changes
 
 import { Members } from "./members.mjs";
 import { createStorageConfig } from "./objectUtils.mjs";
