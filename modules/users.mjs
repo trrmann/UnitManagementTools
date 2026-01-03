@@ -1,9 +1,19 @@
+<<<<<<< Updated upstream
+=======
+//TODO #01 review the roles module for optimizations of fast paths, performance, memory, consurrency, and API ergonomics, perform only 1 next indiviudal update at a time with any implementations that are required with it to maintain functionality for now for review that no functionality is lost verified with valid unit tests, add new unit tests for any new functionality.  when an update is verfied as passing all valid unit tests continue to the next optimization until there are no more optimizations possible.  to not go into a loop of adding and removing the same optimization in the same module.
+//TODO #02 review the members module for optimizations of fast paths, performance, memory, consurrency, and API ergonomics, perform only 1 next indiviudal update at a time with any implementations that are required with it to maintain functionality for now for review that no functionality is lost verified with valid unit tests, add new unit tests for any new functionality.  when an update is verfied as passing all valid unit tests continue to the next optimization until there are no more optimizations possible.  to not go into a loop of adding and removing the same optimization in the same module.
+//TODO #03 review the users module for optimizations of fast paths, performance, memory, consurrency, and API ergonomics, perform only 1 next indiviudal update at a time with any implementations that are required with it to maintain functionality for now for review that no functionality is lost verified with valid unit tests, add new unit tests for any new functionality.  when an update is verfied as passing all valid unit tests continue to the next optimization until there are no more optimizations possible.  to not go into a loop of adding and removing the same optimization in the same module.
+//TODO #04 review the auth module for optimizations of fast paths, performance, memory, consurrency, and API ergonomics, perform only 1 next indiviudal update at a time with any implementations that are required with it to maintain functionality for now for review that no functionality is lost verified with valid unit tests, add new unit tests for any new functionality.  when an update is verfied as passing all valid unit tests continue to the next optimization until there are no more optimizations possible.  to not go into a loop of adding and removing the same optimization in the same module.
+//TODO #05 review the site module for optimizations of fast paths, performance, memory, consurrency, and API ergonomics, perform only 1 next indiviudal update at a time with any implementations that are required with it to maintain functionality for now for review that no functionality is lost verified with valid unit tests, add new unit tests for any new functionality.  when an update is verfied as passing all valid unit tests continue to the next optimization until there are no more optimizations possible.  to not go into a loop of adding and removing the same optimization in the same module.
+
+>>>>>>> Stashed changes
 //TODO #06 read the additional roles from the users record
 //TODO #07 validate the additional roles do not have a calling associated with them
 //TODO #08 add additional roles to the roleIDs in the userDetails output
 //TODO #09 add additional roles to the roleNames in the userDetails output
 //TODO #10 ensure the additional roles are available in the role selector on the dashboard
 
+<<<<<<< Updated upstream
 //TODO #24 add tasks module - integrate into assignments tab
 //TODO #26 add callings scrape function to callings tab
 //TODO #27 add members scrape function to users tab
@@ -22,6 +32,70 @@
 //TODO #40 sixth repeat event schedule is tithing declaration
 //TODO #41 seventh repeat event schedule is leadership youth training
 //TODO #42 eighth repeat event schedule is leadership church funds training
+=======
+//TODO #11 add configuration tab to the UI.
+//TODO #12 add organization tab to the UI.
+//TODO #13 add callings tab to the UI.
+//TODO #14 add roles tab to the UI.
+//TODO #15 add users tab to the UI.
+//TODO #16 add testing tab to the UI.
+//TODO #17 add workflows tab to the UI.
+//TODO #18 add event schedule templates tab to the UI.
+
+//TODO #19 add a record per row display of all configuration data on the configuration tab.
+//TODO #20 add a record per row display of all organization data on the organization tab.
+//TODO #21 add a record per row display of all callings data on the callings tab.
+//TODO #22 add a record per row display of all roles data on the roles tab.
+//TODO #23 add a record per row display of all users data on the uers tab.
+
+//TODO #24 add an edit and delete button to each record on the data display on the configuration tab.
+//TODO #25 add an edit and delete button to each record on the data display on the organization tab.
+//TODO #26 add an edit and delete button to each record on the data display on the callings tab.
+//TODO #27 add an edit and delete button to each record on the data display on the roles tab.
+//TODO #28 add an edit and delete button to each record on the data display on the users tab.
+
+//TODO #29 add reset cache button, reset session data button, reset local storage button, and the reset google drive buttons to the testing tab.
+//TODO #30 add the add, export, import, 'encryption rekey', and 'cloud storage type/account migration' buttons to the configurations tab.
+//TODO #31 add the add, export and import buttons to the callings tab.
+//TODO #32 add the add, export and import buttons to the roles tab.
+//TODO #33 add the 'add user', 'export users' and 'import users' buttons to the users tab.
+//TODO #34 add the 'export members' and 'import members' buttons to the users tab.
+
+//TODO #35 update the rights data to only allow the system admin, developer and tester roles to view the configuration tab.
+//TODO #36 update the rights data to only allow the system admin, developer and tester roles to view the organizations tab.
+//TODO #37 update the rights data to only allow the system admin, developer and tester roles to view the callings tab.
+//TODO #38 update the rights data to only allow the system admin, developer and tester roles to view the roles tab.
+//TODO #39 update the rights data to only allow the system admin, developer and tester roles to view the users tab.
+//TODO #40 update the rights data to only allow the developer and tester roles to view the testing tab.
+//TODO #41 update the rights data to only allow the system admin to view the workflows tab.
+//TODO #42 update the rights data to only allow the system admin to view the event schedule templates tab.
+
+//TODO #43 update the rights data to only allow the developer and tester roles to view and click the buttons on the testing tab.
+//TODO #44 update the rights data to only allow the system admin, developer and tester roles to view and click the buttons on the configuration tab.
+//TODO #45 update the rights data to only allow the system admin, developer and tester roles to view and click the buttons on the organizations tab.
+//TODO #46 update the rights data to only allow the system admin, developer and tester roles to view and click the buttons on the callings tab.
+//TODO #47 update the rights data to only allow the system admin, developer and tester roles to view and click the buttons on the roles tab.
+//TODO #48 update the rights data to only allow the system admin, developer and tester roles to view and clink the buttons on the users tab.
+
+//TODO #49 add tasks module - integrate into assignments tab
+//TODO #50 add callings scrape function to callings tab
+//TODO #51 add members scrape function to users tab
+//TODO #52 add schedule module integrate into the schedule tab
+//TODO #53 add events module integrate into the schedule module
+//TODO #54 first workflow is the calling pipeline
+//TODO #55 second workflow is the sacrament talk pipeline
+//TODO #56 third workflow is the sacrament prayers pipline
+//TODO #57 forth workflow is the youth temple recommend pipline
+//TODO #58 fifth workflow is the missing members pipline
+//TODO #59 first repeat event schedule is ward council meeting
+//TODO #60 second repeat event schedule is bishopric meeting
+//TODO #61 third repeat event schedule is sacrament attendance count
+//TODO #62 forth repeat event schedule is donation processing
+//TODO #63 fifth repeat event schedule is expense review
+//TODO #64 sixth repeat event schedule is tithing declaration
+//TODO #65 seventh repeat event schedule is leadership youth training
+//TODO #66 eighth repeat event schedule is leadership church funds training
+>>>>>>> Stashed changes
 
 import { Members } from "./members.mjs";
 import { createStorageConfig } from "./objectUtils.mjs";
