@@ -4,7 +4,10 @@ export function renderWorkflowsTable(workflows) {
     const tbody = document.getElementById('workflowsBody');
     if (!tbody) return;
     tbody.innerHTML = '';
-    if (!workflows || workflows.length === 0) return;
+    if (!Array.isArray(workflows) || workflows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3">No workflows data found.</td></tr>';
+        return;
+    }
     workflows.forEach(workflow => {
         const tr = document.createElement('tr');
         tr.innerHTML = `

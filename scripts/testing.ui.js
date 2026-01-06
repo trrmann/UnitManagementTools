@@ -43,10 +43,12 @@ export function attachTestingTabHandlers() {
     // Ensure Users instance is available for all handlers
     import('../modules/users.mjs').then(async ({ Users }) => {
         if (!window.Users) {
-            // Use window.Storage if available, else fallback to empty config
-            let config = {};
-            if (window.Storage) config._storageObj = window.Storage;
-            window.Users = await Users.Factory(config);
+            // Always pass {_storageObj: window.Storage} if available
+            if (window.Storage) {
+                window.Users = await Users.Factory({ _storageObj: window.Storage });
+            } else {
+                window.Users = await Users.Factory({});
+            }
         }
     });
     // CONFIGURATION
@@ -176,8 +178,8 @@ export function attachTestingTabHandlers() {
                                                                                         if (window.Storage.LocalStorage && typeof window.Storage.LocalStorage.Clear === 'function') {
                                                                                             window.Storage.LocalStorage.Clear();
                                                                                         }
-                                                                                        if (window.Storage.GoogleDrive && typeof window.Storage.GoogleDrive.listFiles === 'function' && typeof window.Storage.GoogleDrive.deleteFile === 'function') {
-                                                                                            const files = await window.Storage.GoogleDrive.listFiles("name = 'users.json'");
+                                                                                        if (window.Storage.GoogleDrive && typeof window.Storage.GoogleDrive.listDirectory === 'function' && typeof window.Storage.GoogleDrive.deleteFile === 'function') {
+                                                                                            const files = await window.Storage.GoogleDrive.listDirectory("name = 'users.json'");
                                                                                             for (const file of files) {
                                                                                                 if (file.name === 'users.json') {
                                                                                                     await window.Storage.GoogleDrive.deleteFile(file.id);

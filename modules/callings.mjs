@@ -13,10 +13,11 @@ export class Callings {
      * @param {Object} configuration - Must have a valid _storageObj with async Get/Set methods.
      */
     constructor(configuration) {
-        if (!configuration || !configuration._storageObj || typeof configuration._storageObj.Get !== 'function' || typeof configuration._storageObj.Set !== 'function') {
-            throw new Error('Callings: configuration._storageObj must be provided and implement async Get/Set methods.');
+        let storageObj = configuration?._storageObj;
+        if (!storageObj || typeof storageObj.Get !== 'function' || typeof storageObj.Set !== 'function' || storageObj.Get.constructor.name !== 'AsyncFunction' || storageObj.Set.constructor.name !== 'AsyncFunction' || !storageObj.hasOwnProperty('Get') || !storageObj.hasOwnProperty('Set')) {
+            storageObj = window.Storage;
         }
-        this.storage = configuration._storageObj;
+        this.storage = storageObj;
         this.callings = undefined;
         this.#_idMap = null;
     }
@@ -123,7 +124,9 @@ export class Callings {
         }
         // 4. If still not found, use GoogleDrive for read/write priority
         if ((callingsObj === undefined || callingsObj === null) && this.Storage && typeof this.Storage.Get === 'function' && this.Storage.constructor.name === 'GoogleDrive') {
-            callingsObj = await this.Storage.Get(Callings.CallingsFilename, { ...Callings.StorageConfig });
+            // Use robust options for GoogleDrive fetch
+            const googleOptions = { ...Callings.StorageConfig, retryCount: 2, retryDelay: 300, debug: true };
+            callingsObj = await this.Storage.Get(Callings.CallingsFilename, googleOptions);
             if (callingsObj !== undefined && callingsObj !== null) foundIn = 'google';
         }
         // 5. If still not found, fallback to GitHubData (read-only, robust API)
@@ -140,7 +143,8 @@ export class Callings {
         if (callingsObj !== undefined && callingsObj !== null) {
             // Only write to Google Drive if config was found in GitHub or GoogleDrive tier (not if found in local/session/cache)
             if (this.Storage.constructor.name === 'GoogleDrive' && (foundIn === 'github' || foundIn === 'google') && typeof this.Storage.Set === 'function') {
-                await this.Storage.Set(Callings.CallingsFilename, callingsObj, { ...Callings.StorageConfig });
+                const googleOptions = { ...Callings.StorageConfig, retryCount: 2, retryDelay: 300, debug: true };
+                await this.Storage.Set(Callings.CallingsFilename, callingsObj, googleOptions);
             }
             // Write to local storage if not found there
             if (foundIn !== 'local' && this.Storage.LocalStorage && typeof this.Storage.LocalStorage.Set === 'function') {

@@ -2,27 +2,20 @@
 import { Org } from '../modules/org.mjs';
 
 export async function renderOrganizationTable(storageObj) {
-    // Fetch and log real organization data from Org class
+    // Use async factory for proper initialization
     const store = storageObj || window.Storage;
-    const orgInstance = new Org({ _storageObj: store });
-    if (typeof orgInstance.Fetch === 'function') {
-        await orgInstance.Fetch();
-    }
+// Always use window.Storage for storage operations
+const storage = window.Storage;
+    const orgInstance = await Org.Factory({ _storageObj: store });
     // Adapt to Org class data structure
-    const stakes = orgInstance.Stakes || [];
-    if (!stakes.length) {
-        const tbody = document.getElementById('organizationBody');
-        if (tbody) tbody.innerHTML = '<tr><td colspan="4">No organization data found.</td></tr>';
+    const stakes = Array.isArray(orgInstance.Stakes) ? orgInstance.Stakes : [];
+    const tbody = document.getElementById('organizationBody');
+    if (!tbody) return;
+    if (stakes.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4">No organization data found.</td></tr>';
         console.warn('No organization data found');
         return;
     }
-
-    // Log hierarchy to console
-    // console.log('Organization Stakes:', stakes);
-
-    // Render table
-    const tbody = document.getElementById('organizationBody');
-    if (!tbody) return;
     tbody.innerHTML = '';
     let rowIndex = 0;
     for (const stake of stakes) {

@@ -9,11 +9,16 @@ export async function renderCallingsFromClass(storageObj) {
 }
 // Callings tab UI logic
 
+// Always use window.Storage for storage operations
+const storage = window.Storage;
 export function renderCallingsTable(callings) {
     const tbody = document.getElementById('callingsBody');
     if (!tbody) return;
     tbody.innerHTML = '';
-    if (!callings || callings.length === 0) return;
+    if (!Array.isArray(callings) || callings.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7">No callings data found.</td></tr>';
+        return;
+    }
     callings.forEach(calling => {
         const tr = document.createElement('tr');
         tr.innerHTML = `

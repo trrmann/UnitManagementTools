@@ -336,7 +336,9 @@ export class Users {
         }
         // If not found in any local tier, try GoogleDrive
         if (!usersObj && this.Storage && typeof this.Storage.Get === 'function' && this.Storage.constructor.name === 'GoogleDrive') {
-            usersObj = await this.Storage.Get(Users.UsersFilename, { ...Users.StorageConfig });
+            // Use robust options for GoogleDrive fetch
+            const googleOptions = { ...Users.StorageConfig, retryCount: 2, retryDelay: 300, debug: true };
+            usersObj = await this.Storage.Get(Users.UsersFilename, googleOptions);
         }
         // If not found in GoogleDrive, try GitHubData (read-only, robust API)
         if (!usersObj && this.Storage && typeof this.Storage._gitHubDataObj === 'object' && typeof this.Storage._gitHubDataObj.get === 'function') {

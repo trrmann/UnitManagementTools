@@ -4,7 +4,10 @@ export function renderRolesTable(roles) {
     const tbody = document.getElementById('rolesBody');
     if (!tbody) return;
     tbody.innerHTML = '';
-    if (!roles || roles.length === 0) return;
+    if (!Array.isArray(roles) || roles.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5">No roles data found.</td></tr>';
+        return;
+    }
     roles.forEach(role => {
         const tr = document.createElement('tr');
         tr.innerHTML = `

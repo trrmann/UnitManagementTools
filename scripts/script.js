@@ -1,3 +1,4 @@
+console.log('[DEBUG] VERY TOP OF SCRIPT.JS - Script execution started');
 // Global error handler for debugging
 window.addEventListener('error', function(event) {
     console.error('[GLOBAL ERROR]', event.message, event.filename, event.lineno, event.colno, event.error);
@@ -58,17 +59,25 @@ const originalShowSection = window.showSection;
 // ...existing code...
 window.showSection = function(sectionId) {
     originalShowSection(sectionId);
+    // Wait for window.Storage to be ready before rendering any section
+    const waitForStorage = async (cb) => {
+        if (window.Storage && typeof window.Storage.Get === 'function' && typeof window.Storage.Set === 'function') {
+            cb();
+        } else {
+            setTimeout(() => waitForStorage(cb), 50);
+        }
+    };
     if (sectionId === 'configuration') {
-        renderConfigurationTable(window.Storage);
+        waitForStorage(() => renderConfigurationTable({ _storageObj: window.Storage }));
     }
     if (sectionId === 'callings') {
-        renderCallingsFromClass(window.Storage);
+        waitForStorage(() => renderCallingsFromClass({ _storageObj: window.Storage }));
     }
     if (sectionId === 'roles') {
-        renderRolesFromClass(window.Storage);
+        waitForStorage(() => renderRolesFromClass({ _storageObj: window.Storage }));
     }
     if (sectionId === 'users') {
-        renderUsersFromClass(window.Storage);
+        waitForStorage(() => renderUsersFromClass({ _storageObj: window.Storage }));
     }
     if (sectionId === 'eventscheduletemplate') {
         import('./eventscheduletemplate.ui.js').then(mod => {
@@ -82,15 +91,135 @@ window.showSection = function(sectionId) {
 import { Storage } from "../modules/storage.mjs";
 import { Auth } from "../modules/auth.mjs";
 console.log('[DEBUG] Auth module imported:', typeof Auth);
+// Diagnostic: Print Auth and Factory right after import
+console.log('[DEBUG][IMPORT] typeof Auth:', typeof Auth);
+console.log('[DEBUG][IMPORT] Auth:', Auth);
+console.log('[DEBUG][IMPORT] typeof Auth.Factory:', typeof Auth.Factory);
+console.log('[DEBUG][IMPORT] Auth.Factory:', Auth.Factory);
 import { PublicKeyCrypto } from "../modules/crypto.mjs";
 import { Site } from "../modules/site.mjs";
+// Global unhandledrejection handler
+window.addEventListener('unhandledrejection', function(event) {
+    console.error('[GLOBAL UNHANDLED PROMISE REJECTION]', event.reason);
+});
 
-// Instantiate Storage and CacheStore as early as possible for global use
+// Unified initialization: Storage, Auth, and Site
 if (typeof window !== 'undefined') {
     (async () => {
-        window.Storage = await Storage.Factory();
+        console.log('[DEBUG] >>> TOP OF MAIN ASYNC IIFE in script.js');
+        console.log('[DEBUG] Unified App Initialization Started');
+        try {
+            window.Storage = await Storage.Factory();
+            console.debug('[DEBUG] window.Storage set:', window.Storage);
+            // Debug: Confirm code path after Storage.Factory
+            console.log('[DEBUG] After Storage.Factory, before Auth.Factory');
+        } catch (storageErr) {
+            console.error('[DEBUG] ERROR during Storage.Factory:', storageErr);
+            throw storageErr;
+        }
+        // Print Auth and Auth.Factory for diagnostics
+        console.log('[DEBUG] typeof Auth:', typeof Auth);
+        console.log('[DEBUG] Auth:', Auth);
+        console.log('[DEBUG] typeof Auth.Factory:', typeof Auth.Factory);
+        console.log('[DEBUG] Auth.Factory:', Auth.Factory);
+        // Initialize Auth FIRST
+        let authInstance = null;
+        try {
+            console.log('[DEBUG] >>> BEFORE await Auth.Factory(window.Storage)');
+            try {
+                await Auth.Factory(window.Storage)
+                    .then(auth => {
+                        console.log('[DEBUG] >>> RESOLVED Auth.Factory(window.Storage)');
+                        authInstance = auth;
+                        window.authInstance = auth;
+                        // Force the login modal to always display for testing
+                        if (authInstance && typeof authInstance.ShowLoginForm === 'function') {
+                            console.log('[DEBUG] Forcing login modal display for testing.');
+                            authInstance.ShowLoginForm();
+                            // Extra debug: check if modal is in DOM and visible
+                            const modal = document.getElementById(authInstance.destinationID);
+                            if (!modal) {
+                                console.error('[DEBUG] Login modal NOT FOUND in DOM after ShowLoginForm!');
+                            } else {
+                                console.log('[DEBUG] Login modal found in DOM after ShowLoginForm:', modal, 'Computed display:', getComputedStyle(modal).display);
+                            }
+                        }
+                    })
+                    .catch(e => {
+                        console.error('[DEBUG] >>> REJECTED Auth.Factory(window.Storage):', e);
+                    });
+                console.log('[DEBUG] >>> AFTER await Auth.Factory(window.Storage)');
+            } catch (innerErr) {
+                console.error('[DEBUG] >>> IMMEDIATE ERROR in Auth.Factory(window.Storage):', innerErr);
+            }
+        } catch (err) {
+            console.error('[DEBUG] Caught error in Auth IIFE:', err);
+        }
+        // --- Google Drive Sign-In: One-Time Prompt and Reuse ---
+        window.GoogleDriveSignInPromise = null;
+        if (window.Storage.GoogleDrive && typeof window.Storage.GoogleDrive.isSignedIn === 'function' && typeof window.Storage.GoogleDrive.signIn === 'function') {
+            if (!window.Storage.GoogleDrive.isSignedIn()) {
+                window.GoogleDriveSignInPromise = window.Storage.GoogleDrive.signIn();
+            } else {
+                window.GoogleDriveSignInPromise = Promise.resolve();
+            }
+        }
+        // Usage: await window.GoogleDriveSignInPromise before any cloud operation
+        if (!window.Storage.hasOwnProperty('Set') || typeof window.Storage.Set !== 'function' || window.Storage.Set.constructor.name !== 'AsyncFunction') {
+            Object.defineProperty(window.Storage, 'Set', {
+                value: async function(key, value, ttlMs, isObject) {
+                    if (typeof this._setSync === 'function') return this._setSync(key, value, ttlMs, isObject);
+                },
+                writable: false,
+                enumerable: false,
+                configurable: true
+            });
+            console.debug('[RUNTIME PATCH] window.Storage.Set patched as async');
+        }
+        // Guarantee configuration._storageObj uses the patched window.Storage
+        if (typeof window.configuration === 'object' && window.configuration !== null) {
+            window.configuration._storageObj = window.Storage;
+            console.debug('[RUNTIME PATCH] configuration._storageObj set to window.Storage');
+        }
+        // --- Site Initialization (after Auth) ---
+        window.membersCurrentPage = 1;
+        window.membersPerPage = 10;
+        window.siteInstance = await Site.Factory(window.Storage);
+        if (typeof window.renderMembersFromClass === 'function') {
+            await window.renderMembersFromClass(window.Storage);
+        } else if (window.siteInstance && typeof window.siteInstance.renderMembersTable === 'function') {
+            window.siteInstance.renderMembersTable();
+        }
     })();
 }
+    // After window.Storage is set, guarantee async Get/Set as own properties
+    if (window.Storage) {
+        // Patch Get if missing or not async
+        if (!window.Storage.hasOwnProperty('Get') || typeof window.Storage.Get !== 'function' || window.Storage.Get.constructor.name !== 'AsyncFunction') {
+            Object.defineProperty(window.Storage, 'Get', {
+                value: async function(key) {
+                    if (typeof this._getSync === 'function') return this._getSync(key);
+                    return undefined;
+                },
+                writable: false,
+                enumerable: false,
+                configurable: true
+            });
+            console.debug('[RUNTIME PATCH] window.Storage.Get patched as async');
+        }
+        // Patch Set if missing or not async
+        if (!window.Storage.hasOwnProperty('Set') || typeof window.Storage.Set !== 'function' || window.Storage.Set.constructor.name !== 'AsyncFunction') {
+            Object.defineProperty(window.Storage, 'Set', {
+                value: async function(key, value, ttlMs, isObject) {
+                    if (typeof this._setSync === 'function') return this._setSync(key, value, ttlMs, isObject);
+                },
+                writable: false,
+                enumerable: false,
+                configurable: true
+            });
+            console.debug('[RUNTIME PATCH] window.Storage.Set patched as async');
+        }
+    }
 
 // --- Public/Private Key Encryption Usage Example ---
 (async () => {
@@ -98,7 +227,16 @@ if (typeof window !== 'undefined') {
     const keyPair = await PublicKeyCrypto.generateKeyPair();
     // 2. Export public and private keys as base64 strings (for storage or sharing)
     const publicKeyBase64 = await PublicKeyCrypto.exportKey(keyPair.publicKey, "public");
+    console.log(publicKeyBase64);
     const privateKeyBase64 = await PublicKeyCrypto.exportKey(keyPair.privateKey, "private");
+    console.log(privateKeyBase64);
+                // Guarantee configuration._storageObj uses the patched window.Storage and log its state
+                if (typeof window.configuration === 'object' && window.configuration !== null) {
+                    window.configuration._storageObj = window.Storage;
+                    console.debug('[RUNTIME PATCH] configuration._storageObj set to window.Storage:', window.configuration._storageObj);
+                    console.debug('[RUNTIME PATCH] configuration._storageObj own Get:', window.configuration._storageObj.hasOwnProperty('Get'), typeof window.configuration._storageObj.Get, window.configuration._storageObj.Get?.constructor?.name);
+                    console.debug('[RUNTIME PATCH] configuration._storageObj own Set:', window.configuration._storageObj.hasOwnProperty('Set'), typeof window.configuration._storageObj.Set, window.configuration._storageObj.Set?.constructor?.name);
+                }
 
     // 3. Encrypt a message with the public key
     const message = "Hello, this is a secret!";
@@ -114,32 +252,7 @@ if (typeof window !== 'undefined') {
 })();
 // --- End Encryption Example ---
 
-// Initialize Site and Auth logic
-(async () => {
-    window.membersCurrentPage = 1;
-    window.membersPerPage = 10;
-    // Instantiate Site (handles all UI logic)
-    const store = await Storage.Factory();
-    window.Storage = store; // Make store globally available for configuration rendering
-    window.siteInstance = await Site.Factory(store);
-    // Render members table on page load
-    window.siteInstance.renderMembersTable();
-    let authInstance = null;
-    console.log('[DEBUG] Calling Auth.Factory(store) directly after site initialization');
-    Auth.Factory(store).then(auth => {
-        console.log('[DEBUG] Auth.Factory(store) resolved');
-        authInstance = auth;
-        window.authInstance = auth;
-        // Ensure role selector is correct on resize
-        window.addEventListener('resize', () => {
-            if (authInstance && typeof authInstance.LoadRoleSelector === 'function') {
-                authInstance.LoadRoleSelector();
-            }
-        });
-    }).catch(e => {
-        console.error('[DEBUG] Auth.Factory(store) rejected:', e);
-    });
-})();
+// (Removed duplicate site initialization logic; now handled in unified IIFE above)
 
 // Pagination rendering is now handled by Site class and Auth class as needed
 
@@ -148,28 +261,48 @@ import { renderCallingsFromClass } from './callings.ui.js';
 import { renderRolesFromClass } from './roles.ui.js';
 
 window.addEventListener('DOMContentLoaded', () => {
-    const tryRenderRoles = () => {
-        if (window.Storage && typeof renderRolesFromClass === 'function') {
-            // console.log('[DEBUG] Rendering roles table from Roles class...');
-            renderRolesFromClass(window.Storage);
+        // Global check for window.Storage after DOMContentLoaded
+        setTimeout(() => {
+            console.debug('[DEBUG][DOMContentLoaded] window.Storage:', window.Storage);
+            if (window.Storage) {
+                console.debug('[DEBUG][DOMContentLoaded] typeof window.Storage.Get:', typeof window.Storage.Get);
+                console.debug('[DEBUG][DOMContentLoaded] typeof window.Storage.Set:', typeof window.Storage.Set);
+                console.debug('[DEBUG][DOMContentLoaded] Own property names:', Object.getOwnPropertyNames(window.Storage));
+                // If Get/Set are missing, forcibly patch them to no-op async functions to prevent UI crash
+                if (typeof window.Storage.Get !== 'function') {
+                    window.Storage.Get = async () => undefined;
+                    console.warn('[DEBUG][DOMContentLoaded] Patched missing window.Storage.Get with async no-op');
+                }
+                if (typeof window.Storage.Set !== 'function') {
+                    window.Storage.Set = async () => {};
+                    console.warn('[DEBUG][DOMContentLoaded] Patched missing window.Storage.Set with async no-op');
+                }
+            } else {
+                console.error('[DEBUG][DOMContentLoaded] window.Storage is not set!');
+            }
+        }, 1000);
+    const waitForStorage = async (cb) => {
+        if (window.Storage && typeof window.Storage.Get === 'function' && typeof window.Storage.Set === 'function') {
+            cb();
         } else {
-            // console.log('[DEBUG] Storage or renderRolesFromClass not ready, retrying...');
-            setTimeout(tryRenderRoles, 100);
+            setTimeout(() => waitForStorage(cb), 50);
         }
     };
-    if (window.Storage) {
+    waitForStorage(() => {
         renderConfigurationTable(window.Storage);
         if (typeof window.renderOrganizationTable === 'function') {
-            window.renderOrganizationTable(window.Storage);
+            window.renderOrganizationTable({ _storageObj: window.Storage });
         }
         if (typeof renderCallingsFromClass === 'function') {
-            renderCallingsFromClass(window.Storage);
+            renderCallingsFromClass({ _storageObj: window.Storage });
         }
-        tryRenderRoles();
+        if (typeof renderRolesFromClass === 'function') {
+            renderRolesFromClass({ _storageObj: window.Storage });
+        }
         if (typeof renderUsersFromClass === 'function') {
-            renderUsersFromClass(window.Storage);
+            renderUsersFromClass({ _storageObj: window.Storage });
         }
-    }
+    });
 });
 
 

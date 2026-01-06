@@ -1,10 +1,20 @@
+import { Members } from '../modules/members.mjs';
+
+export async function renderMembersFromClass(storageObj) {
+    const store = storageObj || window.Storage;
+    const membersInstance = await Members.Factory({ _storageObj: store });
+    renderMembersTable(membersInstance.Members);
+}
 // Members tab UI logic
 
 export function renderMembersTable(members) {
     const tbody = document.getElementById('membersBody');
     if (!tbody) return;
     tbody.innerHTML = '';
-    if (!members || members.length === 0) return;
+    if (!Array.isArray(members) || members.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9">No members data found.</td></tr>';
+        return;
+    }
     members.forEach(member => {
         const tr = document.createElement('tr');
         tr.innerHTML = [
@@ -45,8 +55,10 @@ export function renderMembersPagination(currentPage, totalPages) {
     container.innerHTML = html;
 }
 
+
 window.renderMembersTable = renderMembersTable;
 window.renderMembersPagination = renderMembersPagination;
+window.renderMembersFromClass = renderMembersFromClass;
 window.editMember = function(memberNumber) {
     alert('Edit member: ' + memberNumber);
 };

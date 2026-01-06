@@ -128,7 +128,8 @@ export async function renderConfigurationTable(storageObj) {
         if (!store || typeof store.Get !== 'function') {
             throw new Error('No valid storage object with Get method provided.');
         }
-        const configInstance = new Configuration(store);
+        // Always wrap the storage object as {_storageObj: store} for Configuration
+        const configInstance = new Configuration({ _storageObj: store });
         await configInstance.Fetch();
         if (!configInstance.HasConfig()) {
             tbody.innerHTML = '<tr><td colspan="3">No configuration data found.</td></tr>';
@@ -136,6 +137,8 @@ export async function renderConfigurationTable(storageObj) {
         }
         // Flatten config for hierarchical display
         const flat = configInstance.FlattenObject(configInstance.Config);
+        // Always use window.Storage for storage operations
+        // Use window.Storage directly, no redeclaration
         // ...existing code...
         const tree = buildConfigTree(flat);
         renderConfigTreeRows(tree, tbody);

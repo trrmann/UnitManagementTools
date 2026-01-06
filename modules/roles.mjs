@@ -158,7 +158,9 @@ export class Roles {
         }
         // 4. If still not found, use GoogleDrive for read/write priority
         if ((rolesObj === undefined || rolesObj === null) && this.Callings.storage && typeof this.Callings.storage.Get === 'function' && this.Callings.storage.constructor.name === 'GoogleDrive') {
-            rolesObj = await this.Callings.storage.Get(Roles.RolesFilename, { ...Roles.StorageConfig });
+            // Use robust options for GoogleDrive fetch
+            const googleOptions = { ...Roles.StorageConfig, retryCount: 2, retryDelay: 300, debug: true };
+            rolesObj = await this.Callings.storage.Get(Roles.RolesFilename, googleOptions);
             if (rolesObj !== undefined && rolesObj !== null) foundIn = 'google';
         }
         // 5. If still not found, fallback to GitHubData (read-only, robust API)
@@ -175,7 +177,8 @@ export class Roles {
         if (rolesObj !== undefined && rolesObj !== null) {
             // Only write to Google Drive if config was found in GitHub or GoogleDrive tier (not if found in local/session/cache)
             if (this.Callings.storage.constructor.name === 'GoogleDrive' && (foundIn === 'github' || foundIn === 'google') && typeof this.Callings.storage.Set === 'function') {
-                await this.Callings.storage.Set(Roles.RolesFilename, rolesObj, { ...Roles.StorageConfig });
+                const googleOptions = { ...Roles.StorageConfig, retryCount: 2, retryDelay: 300, debug: true };
+                await this.Callings.storage.Set(Roles.RolesFilename, rolesObj, googleOptions);
             }
             // Write to local storage if not found there
             if (foundIn !== 'local' && this.Callings.storage.LocalStorage && typeof this.Callings.storage.LocalStorage.Set === 'function') {

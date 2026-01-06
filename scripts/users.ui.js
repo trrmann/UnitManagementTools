@@ -3,8 +3,13 @@
 export function renderUsersTable(users) {
     const tbody = document.getElementById('usersBody');
     if (!tbody) return;
+// Always use window.Storage for storage operations
+const storage = window.Storage;
     tbody.innerHTML = '';
-    if (!users || users.length === 0) return;
+    if (!Array.isArray(users) || users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6">No users data found.</td></tr>';
+        return;
+    }
     users.forEach(user => {
         const tr = document.createElement('tr');
         tr.innerHTML = `

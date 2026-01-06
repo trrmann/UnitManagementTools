@@ -49,10 +49,11 @@ export class Configuration {
     // Protected setter for Storage
     // Synchronous setter for Storage (should only be called after initialization)
     set _Storage(val) {
-        if (!val || typeof val.Get !== 'function' || typeof val.Set !== 'function') {
-            throw new Error('Configuration: storageObject must be provided and implement async Get/Set methods.');
+        let storageObj = val;
+        if (!storageObj || typeof storageObj.Get !== 'function' || typeof storageObj.Set !== 'function' || storageObj.Get.constructor.name !== 'AsyncFunction' || storageObj.Set.constructor.name !== 'AsyncFunction' || !storageObj.hasOwnProperty('Get') || !storageObj.hasOwnProperty('Set')) {
+            storageObj = window.Storage;
         }
-        this.#storage = val;
+        this.#storage = storageObj;
     }
     /**
      * Synchronous accessor for the configuration data.
@@ -89,6 +90,7 @@ export class Configuration {
 
 
     static async Factory(storageObject) {
+            console.log('[DEBUG] >>> ENTERED Configuration.Factory');
         return new Configuration(storageObject);
     }
     static async CopyFromJSON(dataJSON) {
@@ -171,7 +173,9 @@ export class Configuration {
             typeof storage.Set === 'function' &&
             (storage.isGoogleDrive === true || (storage.Get.length >= 2 && storage.Set.length >= 2))
         ) {
-            configObj = await storage.Get(Configuration.ConfigFilename, { ...Configuration.StorageConfig });
+            // Use robust options for GoogleDrive fetch
+            const googleOptions = { ...Configuration.StorageConfig, retryCount: 2, retryDelay: 300, debug: true };
+            configObj = await storage.Get(Configuration.ConfigFilename, googleOptions);
             if (configObj !== undefined) {
                 this.Post(configObj);
                 return configObj;
@@ -240,7 +244,8 @@ export class Configuration {
             !this.#foundIn.has('google')
         ) {
             try {
-                await storage.Set(Configuration.ConfigFilename, configObj, { ...Configuration.StorageConfig });
+                const googleOptions = { ...Configuration.StorageConfig, retryCount: 2, retryDelay: 300, debug: true };
+                await storage.Set(Configuration.ConfigFilename, configObj, googleOptions);
                 this.#foundIn.add('google');
             } catch (err) {
                 console.error('[Configuration] Failed to warm Google Drive storage layer:', err);

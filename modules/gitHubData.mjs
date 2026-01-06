@@ -1,4 +1,4 @@
- *
+/**
  * ----------------------------------------------------------------------------------
  *  INTERNAL PRIVATE METHODS POLICY
  * ----------------------------------------------------------------------------------
@@ -332,8 +332,8 @@ export class GitHubData {
         return this.#dataPath;
     }
     getConfigurationUrl(filename) {
-        GitHubData.#requireString(filename, "filename");
-        const normFile = GitHubData.#normalizePath(filename);
+        GitHubData.requireString(filename, "filename");
+        const normFile = GitHubData.normalizePath(filename);
         // Join parts with single slashes
         const host = this.getHost();
         const project = this.getProject();
@@ -342,8 +342,8 @@ export class GitHubData {
         return `${host}/${project}/${dataPath}/${normFile}`.replace(/([^:]\/)\/+/,'$1');
     }
     async has(filename, token = null) {
-        GitHubData.#requireString(filename, "filename");
-        const normFile = GitHubData.#normalizePath(filename);
+        GitHubData.requireString(filename, "filename");
+        const normFile = GitHubData.normalizePath(filename);
         const useToken = token !== null ? token : this.#defaultToken;
         if (this.#debug) {
             console.debug(`[GitHubData.has] Checking existence:`, { filename, normFile, token: !!token, useToken: !!useToken });
@@ -371,8 +371,8 @@ export class GitHubData {
      */
     async batchExists(filenames, dirPath = "", token = null) {
         if (!Array.isArray(filenames)) throw new Error("GitHubData.batchExists: filenames must be an array.");
-        const normDir = GitHubData.#normalizePath(dirPath || "");
-        const normFiles = filenames.map(f => GitHubData.#normalizePath(f));
+        const normDir = GitHubData.normalizePath(dirPath || "");
+        const normFiles = filenames.map(f => GitHubData.normalizePath(f));
         const useToken = token !== null ? token : this.#defaultToken;
         if (this.#debug) {
             console.debug(`[GitHubData.batchExists] Checking batch existence:`, { filenames, normFiles, dirPath, normDir, token: !!token, useToken: !!useToken });
@@ -445,8 +445,8 @@ export class GitHubData {
         }
     }
     async #fetchFileMetadata(filename, token = null) {
-        GitHubData.#requireString(filename, "filename");
-        const normFile = GitHubData.#normalizePath(filename);
+        GitHubData.requireString(filename, "filename");
+        const normFile = GitHubData.normalizePath(filename);
         const url = `https://api.github.com/repos/${this.#repoOwner}/${this.#repoName}/contents/${normFile}?ref=${this.#branch}`;
         const headers = token ? { Authorization: `token ${token}` } : {};
         if (this.#debug) {

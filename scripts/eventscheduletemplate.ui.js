@@ -15,6 +15,10 @@ export function renderEventScheduleTemplateTable() {
         { name: "Ward Council Meeting", description: "Monthly leadership meeting" },
         { name: "Bishopric Meeting", description: "Weekly bishopric planning" }
     ];
+    if (!Array.isArray(templates) || templates.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3">No event schedule templates found.</td></tr>';
+        return;
+    }
     templates.forEach((tpl, idx) => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
@@ -75,14 +79,21 @@ export function renderEventScheduleTemplateTable() {
         if (searchInput) {
             searchInput.addEventListener('input', e => {
                 const val = e.target.value.toLowerCase();
-                const filtered = allTemplates.filter(tpl =>
-                    (tpl.name || '').toLowerCase().includes(val) ||
-                    (tpl.description || '').toLowerCase().includes(val)
-                );
+                let filtered = [];
+                if (Array.isArray(allTemplates)) {
+                    filtered = allTemplates.filter(tpl =>
+                        (tpl.name || '').toLowerCase().includes(val) ||
+                        (tpl.description || '').toLowerCase().includes(val)
+                    );
+                }
                 // Render filtered
                 const tbody = document.getElementById("eventscheduletemplateBody");
                 if (!tbody) return;
                 tbody.innerHTML = "";
+                if (!Array.isArray(filtered) || filtered.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3">No event schedule templates found.</td></tr>';
+                    return;
+                }
                 filtered.forEach((tpl, idx) => {
                     const tr = document.createElement("tr");
                     tr.innerHTML = `

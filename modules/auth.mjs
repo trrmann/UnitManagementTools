@@ -1,6 +1,7 @@
 import { Members } from "../modules/members.mjs";
 import { Users } from "../modules/users.mjs";
-import { Configuration } from "./configuration.mjs";
+
+console.log('[DEBUG] VERY TOP OF AUTH.MJS - Module loaded');
 // modules/auth.mjs
 // Authentication management module for Unit Management Tools
 export class Auth {
@@ -24,7 +25,21 @@ export class Auth {
         this.currentUser = null;
     }
     static async Factory(storageObject) {
+        console.log('[DEBUG] [TRACE] VERY FIRST LINE OF Auth.Factory');
+        try { console.trace('[TRACE] Auth.Factory stack'); } catch {}
         console.log('[DEBUG] Auth.Factory called');
+        console.log('[DEBUG] [TRACE] About to dynamic import configuration.mjs');
+        let Configuration;
+        try {
+            const imported = await import('./configuration.mjs');
+            Configuration = imported.Configuration;
+            Auth.Configuration = Configuration; // Store on Auth for later use
+            console.log('[DEBUG] [TRACE] Dynamic import of configuration.mjs succeeded');
+        } catch (importErr) {
+            console.error('[DEBUG] [TRACE] Dynamic import of configuration.mjs FAILED:', importErr);
+            throw importErr;
+        }
+        console.log('[DEBUG] >>> ENTERED Auth.Factory');
         // Use Configuration.Fetch to leverage hierarchical caching
         const configInstance = await Configuration.Factory(storageObject);
         // Ensure configuration is loaded before passing to Auth
@@ -41,6 +56,7 @@ export class Auth {
         configInstance._storageObj = storageObject; // Ensure _storageObj is set
         const auth = new Auth(configInstance);
         auth.CreateLoginModalWithSpecs();
+        console.log('[DEBUG] Login modal should now be created and appended to body.');
         (async function() {
             try {
                 // Always reload users for login page
@@ -55,15 +71,18 @@ export class Auth {
                 auth.allUsers = [];
             }
             const loggedInUser = sessionStorage.getItem('currentUser');
+            console.log('[DEBUG] sessionStorage.getItem("currentUser"):', loggedInUser);
             if (loggedInUser) {
                 try {
                     auth.currentUser = JSON.parse(loggedInUser);
+                    console.log('[DEBUG] Restoring session for user:', auth.currentUser);
                     await auth.ShowDashboard();
                 } catch (error) {
                     console.error('Error restoring session:', error);
                     auth.ShowLoginForm();
                 }
             } else {
+                console.log('[DEBUG] No session found, showing login modal.');
                 auth.ShowLoginForm();
             }
         })();
@@ -132,8 +151,26 @@ export class Auth {
     }
     // Dynamically create and insert the login modal HTML
     CreateLoginModalWithSpecs() {
+        console.log('[DEBUG] >>> TOP OF CreateLoginModalWithSpecs');
         console.log('[DEBUG] Entering CreateLoginModalWithSpecs');
-        if (document.getElementById(this.destinationID)) return;
+        console.log('[DEBUG] Modal creation IDs:', {
+            destinationID: this.destinationID,
+            formID: this.formID,
+            emailInputID: this.emailInputID,
+            emailListID: this.emailListID,
+            passwordInputID: this.passwordInputID,
+            mainContainerID: this.mainContainerID,
+            roleSelectorID: this.roleSelectorID,
+            selectedRolesID: this.selectedRolesID,
+            logoutID: this.logoutID
+        });
+        if (!this.destinationID) {
+            console.warn('[DEBUG] destinationID is empty or undefined! Modal will not be created.');
+        }
+        if (document.getElementById(this.destinationID)) {
+            console.log('[DEBUG] Modal already exists in DOM, skipping creation.');
+            return;
+        }
         const modal = document.createElement('div');
         const loginFormContainer = document.createElement('div');
         const loginHeader = document.createElement('div');
@@ -178,6 +215,7 @@ export class Auth {
         passwordFormGroup.className = 'form-group';
         loginButton.className = 'btn-login';
         loginSpecialAttentionSection.className = 'demo-users';
+        // ...existing code...
 
         loginTitle.textContent = 'Unit Management Tools';
         loginMessage.textContent = 'Sign In to Your Account';
@@ -278,16 +316,24 @@ export class Auth {
             loginModal.style.display = '';
             loginModal.classList.add('active');
             loginModal.style.zIndex = '9999';
+            console.log('[DEBUG] ShowLoginForm: login modal should now be visible.', loginModal);
+        } else {
+            console.warn('[DEBUG] ShowLoginForm: login modal not found in DOM!');
         }
-        if (mainContainer) mainContainer.style.display = 'none';
+        if (mainContainer) {
+            mainContainer.style.display = 'none';
+            console.log('[DEBUG] ShowLoginForm: mainContainer hidden.');
+        }
     }
     // Show dashboard
     async ShowDashboard() {
         let config = null;
         if(this.configuration) {
             config = this.configuration;
+        } else if (Auth.Configuration) {
+            config = await Auth.Configuration.Factory(this._storageObj);
         } else {
-            config = await Configuration.Factory(this._storageObj);
+            throw new Error('Auth.ShowDashboard: Configuration class is not available.');
         }
 
         // Ensure members table is rendered for the current user

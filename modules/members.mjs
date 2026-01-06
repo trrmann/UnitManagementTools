@@ -132,7 +132,9 @@ export class Members {
         }
         // 4. If still not found, use GoogleDrive for read/write priority
         if ((membersObj === undefined || membersObj === null) && this.Storage && typeof this.Storage.Get === 'function' && this.Storage.constructor.name === 'GoogleDrive') {
-            membersObj = await this.Storage.Get(Members.MembersFilename, { ...Members.StorageConfig });
+            // Use robust options for GoogleDrive fetch
+            const googleOptions = { ...Members.StorageConfig, retryCount: 2, retryDelay: 300, debug: true };
+            membersObj = await this.Storage.Get(Members.MembersFilename, googleOptions);
             if (membersObj !== undefined && membersObj !== null) foundIn = 'google';
         }
         // 5. If still not found, fallback to GitHubData (read-only, robust API)
@@ -149,7 +151,8 @@ export class Members {
         if (membersObj !== undefined && membersObj !== null) {
             // Only write to Google Drive if config was found in GitHub or GoogleDrive tier (not if found in local/session/cache)
             if (this.Storage.constructor.name === 'GoogleDrive' && (foundIn === 'github' || foundIn === 'google') && typeof this.Storage.Set === 'function') {
-                await this.Storage.Set(Members.MembersFilename, membersObj, { ...Members.StorageConfig });
+                const googleOptions = { ...Members.StorageConfig, retryCount: 2, retryDelay: 300, debug: true };
+                await this.Storage.Set(Members.MembersFilename, membersObj, googleOptions);
             }
             // Write to local storage if not found there
             if (foundIn !== 'local' && this.Storage.LocalStorage && typeof this.Storage.LocalStorage.Set === 'function') {
