@@ -179,7 +179,7 @@ export class Org {
     // If still not found, try to fetch from /data/organizations.json (direct file fetch fallback)
     if (orgObj === undefined && typeof fetch === "function") {
       try {
-        const resp = await fetch("/data/organizations.json");
+        const resp = await fetch("/public/data/organizations.json");
         if (resp.ok) {
           orgObj = await resp.json();
           foundIn = "file";

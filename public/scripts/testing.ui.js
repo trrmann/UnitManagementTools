@@ -158,7 +158,7 @@ export function attachTestingTabHandlers() {
   async function fetchGithubJson(filename) {
     const repo = "trrmann/UnitManagementTools";
     const branch = "main";
-    const url = `https://raw.githubusercontent.com/${repo}/${branch}/data/${filename}`;
+    const url = `https://raw.githubusercontent.com/${repo}/${branch}/public/data/${filename}`;
     const resp = await fetch(url);
     if (!resp.ok) throw new Error("Failed to fetch " + filename);
     return await resp.json();

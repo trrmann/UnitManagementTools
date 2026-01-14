@@ -246,7 +246,21 @@ export class Auth {
     passwordInput.placeholder = "Enter your password";
 
     churchLogo.alt = "The Church of Jesus Christ of Latter-day Saints";
-    churchLogo.src = "images/church-logo.png";
+    // Dynamically determine if the image exists in 'images/' or 'public/images/'
+    function resolveLogoSrcWithImageProbe() {
+      // Use fetch with HEAD to avoid 404 errors in the console
+      return (async () => {
+        const trySrcs = ["images/church-logo.png", "public/images/church-logo.png"];
+        for (let i = 0; i < trySrcs.length; i++) {
+          try {
+            const resp = await fetch(trySrcs[i], { method: "HEAD" });
+            if (resp.ok) return trySrcs[i];
+          } catch {}
+        }
+        return "images/church-logo.png"; // fallback
+      })();
+    }
+    resolveLogoSrcWithImageProbe().then(src => { churchLogo.src = src; });
 
     emailInput.type = "text";
     passwordInput.type = "password";

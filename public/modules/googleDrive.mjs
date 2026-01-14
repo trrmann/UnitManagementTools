@@ -572,7 +572,7 @@ export class GoogleDrive {
         // Fallback to local if not loaded
         if (!googleConfig) {
           try {
-            const response = await fetch("data/googleDrive.json");
+            const response = await fetch("public/data/googleDrive.json");
             if (!response.ok)
               throw new Error("Local googleDrive.json not found");
             googleConfig = await response.json();
@@ -590,7 +590,7 @@ export class GoogleDrive {
         }
         if (!secrets) {
           try {
-            const response = await fetch("data/secrets.json");
+            const response = await fetch("public/data/secrets.json");
             if (!response.ok) throw new Error("Local secrets.json not found");
             secrets = await response.json();
             console.debug(

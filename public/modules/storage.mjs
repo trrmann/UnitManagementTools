@@ -185,7 +185,7 @@ export class Storage {
       // Attempt to load Google Drive config from local file
       let googleDriveConfig = null;
       try {
-        const response = await fetch("data/googleDrive.json");
+        const response = await fetch("public/data/googleDrive.json");
         if (!response.ok) throw new Error("Local googleDrive.json not found");
         const rawConfig = await response.json();
         // Normalize config for GoogleDrive.Factory
