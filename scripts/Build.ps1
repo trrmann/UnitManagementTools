@@ -3,9 +3,9 @@
 
 Write-Host "Starting Vite build..."
 
+
 # Ensure we are in the project root
-$PSScriptRoot
-Set-Location (Resolve-Path "$PSScriptRoot\..\..")
+Set-Location (Resolve-Path "$PSScriptRoot\..")
 
 # Run the Vite build
 pnpm run build

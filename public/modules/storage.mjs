@@ -156,9 +156,11 @@ export class Storage {
     let gitHubOk = false;
     let googleDriveOk = false;
     try {
+      // Use 'public/data' as the dataPath for GitHubData fetches
       storage._gitHub = await GitHubData.factory(
         "trrmann",
         "UnitManagementTools",
+        "public/data",
       );
       if (storage._gitHub && typeof storage._gitHub.get === "function") {
         gitHubOk = true;

@@ -2,8 +2,9 @@
 # Runs the full local workflow: install, lint, format, build, and preview
 
 Write-Host "Running full local workflow: install, lint, format, build, and preview..."
-$PSScriptRoot
-Set-Location (Resolve-Path "$PSScriptRoot\..\..")
+
+# Ensure we are in the project root
+Set-Location (Resolve-Path "$PSScriptRoot\..")
 
 Write-Host "Ensuring dependencies are installed..."
 pnpm install

@@ -1,8 +1,8 @@
-module.exports = [
+export default [
   {
     files: ["**/*.js", "**/*.mjs"],
     languageOptions: {
-      ecmaVersion: 2021,
+      ecmaVersion: 2022,
       sourceType: "module",
       globals: {
         window: "readonly",
@@ -16,10 +16,10 @@ module.exports = [
     linterOptions: {
       reportUnusedDisableDirectives: true,
     },
-    extends: ["eslint:recommended"],
     rules: {
       "no-unused-vars": "warn",
       "no-console": "off",
     },
+    ignores: ["dist/", "node_modules/"],
   },
 ];

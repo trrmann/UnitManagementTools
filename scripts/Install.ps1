@@ -2,8 +2,9 @@
 # Installs pnpm globally if not already installed
 
 
+
 # Ensure script runs from project root
-Set-Location (Resolve-Path "$PSScriptRoot\..\..")
+Set-Location (Resolve-Path "$PSScriptRoot\..")
 
 Write-Host "Checking for pnpm installation..."
 

@@ -8,8 +8,17 @@ const PORT = process.env.PORT || 3000;
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// Serve static files from public
-app.use(express.static(path.join(__dirname, "public")));
+// Serve static files from dist if it exists, otherwise from public
+const fs = require("fs");
+const distPath = path.join(__dirname, "dist");
+const publicPath = path.join(__dirname, "public");
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+  console.log("[server.js] Serving static files from ./dist");
+} else {
+  app.use(express.static(publicPath));
+  console.log("[server.js] Serving static files from ./public");
+}
 
 // Root route renders index.ejs
 app.get("/", (req, res) => {

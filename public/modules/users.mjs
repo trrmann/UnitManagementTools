@@ -1,5 +1,3 @@
-//<<<<<<< Updated upstream
-//=======
 //TODO #01 review the roles module for optimizations of fast paths, performance, memory, consurrency, and API ergonomics, perform only 1 next indiviudal update at a time with any implementations that are required with it to maintain functionality for now for review that no functionality is lost verified with valid unit tests, add new unit tests for any new functionality.  when an update is verfied as passing all valid unit tests continue to the next optimization until there are no more optimizations possible.  to not go into a loop of adding and removing the same optimization in the same module.
 //TODO #02 review the members module for optimizations of fast paths, performance, memory, consurrency, and API ergonomics, perform only 1 next indiviudal update at a time with any implementations that are required with it to maintain functionality for now for review that no functionality is lost verified with valid unit tests, add new unit tests for any new functionality.  when an update is verfied as passing all valid unit tests continue to the next optimization until there are no more optimizations possible.  to not go into a loop of adding and removing the same optimization in the same module.
 //TODO #03 review the users module for optimizations of fast paths, performance, memory, consurrency, and API ergonomics, perform only 1 next indiviudal update at a time with any implementations that are required with it to maintain functionality for now for review that no functionality is lost verified with valid unit tests, add new unit tests for any new functionality.  when an update is verfied as passing all valid unit tests continue to the next optimization until there are no more optimizations possible.  to not go into a loop of adding and removing the same optimization in the same module.
@@ -13,31 +11,6 @@
 //TODO #09 add additional roles to the roleNames in the userDetails output
 //TODO #10 ensure the additional roles are available in the role selector on the dashboard
 
-//<<<<<<< Updated upstream
-//TODO #24 add tasks module - integrate into assignments tab
-//TODO #26 add callings scrape function to callings tab
-//TODO #27 add members scrape function to users tab
-//TODO #28 add schedule module integrate into the schedule tab
-//TODO #29 add events module integrate into the schedule module
-//TODO #30 first workflow is the calling pipeline
-//TODO #31 second workflow is the sacrament talk pipeline
-//TODO #32 third workflow is the sacrament prayers pipline
-//TODO #33 forth workflow is the youth temple recommend pipline
-//TODO #34 fifth workflow is the missing members pipline
-//TODO #35 first repeat event schedule is ward council meeting
-//TODO #36 second repeat event schedule is bishopric meeting
-//TODO #37 third repeat event schedule is sacrament attendance count
-//TODO #38 forth repeat event schedule is donation processing
-//TODO #39 fifth repeat event schedule is expense review
-//TODO #40 sixth repeat event schedule is tithing declaration
-//TODO #41 seventh repeat event schedule is leadership youth training
-//TODO #42 eighth repeat event schedule is leadership church funds training
-//=======
-//TODO #11 add configuration tab to the UI.
-//TODO #12 add organization tab to the UI.
-//TODO #13 add callings tab to the UI.
-//TODO #14 add roles tab to the UI.
-//TODO #15 add users tab to the UI.
 //TODO #16 add testing tab to the UI.
 //TODO #17 add workflows tab to the UI.
 //TODO #18 add event schedule templates tab to the UI.

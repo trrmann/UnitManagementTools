@@ -2,8 +2,9 @@
 # Runs the lint script using pnpm
 
 Write-Host "Running lint checks..."
-$PSScriptRoot
-Set-Location (Resolve-Path "$PSScriptRoot\..\..")
+
+# Ensure we are in the project root
+Set-Location (Resolve-Path "$PSScriptRoot\..")
 
 pnpm run lint
 

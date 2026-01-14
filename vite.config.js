@@ -21,8 +21,12 @@ export default defineConfig({
     viteStaticCopy({
       targets: [
         {
-          src: "dev-server/public/images/church-logo.png",
+          src: "public/images/church-logo.png",
           dest: "images",
+        },
+        {
+          src: "public/data/*",
+          dest: "data",
         },
       ],
     }),

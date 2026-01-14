@@ -2,14 +2,16 @@
 # Runs the format script using pnpm
 
 Write-Host "Running code formatter..."
-$PSScriptRoot
-Set-Location (Resolve-Path "$PSScriptRoot\..\..")
+
+# Ensure we are in the project root
+Set-Location (Resolve-Path "$PSScriptRoot\..")
 
 pnpm run format
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "Formatting completed successfully."
-} else {
+}
+else {
     Write-Error "Formatting failed."
     exit 1
 }
