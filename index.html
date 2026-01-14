@@ -1,859 +1,1447 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Unit Management Tools</title>
-    <link rel="icon" type="image/png" href="images/church-logo.png">
-    <link rel="stylesheet" href="styles/styles.css">
-    <link rel="stylesheet" href="styles/configuration.css">
-    <link rel="stylesheet" href="styles/callings.css">
-    <link rel="stylesheet" href="styles/roles.css">
-    <link rel="stylesheet" href="styles/users.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="images/church-logo.png" />
+    <link rel="stylesheet" href="styles/styles.css" />
+    <link rel="stylesheet" href="styles/configuration.css" />
+    <link rel="stylesheet" href="styles/callings.css" />
+    <link rel="stylesheet" href="styles/roles.css" />
+    <link rel="stylesheet" href="styles/users.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
     <!-- scripts moved to end of body for proper DOM initialization -->
-</head>
-<body>
+  </head>
+  <body>
     <div class="container" id="mainContainer" class="hidden">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <div class="logo-container">
-                    <img src="images/church-logo.png" alt="The Church of Jesus Christ of Latter-day Saints" class="church-logo">
-                </div>
-                <div class="dashboard-title-col">
-                    <div class="dashboard-title-row">
-                        <h1 class="dashboard-title">Unit Management Tools</h1>
-                    </div>
-                    <p>The Church of Jesus Christ of Latter-day Saints</p>
-                    <p class="subtitle">Ward Management Tools</p>
-                </div>
-                <div class="user-menu-container">
-                    <button id="logout" class="btn-logout">Logout</button>
-                    <button id="userMenuToggle" class="user-menu-toggle" aria-label="Toggle user menu">
-                        <span id="userMenuToggleIcon" class="fa fa-bars"></span>
-                    </button>
-                    <div class="user-menu">
-                        <span id="userName">John Smith</span>
-                        <!--<select id="roleSelector" class="role-selector" onchange="updateRole()" style="display: none;">-->
-                        <select id="roleSelector" class="role-selector hidden" title="Select user role">
-                            <option value="">Select Role</option>
-                        </select>
-                        <div id="selectedRoles" class="user-roles"></div>
-                    </div>
-                </div>
+      <!-- Header -->
+      <header class="header">
+        <div class="header-content">
+          <div class="logo-container">
+            <img
+              src="images/church-logo.png"
+              alt="The Church of Jesus Christ of Latter-day Saints"
+              class="church-logo"
+            />
+          </div>
+          <div class="dashboard-title-col">
+            <div class="dashboard-title-row">
+              <h1 class="dashboard-title">Unit Management Tools</h1>
             </div>
-        </header>
-        <!-- Navigation -->
-        <nav class="navbar">
-            <button class="nav-btn active dashboardmenuitem" onclick="showSection('dashboard')">
-                <i class="fas fa-home"></i> Dashboard
+            <p>The Church of Jesus Christ of Latter-day Saints</p>
+            <p class="subtitle">Ward Management Tools</p>
+          </div>
+          <div class="user-menu-container">
+            <button id="logout" class="btn-logout">Logout</button>
+            <button
+              id="userMenuToggle"
+              class="user-menu-toggle"
+              aria-label="Toggle user menu"
+            >
+              <span id="userMenuToggleIcon" class="fa fa-bars"></span>
             </button>
-            <button class="nav-btn membersmenuitem" onclick="showSection('members')">
-                <i class="fas fa-users"></i> Members
-            </button>
-            <button class="nav-btn assignmentsmenuitem" onclick="showSection('assignments')">
-                <i class="fas fa-tasks"></i> Assignments
-            </button>
-            <button class="nav-btn schedulingmenuitem" onclick="showSection('scheduling')">
-                <i class="fas fa-calendar"></i> Scheduling
-            </button>
-            <button class="nav-btn organizationmenuitem" onclick="showSection('organization')">
-                <i class="fas fa-sitemap"></i> Organization
-            </button>
-            <button class="nav-btn callingsmenuitem" onclick="showSection('callings')">
-                <i class="fas fa-user-tie"></i> Callings
-            </button>
-            <button class="nav-btn rolesmenuitem" onclick="showSection('roles')">
-                <i class="fas fa-user-shield"></i> Roles
-            </button>
-            <button class="nav-btn usersmenuitem" onclick="showSection('users')">
-                <i class="fas fa-id-badge"></i> Users
-            </button>
-            <button class="nav-btn testingmenuitem" onclick="showSection('testing')">
-                <i class="fas fa-vial"></i> Testing
-            </button>
-            <button class="nav-btn workflowsmenuitem" onclick="showSection('workflows')">
-                <i class="fas fa-project-diagram"></i> Workflows
-            </button>
-            <button class="nav-btn eventschedulemenuitem" onclick="showSection('eventscheduletemplate')">
-                <i class="fas fa-calendar-alt"></i> Event Schedule Template
-            </button>
-            <button class="nav-btn configurationmenuitem" onclick="showSection('configuration')">
-                <i class="fas fa-cogs"></i> Configuration
-            </button>
-            <button class="nav-btn formsmenuitem" onclick="showSection('forms')">
-                <i class="fas fa-file-alt"></i> Forms
-            </button>
-            <button class="nav-btn reportsmenuitem" onclick="showSection('reports')">
-                <i class="fas fa-chart-bar"></i> Reports
-            </button>
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Event Schedule Template Section -->
-            <section id="eventscheduletemplate" class="section">
-                                                                                        <h2>Event Schedule Templates</h2>
-                                                                                        <div class="section-toolbar eventscheduletemplate-toolbar improved-toolbar">
-                                                                                            <div class="eventscheduletemplate-toolbar-row">
-                                                                                                <input type="text" id="eventscheduletemplateSearch" class="eventscheduletemplate-search" placeholder="Search event schedule templates..." />
-                                                                                                <div class="eventscheduletemplate-toolbar-buttons">
-                                                                                                    <button class="btn-secondary" id="eventscheduletemplateImportBtn"><i class="fas fa-file-import"></i> Import</button>
-                                                                                                    <button class="btn-secondary" id="eventscheduletemplateExportBtn"><i class="fas fa-file-export"></i> Export</button>
-                                                                                                    <button class="btn-primary eventschedule-AddTemplate" id="eventscheduletemplateAddBtn" onclick="openAddEventScheduleTemplate()"><i class="fas fa-plus"></i> Add</button>
-                                                                                                </div>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                        <div id="eventscheduletemplateTable" class="eventscheduletemplate-table">
-                                                                                            <table>
-                                                                                                <thead>
-                                                                                                    <tr>
-                                                                                                        <th>Template Name</th>
-                                                                                                        <th>Description</th>
-                                                                                                        <th>Actions</th>
-                                                                                                    </tr>
-                                                                                                </thead>
-                                                                                                <tbody id="eventscheduletemplateBody">
-                                                                                                    <!-- Event schedule template rows will be dynamically generated by JavaScript -->
-                                                                                                </tbody>
-                                                                                            </table>
-                                                                                        </div>
-            </section>
-            <!-- Workflows Section -->
-            <section id="workflows" class="section">
-                                                                            <h2>Workflows Management</h2>
-                                                                            <div class="section-toolbar workflows-toolbar improved-toolbar">
-                                                                                <div class="workflows-toolbar-row">
-                                                                                    <input type="text" id="workflowsSearch" class="workflows-search" placeholder="Search workflows..." />
-                                                                                    <div class="workflows-toolbar-buttons">
-                                                                                        <button class="btn-secondary" id="workflowsImportBtn"><i class="fas fa-file-import"></i> Import</button>
-                                                                                        <button class="btn-secondary" id="workflowsExportBtn"><i class="fas fa-file-export"></i> Export</button>
-                                                                                        <button class="btn-primary workflows-AddWorkflow" id="workflowsAddBtn" onclick="openAddWorkflow()"><i class="fas fa-plus"></i> Add</button>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div id="workflowsTable" class="workflows-table">
-                                                                                <table>
-                                                                                    <thead>
-                                                                                        <tr>
-                                                                                            <th>Workflow</th>
-                                                                                            <th>Description</th>
-                                                                                            <th>Actions</th>
-                                                                                        </tr>
-                                                                                    </thead>
-                                                                                    <tbody id="workflowsBody">
-                                                                                        <!-- Workflows rows will be dynamically generated by JavaScript -->
-                                                                                    </tbody>
-                                                                                </table>
-                                                                            </div>
-            </section>
-            <!-- Testing Section -->
-            <section id="testing" class="section">
-                                                                <h2>Testing & Utilities</h2>
-                                                                <div class="section-toolbar testing-toolbar improved-toolbar">
-                                                                    <div class="testing-toolbar-group">
-                                                                        <h3>Users</h3>
-                                                                        <button class="btn-primary users-Superuser" id="superuserBtn"><i class="fas fa-user-shield"></i> Superuser</button>
-                                                                        <button class="btn-primary" id="resetUsersBtn">Reset</button>
-                                                                        <button class="btn-secondary" id="viewDetailedUsersBtn">View Detailed</button>
-                                                                        <button class="btn-secondary" id="importDetailedUsersBtn">Import Detailed</button>
-                                                                        <input type="file" id="importDetailedUsersInput" class="hidden" accept="application/json" title="Import detailed users JSON file" />
-                                                                        <button class="btn-secondary" id="exportDetailedUsersBtn">Export Detailed</button>
-                                                                        <button class="btn-secondary" id="viewRawUsersBtn">View Raw</button>
-                                                                        <button class="btn-secondary" id="importRawUsersBtn">Import Raw</button>
-                                                                        <input type="file" id="importRawUsersInput" class="hidden" accept="application/json" title="Import raw users JSON file" />
-                                                                        <button class="btn-secondary" id="exportRawUsersBtn">Export Raw</button>
-                                                                        <input type="text" class="testing-group-search wide-input" placeholder="Search Users..." />
-                                                                    </div>
-                                                                    <div class="testing-toolbar-group">
-                                                                        <h3>Members</h3>
-                                                                        <input type="text" class="testing-group-search wide-input" placeholder="Search Members..." />
-                                                                        <button class="btn-primary" id="resetMembersBtn">Reset</button>
-                                                                        <button class="btn-secondary" id="viewRawMembersBtn">View Raw</button>
-                                                                        <button class="btn-secondary" id="viewDetailedMembersBtn">View Detailed</button>
-                                                                        <button class="btn-secondary" id="importRawMembersBtn">Import Raw</button>
-                                                                        <input type="file" id="importRawMembersInput" class="hidden" accept="application/json" title="Import raw members JSON file" />
-                                                                        <button class="btn-secondary" id="exportRawMembersBtn">Export Raw</button>
-                                                                        <button class="btn-secondary" id="importDetailedMembersBtn">Import Detailed</button>
-                                                                        <input type="file" id="importDetailedMembersInput" class="hidden" accept="application/json" title="Import detailed members JSON file" />
-                                                                        <button class="btn-secondary" id="exportDetailedMembersBtn">Export Detailed</button>
-                                                                    </div>
-                                                                    <div class="testing-toolbar-group">
-                                                                        <h3>Roles</h3>
-                                                                        <input type="text" class="testing-group-search wide-input" placeholder="Search Roles..." />
-                                                                        <button class="btn-primary" id="resetRolesBtn">Reset</button>
-                                                                        <button class="btn-secondary" id="viewRawRolesBtn">View Raw</button>
-                                                                        <button class="btn-secondary" id="viewDetailedRolesBtn">View Detailed</button>
-                                                                        <button class="btn-secondary" id="importRawRolesBtn">Import Raw</button>
-                                                                        <input type="file" id="importRawRolesInput" class="hidden" accept="application/json" title="Import raw roles JSON file" />
-                                                                        <button class="btn-secondary" id="exportRawRolesBtn">Export Raw</button>
-                                                                        <button class="btn-secondary" id="importDetailedRolesBtn">Import Detailed</button>
-                                                                        <input type="file" id="importDetailedRolesInput" class="hidden" accept="application/json" title="Import detailed roles JSON file" />
-                                                                        <button class="btn-secondary" id="exportDetailedRolesBtn">Export Detailed</button>
-                                                                    </div>
-                                                                    <div class="testing-toolbar-group">
-                                                                        <h3>Callings</h3>
-                                                                        <input type="text" class="testing-group-search wide-input" placeholder="Search Callings..." />
-                                                                        <button class="btn-primary" id="resetCallingsBtn">Reset</button>
-                                                                        <button class="btn-secondary" id="viewCallingsBtn">View</button>
-                                                                        <button class="btn-secondary" id="importCallingsBtn">Import</button>
-                                                                        <input type="file" id="importCallingsInput" class="hidden" accept="application/json" title="Import callings JSON file" />
-                                                                        <button class="btn-secondary" id="exportCallingsBtn">Export</button>
-                                                                    </div>
-                                                                    <div class="testing-toolbar-group">
-                                                                        <h3>Organization</h3>
-                                                                        <input type="text" class="testing-group-search wide-input" placeholder="Search Organization..." />
-                                                                        <button class="btn-primary" id="resetOrgBtn">Reset</button>
-                                                                        <button class="btn-secondary" id="viewOrgBtn">View</button>
-                                                                        <button class="btn-secondary" id="importOrgBtn">Import</button>
-                                                                        <input type="file" id="importOrgInput" class="hidden" accept="application/json" title="Import organization JSON file" />
-                                                                        <button class="btn-secondary" id="exportOrgBtn">Export</button>
-                                                                    </div>
-                                                                    <div class="testing-toolbar-group">
-                                                                        <h3>Event Schedule Templates</h3>
-                                                                        <input type="text" class="testing-group-search wide-input" placeholder="Search Event Templates..." />
-                                                                        <button class="btn-primary" id="resetEventScheduleTemplatesBtn">Reset</button>
-                                                                        <button class="btn-secondary" id="viewRawEventScheduleTemplatesBtn">View Raw</button>
-                                                                        <button class="btn-secondary" id="viewDetailedEventScheduleTemplatesBtn">View Detailed</button>
-                                                                        <button class="btn-secondary" id="importRawEventScheduleTemplatesBtn">Import Raw</button>
-                                                                        <input type="file" id="importRawEventScheduleTemplatesInput" class="hidden" accept="application/json" title="Import raw event schedule templates JSON file" />
-                                                                        <button class="btn-secondary" id="exportRawEventScheduleTemplatesBtn">Export Raw</button>
-                                                                        <button class="btn-secondary" id="importDetailedEventScheduleTemplatesBtn">Import Detailed</button>
-                                                                        <input type="file" id="importDetailedEventScheduleTemplatesInput" class="hidden" accept="application/json" title="Import detailed event schedule templates JSON file" />
-                                                                        <button class="btn-secondary" id="exportDetailedEventScheduleTemplatesBtn">Export Detailed</button>
-                                                                    </div>
-                                                                    <div class="testing-toolbar-group">
-                                                                        <h3>Workflows</h3>
-                                                                        <input type="text" class="testing-group-search wide-input" placeholder="Search Workflows..." />
-                                                                        <button class="btn-primary" id="resetWorkflowsBtn">Reset</button>
-                                                                        <button class="btn-secondary" id="viewRawWorkflowsBtn">View Raw</button>
-                                                                        <button class="btn-secondary" id="viewDetailedWorkflowsBtn">View Detailed</button>
-                                                                        <button class="btn-secondary" id="importRawWorkflowsBtn">Import Raw</button>
-                                                                        <input type="file" id="importRawWorkflowsInput" class="hidden" accept="application/json" title="Import raw workflows JSON file" />
-                                                                        <button class="btn-secondary" id="exportRawWorkflowsBtn">Export Raw</button>
-                                                                        <button class="btn-secondary" id="importDetailedWorkflowsBtn">Import Detailed</button>
-                                                                        <input type="file" id="importDetailedWorkflowsInput" class="hidden" accept="application/json" title="Import detailed workflows JSON file" />
-                                                                        <button class="btn-secondary" id="exportDetailedWorkflowsBtn">Export Detailed</button>
-                                                                    </div>
-                                                                    <div class="testing-toolbar-group">
-                                                                        <h3>Configuration</h3>
-                                                                        <input type="text" class="testing-group-search wide-input" placeholder="Search Configuration..." />
-                                                                        <button class="btn-primary" id="resetConfigBtn">Reset</button>
-                                                                        <button class="btn-secondary" id="viewConfigBtn">View</button>
-                                                                        <button class="btn-secondary" id="importConfigBtn">Import</button>
-                                                                        <input type="file" id="importConfigInput" class="hidden" accept="application/json" title="Import configuration JSON file" />
-                                                                        <button class="btn-secondary" id="exportConfigBtn">Export</button>
-                                                                    </div>
-                                                                    <div class="testing-toolbar-group">
-                                                                        <h3>Cache</h3>
-                                                                        <input type="text" class="testing-group-search wide-input" placeholder="Search Cache..." />
-                                                                        <button class="btn-primary" id="resetCacheBtn">Reset</button>
-                                                                        <button class="btn-secondary" id="viewCacheBtn">View</button>
-                                                                        <button class="btn-secondary" id="importCacheBtn">Import</button>
-                                                                        <input type="file" id="importCacheInput" class="hidden" accept="application/json" title="Import cache JSON file" />
-                                                                        <button class="btn-secondary" id="exportCacheBtn">Export</button>
-                                                                    </div>
-                                                                    <div class="testing-toolbar-group">
-                                                                        <h3>Session Storage</h3>
-                                                                        <input type="text" class="testing-group-search wide-input" placeholder="Search Session Storage..." />
-                                                                        <button class="btn-primary" id="resetSessionStorageBtn">Reset</button>
-                                                                        <button class="btn-secondary" id="viewSessionStorageBtn">View</button>
-                                                                        <button class="btn-secondary" id="importSessionStorageBtn">Import</button>
-                                                                        <input type="file" id="importSessionStorageInput" class="hidden" accept="application/json" title="Import session storage JSON file" />
-                                                                        <button class="btn-secondary" id="exportSessionStorageBtn">Export</button>
-                                                                    </div>
-                                                                    <div class="testing-toolbar-group">
-                                                                        <h3>Local Storage</h3>
-                                                                        <input type="text" class="testing-group-search wide-input" placeholder="Search Local Storage..." />
-                                                                        <button class="btn-primary" id="resetLocalStorageBtn">Reset</button>
-                                                                        <button class="btn-secondary" id="viewLocalStorageBtn">View</button>
-                                                                        <button class="btn-secondary" id="importLocalStorageBtn">Import</button>
-                                                                        <input type="file" id="importLocalStorageInput" class="hidden" accept="application/json" title="Import local storage JSON file" />
-                                                                        <button class="btn-secondary" id="exportLocalStorageBtn">Export</button>
-                                                                    </div>
-                                                                    <div class="testing-toolbar-group">
-                                                                        <h3>Cloud Storage</h3>
-                                                                        <input type="text" class="testing-group-search wide-input" placeholder="Search Cloud Storage..." />
-                                                                        <button class="btn-primary" id="resetCloudStorageBtn">Reset</button>
-                                                                        <button class="btn-secondary" id="viewCloudStorageBtn">View</button>
-                                                                        <button class="btn-secondary" id="importCloudStorageBtn">Import</button>
-                                                                        <input type="file" id="importCloudStorageInput" class="hidden" accept="application/json" title="Import cloud storage JSON file" />
-                                                                        <button class="btn-secondary" id="exportCloudStorageBtn">Export</button>
-                                                                                                                                        </div>
-                                                                                                                                        <div class="testing-toolbar-group">
-                                                                                                                                            <h3>GitHub Data</h3>
-                                                                                                                                            <input type="text" class="testing-group-search wide-input" placeholder="Search GitHub..." />
-                                                                                                                                            <button class="btn-secondary" id="viewGitHubBtn">View</button>
-                                                                                                                                            <button class="btn-secondary" id="exportGitHubBtn">Export</button>
-                                                                    </div>
-                                                                </div>
-                                                                <div id="testingUtilities" class="testing-utilities">
-                                                                    <p>Use these tools for development and troubleshooting.</p>
-                                                                </div>
-            </section>
-            <!-- Users Section -->
-            <section id="users" class="section">
-                                                    <h2>Users Management</h2>
-                                                    <div class="section-toolbar users-toolbar improved-toolbar">
-                                                        <div class="users-toolbar-row">
-                                                            <input type="text" id="usersSearch" class="users-search" placeholder="Search users..." />
-                                                            <input type="text" id="membersSearch" class="members-search" placeholder="Search members..." />
-                                                            <div class="users-toolbar-buttons">
-                                                                <button class="btn-secondary" id="importUsersBtn"><i class="fas fa-file-import"></i> Import Users</button>
-                                                                <button class="btn-secondary" id="importMembersBtn"><i class="fas fa-file-import"></i> Import Members</button>
-                                                                <button class="btn-secondary" id="exportUsersBtn"><i class="fas fa-file-export"></i> Export Users</button>
-                                                                <button class="btn-secondary" id="exportMembersBtn"><i class="fas fa-file-export"></i> Export Members</button>
-                                                                <button class="btn-secondary" id="syncMembersBtnUsers"><i class="fas fa-sync-alt"></i> Sync Members</button>
-                                                                <button class="btn-primary users-AddUser" id="addUserBtn" onclick="openAddUser()"><i class="fas fa-user-plus"></i> Add User</button>
-                                                                <button class="btn-primary users-AddMember" id="addMemberBtn" onclick="openAddMember()"><i class="fas fa-user-plus"></i> Add Member</button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div id="usersTable" class="users-table">
-                                                        <table>
-                                                            <thead>
-                                                                <tr>
-                                                                    <th>Name</th>
-                                                                    <th>Email</th>
-                                                                    <th>Member #</th>
-                                                                    <th>Roles</th>
-                                                                    <th>Status</th>
-                                                                    <th>Actions</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody id="usersBody">
-                                                                <!-- Users rows will be dynamically generated by JavaScript -->
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-            </section>
-            <!-- Roles Section -->
-            <section id="roles" class="section">
-                                        <h2>Roles Management</h2>
-                                        <div class="section-toolbar roles-toolbar improved-toolbar">
-                                            <div class="roles-toolbar-row">
-                                                <input type="text" id="rolesSearch" class="roles-search" placeholder="Search roles..." />
-                                                <div class="roles-toolbar-buttons">
-                                                    <button class="btn-secondary" id="rolesImportBtn"><i class="fas fa-file-import"></i> Import</button>
-                                                    <button class="btn-secondary" id="rolesExportBtn"><i class="fas fa-file-export"></i> Export</button>
-                                                    <button class="btn-primary roles-AddRole" onclick="openAddRole()"><i class="fas fa-plus"></i> Add</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div id="rolesTable" class="roles-table">
-                                            <table>
-                                                <thead>
-                                                    <tr>
-                                                        <th>Role Name</th>
-                                                        <th>Calling Name</th>
-                                                        <th>Sub Role Names</th>
-                                                        <th>Status</th>
-                                                        <th>Actions</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="rolesBody">
-                                                    <!-- Roles rows will be dynamically generated by JavaScript -->
-                                                </tbody>
-                                            </table>
-                                        </div>
-            </section>
-            <!-- Callings Section -->
-            <section id="callings" class="section">
-                            <h2>Callings Management</h2>
-                            <div class="section-toolbar callings-toolbar improved-toolbar">
-                                <div class="callings-toolbar-row">
-                                    <input type="text" id="callingsSearch" class="callings-search" placeholder="Search callings..." />
-                                    <div class="callings-toolbar-buttons">
-                                        <button class="btn-secondary" id="callingsImportBtn"><i class="fas fa-file-import"></i> Import</button>
-                                        <button class="btn-secondary" id="callingsExportBtn"><i class="fas fa-file-export"></i> Export</button>
-                                        <button class="btn-secondary" id="callingsSyncBtn"><i class="fas fa-sync-alt"></i> Sync</button>
-                                        <button class="btn-primary callings-AddCalling" onclick="openAddCalling()"><i class="fas fa-plus"></i> Add</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="callingsTable" class="callings-table">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Name</th>
-                                            <th>Level</th>
-                                            <th>Has Title</th>
-                                            <th>Title</th>
-                                            <th>Title Ordinal</th>
-                                            <th>Status</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="callingsBody">
-                                        <!-- Callings rows will be dynamically generated by JavaScript -->
-                                    </tbody>
-                                </table>
-                            </div>
-            </section>
-            <!-- Organization Section -->
-            <section id="organization" class="section">
-                <h2>Organization Structure</h2>
-                <div class="section-toolbar organization-toolbar improved-toolbar">
-                    <div class="config-toolbar-row">
-                        <input type="text" id="organizationSearch" class="config-search" placeholder="Search organization..." />
-                        <div class="config-toolbar-buttons">
-                            <button class="btn-secondary" id="orgImportBtn">Import</button>
-                            <button class="btn-secondary" id="orgExportBtn">Export</button>
-                            <button class="btn-primary" id="orgAddBtn">Add Stake</button>
-                        </div>
-                    </div>
-                </div>
-                <div id="organizationTable" class="organization-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Unit Name</th>
-                                <th>Unit Number</th>
-                                <th>Unit Type</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="organizationBody">
-                            <!-- Organization rows will be dynamically generated by JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-            <!-- Configuration Section -->
-            <section id="configuration" class="section">
-                <h2>System Configuration</h2>
-                <div class="section-toolbar configuration-toolbar improved-toolbar">
-                    <div class="config-toolbar-row">
-                        <input type="text" id="configurationSearch" class="config-search" placeholder="Search configuration..." />
-                        <div class="config-toolbar-buttons">
-                            <button class="btn-secondary" id="configImportBtn">Import</button>
-                            <button class="btn-secondary" id="configExportBtn">Export</button>
-                            <button class="btn-secondary" id="configRekeyBtn">Encryption Rekey</button>
-                            <button class="btn-secondary" id="configCloudMigrateBtn">Cloud Store Migration</button>
-                            <button class="btn-primary" id="configAddBtn">Add Setting</button>
-                        </div>
-                    </div>
-                </div>
-                <div id="configurationTable" class="configuration-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Setting</th>
-                                <th>Value</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="configurationBody">
-                            <!-- Configuration rows will be dynamically generated by JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-            <!-- Dashboard Section -->
-            <section id="dashboard" class="section active">
-                <h2>Dashboard</h2>
-                <div class="dashboard-grid">
-                    <div class="card dashboard-totalMembers">
-                        <div class="card-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div class="card-content">
-                            <h3>Total Members</h3>
-                            <p class="stat" id="dashboardTotalMembers">245</p>
-                        </div>
-                    </div>
-
-                    <div class="card dashboard-thisWeeksEvents">
-                        <div class="card-icon">
-                            <i class="fas fa-calendar-check"></i>
-                        </div>
-                        <div class="card-content">
-                            <h3>This Week Events</h3>
-                            <p class="stat">8</p>
-                        </div>
-                    </div>
-
-                    <div class="card dashboard-pendingTasks">
-                        <div class="card-icon">
-                            <i class="fas fa-tasks"></i>
-                        </div>
-                        <div class="card-content">
-                            <h3>Pending Tasks</h3>
-                            <p class="stat">12</p>
-                        </div>
-                    </div>
-
-                    <div class="card dashboard-needsAssistance">
-                        <div class="card-icon">
-                            <i class="fas fa-hand-holding-heart"></i>
-                        </div>
-                        <div class="card-content">
-                            <h3>Needs Assistance</h3>
-                            <p class="stat">5</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="dashboard-section">
-                    <h3>Quick Actions</h3>
-                    <div class="action-buttons">
-                        <button class="action-btn dashboard-QuickActions-ResetPassword" id="resetPasswordBtn" onclick="quickAction('reset-password')">
-                            <i class="fas fa-key"></i> Reset Password
-                        </button>
-                        <button class="action-btn dashboard-QuickActions-AddMember" onclick="quickAction('new-member')">
-                            <i class="fas fa-user-plus"></i> Add Member
-                        </button>
-                        <button class="action-btn dashboard-QuickActions-ScheduleEvent" onclick="quickAction('new-event')">
-                            <i class="fas fa-calendar-plus"></i> Schedule Event
-                        </button>
-                        <button class="action-btn dashboard-QuickActions-AssignTask" onclick="quickAction('assign-task')">
-                            <i class="fas fa-clipboard-list"></i> Assign Task
-                        </button>
-                        <button class="action-btn dashboard-QuickActions-SendMessage" onclick="quickAction('send-message')">
-                            <i class="fas fa-envelope"></i> Send Message
-                        </button>
-                    </div>
-                </div>
-
-                <div class="dashboard-section">
-                    <h3>Recent Activities</h3>
-                    <div class="activity-list">
-                        <div class="activity-item dashboard-RecentActivities">
-                            <div class="activity-icon">
-                                <i class="fas fa-user-check"></i>
-                            </div>
-                            <div class="activity-content">
-                                <p>John Smith added to ward</p>
-                                <span class="time">2 hours ago</span>
-                            </div>
-                        </div>
-                        <div class="activity-item">
-                            <div class="activity-icon">
-                                <i class="fas fa-calendar-check"></i>
-                            </div>
-                            <div class="activity-content">
-                                <p>Ward activity scheduled for Saturday</p>
-                                <span class="time">5 hours ago</span>
-                            </div>
-                        </div>
-                        <div class="activity-item">
-                            <div class="activity-icon">
-                                <i class="fas fa-clipboard-check"></i>
-                            </div>
-                            <div class="activity-content">
-                                <p>Sacrament preparation assigned to Home Teachers</p>
-                                <span class="time">1 day ago</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <!-- Members Section -->
-            <section id="members" class="section">
-                <h2>Member Directory</h2>
-                <div class="section-toolbar">
-                    <div class="flex-row-wrap">
-                        <input type="text members-SearchMember" id="memberSearch" placeholder="Search members..." class="search-input" onkeyup="filterMembers()">
-                        <button class="btn-secondary" id="syncMembersBtnMembers"><i class="fas fa-sync-alt"></i> Sync Members</button>
-                        <button class="btn-primary members-AddMember" onclick="openAddMember()">
-                            <i class="fas fa-user-plus"></i> Add Member
-                        </button>
-                    </div>
-                </div>
-                <div id="membersTable" class="members-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th id="nameHeader">Name</th>
-                                <th id="emailHeader">Email</th>
-                                <th id="genderHeader">Gender</th>
-                                <th id="memberNumberHeader">Member #</th>
-                                <th id="phoneHeader">Phone</th>
-                                <th id="unitHeader" class="hidden">Unit</th>
-                                <th id="callingHeader">Calling</th>
-                                <th id="stakeNumberHeader">Stake #</th>
-                                <th id="unitNumberHeader">Unit #</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="membersBody">
-                            <!-- Member rows will be dynamically generated by JavaScript -->
-                        </tbody>
-                    </table>
-                    <div class="centered-margin">
-                        <label for="membersPageSize">Rows per page:</label>
-                        <select id="membersPageSize" onchange="changeMembersPageSize()" class="margin-x">
-                            <option value="5">5</option>
-                            <option value="10" selected>10</option>
-                            <option value="20">20</option>
-                            <option value="50">50</option>
-                            <option value="100">100</option>
-                        </select>
-                    </div>
-                    <div id="membersPagination" class="pagination centered-margin"></div>
-                </div>
-            </section>
-            <!-- Assignments Section -->
-            <section id="assignments" class="section">
-                <h2>Assignments & Responsibilities</h2>
-                <div class="section-toolbar">
-                    <button class="btn-primary assignments-AssignTask" onclick="openNewAssignment()">
-                        <i class="fas fa-plus"></i> New Assignment
-                    </button>
-                    <select id="filterAssignments" onchange="filterAssignments()" class="filter-select assignments-FilterTasks" title="Filter assignments">
-                        <option value="">All Assignments</option>
-                        <option value="active">Active</option>
-                        <option value="completed">Completed</option>
-                        <option value="overdue">Overdue</option>
-                    </select>
-                </div>
-                <div class="assignments-list">
-                    <div class="assignment-card">
-                        <div class="assignment-header">
-                            <h3>Sacrament Preparation</h3>
-                            <span class="status-badge active">Active</span>
-                        </div>
-                        <p class="assignment-desc">Prepare and distribute sacrament for Sunday meeting</p>
-                        <div class="assignment-info">
-                            <span><i class="fas fa-user"></i> James Johnson</span>
-                            <span><i class="fas fa-calendar"></i> Due: Dec 20, 2025</span>
-                        </div>
-                        <div class="assignment-actions">
-                            <button class="btn-small" onclick="editAssignment(1)">Edit</button>
-                            <button class="btn-small assignments-EditTask" onclick="editAssignment(1)">Edit</button>
-                            <button class="btn-small assignments-ActionTask" onclick="markComplete(1)">Complete</button>
-                        </div>
-                    </div>
-
-                    <div class="assignment-card">
-                        <div class="assignment-header">
-                            <h3>Youth Activity Planning</h3>
-                            <span class="status-badge active">Active</span>
-                        </div>
-                        <p class="assignment-desc">Organize and plan the monthly youth activity</p>
-                        <div class="assignment-info">
-                            <span><i class="fas fa-users"></i> Sarah Williams, Michael Brown</span>
-                            <span><i class="fas fa-calendar"></i> Due: Dec 25, 2025</span>
-                        </div>
-                        <div class="assignment-actions">
-                            <button class="btn-small" onclick="editAssignment(2)">Edit</button>
-                            <button class="btn-small assignments-EditTask" onclick="editAssignment(2)">Edit</button>
-                            <button class="btn-small assignments-ActionTask" onclick="markComplete(2)">Complete</button>
-                        </div>
-                    </div>
-
-                    <div class="assignment-card">
-                        <div class="assignment-header">
-                            <h3>Ward Newsletter</h3>
-                            <span class="status-badge completed">Completed</span>
-                        </div>
-                        <p class="assignment-desc">Create and distribute ward newsletter</p>
-                        <div class="assignment-info">
-                            <span><i class="fas fa-user"></i> Jane Doe</span>
-                            <span><i class="fas fa-calendar"></i> Due: Dec 18, 2025</span>
-                        </div>
-                        <div class="assignment-actions">
-                            <button class="btn-small" onclick="viewAssignment(3)">View</button>
-                                                    <button class="btn-small assignments-ViewTask" onclick="viewAssignment(3)">View</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <!-- Scheduling Section -->
-            <section id="scheduling" class="section">
-                <h2>Ward Scheduling</h2>
-                <div class="section-toolbar">
-                    <button class="btn-primary scheduling-ScheduleEvent" onclick="openScheduleEvent()">
-                        <i class="fas fa-calendar-plus"></i> Schedule Event
-                    </button>
-                    <select id="scheduleFilter" onchange="filterSchedule()" class="filter-select scheduling-FilterEventTypes scheduling-FilterEventDates" title="Filter events">
-                        <option value="">All Events</option>
-                        <option value="sacrament">Sacrament Meeting</option>
-                        <option value="activities">Activities</option>
-                        <option value="meetings">Meetings</option>
-                    </select>
-                </div>
-                <div class="calendar-view">
-                    <div class="calendar-header">
-                        <button onclick="previousMonth()">&lt;</button>
-                        <h3 id="currentMonth">December 2025</h3>
-                        <button onclick="nextMonth()">&gt;</button>
-                    </div>
-                    <div class="calendar-grid" id="calendarGrid">
-                        <!-- Calendar will be generated by JavaScript -->
-                    </div>
-                </div>
-                <div class="events-list">
-                    <h3>Upcoming Events</h3>
-                    <div class="event-item">
-                        <div class="event-date">
-                            <div class="date-day">20</div>
-                            <div class="date-month">DEC</div>
-                        </div>
-                        <div class="event-details">
-                            <h4>Sacrament Meeting</h4>
-                            <p>9:00 AM - 10:15 AM</p>
-                        </div>
-                        <button class="btn-small" onclick="editEvent(1)">Edit</button>
-                                            <button class="btn-small scheduling-EditEvents" onclick="editEvent(1)">Edit</button>
-                    </div>
-
-                    <div class="event-item">
-                        <div class="event-date">
-                            <div class="date-day">22</div>
-                            <div class="date-month">DEC</div>
-                        </div>
-                        <div class="event-details">
-                            <h4>Youth Activity</h4>
-                            <p>6:00 PM - 8:00 PM</p>
-                        </div>
-                        <button class="btn-small" onclick="editEvent(2)">Edit</button>
-                                            <button class="btn-small scheduling-EditEvents" onclick="editEvent(2)">Edit</button>
-                    </div>
-
-                    <div class="event-item">
-                        <div class="event-date">
-                            <div class="date-day">25</div>
-                            <div class="date-month">DEC</div>
-                        </div>
-                        <div class="event-details">
-                            <h4>Ward Christmas Party</h4>
-                            <p>5:00 PM - 7:00 PM</p>
-                        </div>
-                        <button class="btn-small" onclick="editEvent(3)">Edit</button>
-                                            <button class="btn-small scheduling-EditEvents" onclick="editEvent(3)">Edit</button>
-                    </div>
-                </div>
-            </section>
-            <!-- Forms Section -->
-            <section id="forms" class="section">
-                <h2>Forms & Templates</h2>
-                <div class="forms-grid">
-                    <div class="form-card forms-MemberReferral">
-                        <div class="form-icon">
-                            <i class="fas fa-file-signature"></i>
-                        </div>
-                        <h3>Member Referral Form</h3>
-                        <p>Submit referrals for members needing assistance</p>
-                        <button class="btn-primary" onclick="openForm('referral')">
-                            Open Form
-                        </button>
-                    </div>
-
-                    <div class="form-card">
-                        <div class="form-icon">
-                            <i class="fas fa-user-check"></i>
-                        </div>
-                        <h3>Home Teaching Report</h3>
-                        <p>Record monthly home teaching visits and updates</p>
-                        <button class="btn-primary forms-HomeTeaching" onclick="openForm('homeTeaching')">
-                            Open Form
-                        </button>
-                    </div>
-
-                    <div class="form-card">
-                        <div class="form-icon">
-                            <i class="fas fa-heart"></i>
-                        </div>
-                        <h3>Welfare Assistance Request</h3>
-                        <p>Request welfare or emergency assistance</p>
-                        <button class="btn-primary forms-WelfareAssistance" onclick="openForm('welfare')">
-                            Open Form
-                        </button>
-                    </div>
-
-                    <div class="form-card">
-                        <div class="form-icon">
-                            <i class="fas fa-graduation-cap"></i>
-                        </div>
-                        <h3>Missionary Recommendation</h3>
-                        <p>Submit missionary recommendations and tracking</p>
-                        <button class="btn-primary forms-MissionaryRecommendation" onclick="openForm('missionary')">
-                            Open Form
-                        </button>
-                    </div>
-
-                    <div class="form-card">
-                        <div class="form-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <h3>Activity Planning Form</h3>
-                        <p>Plan and coordinate ward activities</p>
-                        <button class="btn-primary forms-ActivityPlanning" onclick="openForm('activity')">
-                            Open Form
-                        </button>
-                    </div>
-
-                    <div class="form-card">
-                        <div class="form-icon">
-                            <i class="fas fa-clipboard-list"></i>
-                        </div>
-                        <h3>Service Project Log</h3>
-                        <p>Track and log service projects completed</p>
-                        <button class="btn-primary forms-ServiceProjectLog" onclick="openForm('service')">
-                            Open Form
-                        </button>
-                    </div>
-                </div>
-            </section>
-            <!-- Reports Section -->
-            <section id="reports" class="section">
-                <h2>Reports & Analytics</h2>
-                <div class="reports-grid">
-                    <div class="report-card reports-Statistics">
-                        <h3>Ward Statistics</h3>
-                        <div class="report-stats">
-                            <div class="stat-item reports-Statistics-activeMembers">
-                                <span class="label">Active Members</span>
-                                <span class="value">245</span>
-                            </div>
-                            <div class="stat-item reports-Statistics-recentConverts">
-                                <span class="label">Recent Converts</span>
-                                <span class="value">8</span>
-                            </div>
-                            <div class="stat-item reports-Statistics-Missionaries">
-                                <span class="label">Missionaries</span>
-                                <span class="value">12</span>
-                            </div>
-                            <div class="stat-item reports-Statistics-InNeedOfHelp">
-                                <span class="label">In Need of Help</span>
-                                <span class="value">5</span>
-                            </div>
-                        </div>
-                        <button class="btn-secondary" onclick="exportReport('ward-stats')">Export</button>
-                    </div>
-
-                    <div class="report-card">
-                        <h3>Activity Attendance</h3>
-                        <p class="report-desc">Monthly attendance summary for ward activities</p>
-                        <button class="btn-secondary reports-ActivityAttendance" onclick="generateReport('attendance')">Generate Report</button>
-                    </div>
-
-                    <div class="report-card">
-                        <h3>Assignment Completion</h3>
-                        <p class="report-desc">Track completion rates for assigned tasks</p>
-                        <button class="btn-secondary reports-AssignmentCompletion" onclick="generateReport('assignments')">Generate Report</button>
-                    </div>
-
-                    <div class="report-card">
-                        <h3>Visiting Teaching</h3>
-                        <p class="report-desc">Visiting Teaching completion and report statistics</p>
-                        <button class="btn-secondary reports-VisitingTeaching" onclick="generateReport('visitingTeaching')">Generate Report</button>
-                    </div>
-                </div>
-            </section>
-        </main>
-        <!-- Modal for adding/editing items -->
-        <div id="modal" class="modal">
-            <div class="modal-content">
-                <button class="modal-close-btn" onclick="closeModal()" aria-label="Close modal"><i class="fas fa-times"></i></button>
-                <h3 id="modalTitle">Modal Title</h3>
-                <div id="modalBody">
-                    <!-- Dynamic content goes here -->
-                </div>
+            <div class="user-menu">
+              <span id="userName">John Smith</span>
+              <!--<select id="roleSelector" class="role-selector" onchange="updateRole()" style="display: none;">-->
+              <select
+                id="roleSelector"
+                class="role-selector hidden"
+                title="Select user role"
+              >
+                <option value="">Select Role</option>
+              </select>
+              <div id="selectedRoles" class="user-roles"></div>
             </div>
+          </div>
         </div>
+      </header>
+      <!-- Navigation -->
+      <nav class="navbar">
+        <button
+          class="nav-btn active dashboardmenuitem"
+          onclick="showSection('dashboard')"
+        >
+          <i class="fas fa-home"></i> Dashboard
+        </button>
+        <button
+          class="nav-btn membersmenuitem"
+          onclick="showSection('members')"
+        >
+          <i class="fas fa-users"></i> Members
+        </button>
+        <button
+          class="nav-btn assignmentsmenuitem"
+          onclick="showSection('assignments')"
+        >
+          <i class="fas fa-tasks"></i> Assignments
+        </button>
+        <button
+          class="nav-btn schedulingmenuitem"
+          onclick="showSection('scheduling')"
+        >
+          <i class="fas fa-calendar"></i> Scheduling
+        </button>
+        <button
+          class="nav-btn organizationmenuitem"
+          onclick="showSection('organization')"
+        >
+          <i class="fas fa-sitemap"></i> Organization
+        </button>
+        <button
+          class="nav-btn callingsmenuitem"
+          onclick="showSection('callings')"
+        >
+          <i class="fas fa-user-tie"></i> Callings
+        </button>
+        <button class="nav-btn rolesmenuitem" onclick="showSection('roles')">
+          <i class="fas fa-user-shield"></i> Roles
+        </button>
+        <button class="nav-btn usersmenuitem" onclick="showSection('users')">
+          <i class="fas fa-id-badge"></i> Users
+        </button>
+        <button
+          class="nav-btn testingmenuitem"
+          onclick="showSection('testing')"
+        >
+          <i class="fas fa-vial"></i> Testing
+        </button>
+        <button
+          class="nav-btn workflowsmenuitem"
+          onclick="showSection('workflows')"
+        >
+          <i class="fas fa-project-diagram"></i> Workflows
+        </button>
+        <button
+          class="nav-btn eventschedulemenuitem"
+          onclick="showSection('eventscheduletemplate')"
+        >
+          <i class="fas fa-calendar-alt"></i> Event Schedule Template
+        </button>
+        <button
+          class="nav-btn configurationmenuitem"
+          onclick="showSection('configuration')"
+        >
+          <i class="fas fa-cogs"></i> Configuration
+        </button>
+        <button class="nav-btn formsmenuitem" onclick="showSection('forms')">
+          <i class="fas fa-file-alt"></i> Forms
+        </button>
+        <button
+          class="nav-btn reportsmenuitem"
+          onclick="showSection('reports')"
+        >
+          <i class="fas fa-chart-bar"></i> Reports
+        </button>
+      </nav>
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Event Schedule Template Section -->
+        <section id="eventscheduletemplate" class="section">
+          <h2>Event Schedule Templates</h2>
+          <div
+            class="section-toolbar eventscheduletemplate-toolbar improved-toolbar"
+          >
+            <div class="eventscheduletemplate-toolbar-row">
+              <input
+                type="text"
+                id="eventscheduletemplateSearch"
+                class="eventscheduletemplate-search"
+                placeholder="Search event schedule templates..."
+              />
+              <div class="eventscheduletemplate-toolbar-buttons">
+                <button
+                  class="btn-secondary"
+                  id="eventscheduletemplateImportBtn"
+                >
+                  <i class="fas fa-file-import"></i> Import
+                </button>
+                <button
+                  class="btn-secondary"
+                  id="eventscheduletemplateExportBtn"
+                >
+                  <i class="fas fa-file-export"></i> Export
+                </button>
+                <button
+                  class="btn-primary eventschedule-AddTemplate"
+                  id="eventscheduletemplateAddBtn"
+                  onclick="openAddEventScheduleTemplate()"
+                >
+                  <i class="fas fa-plus"></i> Add
+                </button>
+              </div>
+            </div>
+          </div>
+          <div
+            id="eventscheduletemplateTable"
+            class="eventscheduletemplate-table"
+          >
+            <table>
+              <thead>
+                <tr>
+                  <th>Template Name</th>
+                  <th>Description</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="eventscheduletemplateBody">
+                <!-- Event schedule template rows will be dynamically generated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <!-- Workflows Section -->
+        <section id="workflows" class="section">
+          <h2>Workflows Management</h2>
+          <div class="section-toolbar workflows-toolbar improved-toolbar">
+            <div class="workflows-toolbar-row">
+              <input
+                type="text"
+                id="workflowsSearch"
+                class="workflows-search"
+                placeholder="Search workflows..."
+              />
+              <div class="workflows-toolbar-buttons">
+                <button class="btn-secondary" id="workflowsImportBtn">
+                  <i class="fas fa-file-import"></i> Import
+                </button>
+                <button class="btn-secondary" id="workflowsExportBtn">
+                  <i class="fas fa-file-export"></i> Export
+                </button>
+                <button
+                  class="btn-primary workflows-AddWorkflow"
+                  id="workflowsAddBtn"
+                  onclick="openAddWorkflow()"
+                >
+                  <i class="fas fa-plus"></i> Add
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="workflowsTable" class="workflows-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Workflow</th>
+                  <th>Description</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="workflowsBody">
+                <!-- Workflows rows will be dynamically generated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <!-- Testing Section -->
+        <section id="testing" class="section">
+          <h2>Testing & Utilities</h2>
+          <div class="section-toolbar testing-toolbar improved-toolbar">
+            <div class="testing-toolbar-group">
+              <h3>Users</h3>
+              <button class="btn-primary users-Superuser" id="superuserBtn">
+                <i class="fas fa-user-shield"></i> Superuser
+              </button>
+              <button class="btn-primary" id="resetUsersBtn">Reset</button>
+              <button class="btn-secondary" id="viewDetailedUsersBtn">
+                View Detailed
+              </button>
+              <button class="btn-secondary" id="importDetailedUsersBtn">
+                Import Detailed
+              </button>
+              <input
+                type="file"
+                id="importDetailedUsersInput"
+                class="hidden"
+                accept="application/json"
+                title="Import detailed users JSON file"
+              />
+              <button class="btn-secondary" id="exportDetailedUsersBtn">
+                Export Detailed
+              </button>
+              <button class="btn-secondary" id="viewRawUsersBtn">
+                View Raw
+              </button>
+              <button class="btn-secondary" id="importRawUsersBtn">
+                Import Raw
+              </button>
+              <input
+                type="file"
+                id="importRawUsersInput"
+                class="hidden"
+                accept="application/json"
+                title="Import raw users JSON file"
+              />
+              <button class="btn-secondary" id="exportRawUsersBtn">
+                Export Raw
+              </button>
+              <input
+                type="text"
+                class="testing-group-search wide-input"
+                placeholder="Search Users..."
+              />
+            </div>
+            <div class="testing-toolbar-group">
+              <h3>Members</h3>
+              <input
+                type="text"
+                class="testing-group-search wide-input"
+                placeholder="Search Members..."
+              />
+              <button class="btn-primary" id="resetMembersBtn">Reset</button>
+              <button class="btn-secondary" id="viewRawMembersBtn">
+                View Raw
+              </button>
+              <button class="btn-secondary" id="viewDetailedMembersBtn">
+                View Detailed
+              </button>
+              <button class="btn-secondary" id="importRawMembersBtn">
+                Import Raw
+              </button>
+              <input
+                type="file"
+                id="importRawMembersInput"
+                class="hidden"
+                accept="application/json"
+                title="Import raw members JSON file"
+              />
+              <button class="btn-secondary" id="exportRawMembersBtn">
+                Export Raw
+              </button>
+              <button class="btn-secondary" id="importDetailedMembersBtn">
+                Import Detailed
+              </button>
+              <input
+                type="file"
+                id="importDetailedMembersInput"
+                class="hidden"
+                accept="application/json"
+                title="Import detailed members JSON file"
+              />
+              <button class="btn-secondary" id="exportDetailedMembersBtn">
+                Export Detailed
+              </button>
+            </div>
+            <div class="testing-toolbar-group">
+              <h3>Roles</h3>
+              <input
+                type="text"
+                class="testing-group-search wide-input"
+                placeholder="Search Roles..."
+              />
+              <button class="btn-primary" id="resetRolesBtn">Reset</button>
+              <button class="btn-secondary" id="viewRawRolesBtn">
+                View Raw
+              </button>
+              <button class="btn-secondary" id="viewDetailedRolesBtn">
+                View Detailed
+              </button>
+              <button class="btn-secondary" id="importRawRolesBtn">
+                Import Raw
+              </button>
+              <input
+                type="file"
+                id="importRawRolesInput"
+                class="hidden"
+                accept="application/json"
+                title="Import raw roles JSON file"
+              />
+              <button class="btn-secondary" id="exportRawRolesBtn">
+                Export Raw
+              </button>
+              <button class="btn-secondary" id="importDetailedRolesBtn">
+                Import Detailed
+              </button>
+              <input
+                type="file"
+                id="importDetailedRolesInput"
+                class="hidden"
+                accept="application/json"
+                title="Import detailed roles JSON file"
+              />
+              <button class="btn-secondary" id="exportDetailedRolesBtn">
+                Export Detailed
+              </button>
+            </div>
+            <div class="testing-toolbar-group">
+              <h3>Callings</h3>
+              <input
+                type="text"
+                class="testing-group-search wide-input"
+                placeholder="Search Callings..."
+              />
+              <button class="btn-primary" id="resetCallingsBtn">Reset</button>
+              <button class="btn-secondary" id="viewCallingsBtn">View</button>
+              <button class="btn-secondary" id="importCallingsBtn">
+                Import
+              </button>
+              <input
+                type="file"
+                id="importCallingsInput"
+                class="hidden"
+                accept="application/json"
+                title="Import callings JSON file"
+              />
+              <button class="btn-secondary" id="exportCallingsBtn">
+                Export
+              </button>
+            </div>
+            <div class="testing-toolbar-group">
+              <h3>Organization</h3>
+              <input
+                type="text"
+                class="testing-group-search wide-input"
+                placeholder="Search Organization..."
+              />
+              <button class="btn-primary" id="resetOrgBtn">Reset</button>
+              <button class="btn-secondary" id="viewOrgBtn">View</button>
+              <button class="btn-secondary" id="importOrgBtn">Import</button>
+              <input
+                type="file"
+                id="importOrgInput"
+                class="hidden"
+                accept="application/json"
+                title="Import organization JSON file"
+              />
+              <button class="btn-secondary" id="exportOrgBtn">Export</button>
+            </div>
+            <div class="testing-toolbar-group">
+              <h3>Event Schedule Templates</h3>
+              <input
+                type="text"
+                class="testing-group-search wide-input"
+                placeholder="Search Event Templates..."
+              />
+              <button class="btn-primary" id="resetEventScheduleTemplatesBtn">
+                Reset
+              </button>
+              <button
+                class="btn-secondary"
+                id="viewRawEventScheduleTemplatesBtn"
+              >
+                View Raw
+              </button>
+              <button
+                class="btn-secondary"
+                id="viewDetailedEventScheduleTemplatesBtn"
+              >
+                View Detailed
+              </button>
+              <button
+                class="btn-secondary"
+                id="importRawEventScheduleTemplatesBtn"
+              >
+                Import Raw
+              </button>
+              <input
+                type="file"
+                id="importRawEventScheduleTemplatesInput"
+                class="hidden"
+                accept="application/json"
+                title="Import raw event schedule templates JSON file"
+              />
+              <button
+                class="btn-secondary"
+                id="exportRawEventScheduleTemplatesBtn"
+              >
+                Export Raw
+              </button>
+              <button
+                class="btn-secondary"
+                id="importDetailedEventScheduleTemplatesBtn"
+              >
+                Import Detailed
+              </button>
+              <input
+                type="file"
+                id="importDetailedEventScheduleTemplatesInput"
+                class="hidden"
+                accept="application/json"
+                title="Import detailed event schedule templates JSON file"
+              />
+              <button
+                class="btn-secondary"
+                id="exportDetailedEventScheduleTemplatesBtn"
+              >
+                Export Detailed
+              </button>
+            </div>
+            <div class="testing-toolbar-group">
+              <h3>Workflows</h3>
+              <input
+                type="text"
+                class="testing-group-search wide-input"
+                placeholder="Search Workflows..."
+              />
+              <button class="btn-primary" id="resetWorkflowsBtn">Reset</button>
+              <button class="btn-secondary" id="viewRawWorkflowsBtn">
+                View Raw
+              </button>
+              <button class="btn-secondary" id="viewDetailedWorkflowsBtn">
+                View Detailed
+              </button>
+              <button class="btn-secondary" id="importRawWorkflowsBtn">
+                Import Raw
+              </button>
+              <input
+                type="file"
+                id="importRawWorkflowsInput"
+                class="hidden"
+                accept="application/json"
+                title="Import raw workflows JSON file"
+              />
+              <button class="btn-secondary" id="exportRawWorkflowsBtn">
+                Export Raw
+              </button>
+              <button class="btn-secondary" id="importDetailedWorkflowsBtn">
+                Import Detailed
+              </button>
+              <input
+                type="file"
+                id="importDetailedWorkflowsInput"
+                class="hidden"
+                accept="application/json"
+                title="Import detailed workflows JSON file"
+              />
+              <button class="btn-secondary" id="exportDetailedWorkflowsBtn">
+                Export Detailed
+              </button>
+            </div>
+            <div class="testing-toolbar-group">
+              <h3>Configuration</h3>
+              <input
+                type="text"
+                class="testing-group-search wide-input"
+                placeholder="Search Configuration..."
+              />
+              <button class="btn-primary" id="resetConfigBtn">Reset</button>
+              <button class="btn-secondary" id="viewConfigBtn">View</button>
+              <button class="btn-secondary" id="importConfigBtn">Import</button>
+              <input
+                type="file"
+                id="importConfigInput"
+                class="hidden"
+                accept="application/json"
+                title="Import configuration JSON file"
+              />
+              <button class="btn-secondary" id="exportConfigBtn">Export</button>
+            </div>
+            <div class="testing-toolbar-group">
+              <h3>Cache</h3>
+              <input
+                type="text"
+                class="testing-group-search wide-input"
+                placeholder="Search Cache..."
+              />
+              <button class="btn-primary" id="resetCacheBtn">Reset</button>
+              <button class="btn-secondary" id="viewCacheBtn">View</button>
+              <button class="btn-secondary" id="importCacheBtn">Import</button>
+              <input
+                type="file"
+                id="importCacheInput"
+                class="hidden"
+                accept="application/json"
+                title="Import cache JSON file"
+              />
+              <button class="btn-secondary" id="exportCacheBtn">Export</button>
+            </div>
+            <div class="testing-toolbar-group">
+              <h3>Session Storage</h3>
+              <input
+                type="text"
+                class="testing-group-search wide-input"
+                placeholder="Search Session Storage..."
+              />
+              <button class="btn-primary" id="resetSessionStorageBtn">
+                Reset
+              </button>
+              <button class="btn-secondary" id="viewSessionStorageBtn">
+                View
+              </button>
+              <button class="btn-secondary" id="importSessionStorageBtn">
+                Import
+              </button>
+              <input
+                type="file"
+                id="importSessionStorageInput"
+                class="hidden"
+                accept="application/json"
+                title="Import session storage JSON file"
+              />
+              <button class="btn-secondary" id="exportSessionStorageBtn">
+                Export
+              </button>
+            </div>
+            <div class="testing-toolbar-group">
+              <h3>Local Storage</h3>
+              <input
+                type="text"
+                class="testing-group-search wide-input"
+                placeholder="Search Local Storage..."
+              />
+              <button class="btn-primary" id="resetLocalStorageBtn">
+                Reset
+              </button>
+              <button class="btn-secondary" id="viewLocalStorageBtn">
+                View
+              </button>
+              <button class="btn-secondary" id="importLocalStorageBtn">
+                Import
+              </button>
+              <input
+                type="file"
+                id="importLocalStorageInput"
+                class="hidden"
+                accept="application/json"
+                title="Import local storage JSON file"
+              />
+              <button class="btn-secondary" id="exportLocalStorageBtn">
+                Export
+              </button>
+            </div>
+            <div class="testing-toolbar-group">
+              <h3>Cloud Storage</h3>
+              <input
+                type="text"
+                class="testing-group-search wide-input"
+                placeholder="Search Cloud Storage..."
+              />
+              <button class="btn-primary" id="resetCloudStorageBtn">
+                Reset
+              </button>
+              <button class="btn-secondary" id="viewCloudStorageBtn">
+                View
+              </button>
+              <button class="btn-secondary" id="importCloudStorageBtn">
+                Import
+              </button>
+              <input
+                type="file"
+                id="importCloudStorageInput"
+                class="hidden"
+                accept="application/json"
+                title="Import cloud storage JSON file"
+              />
+              <button class="btn-secondary" id="exportCloudStorageBtn">
+                Export
+              </button>
+            </div>
+            <div class="testing-toolbar-group">
+              <h3>GitHub Data</h3>
+              <input
+                type="text"
+                class="testing-group-search wide-input"
+                placeholder="Search GitHub..."
+              />
+              <button class="btn-secondary" id="viewGitHubBtn">View</button>
+              <button class="btn-secondary" id="exportGitHubBtn">Export</button>
+            </div>
+          </div>
+          <div id="testingUtilities" class="testing-utilities">
+            <p>Use these tools for development and troubleshooting.</p>
+          </div>
+        </section>
+        <!-- Users Section -->
+        <section id="users" class="section">
+          <h2>Users Management</h2>
+          <div class="section-toolbar users-toolbar improved-toolbar">
+            <div class="users-toolbar-row">
+              <input
+                type="text"
+                id="usersSearch"
+                class="users-search"
+                placeholder="Search users..."
+              />
+              <input
+                type="text"
+                id="membersSearch"
+                class="members-search"
+                placeholder="Search members..."
+              />
+              <div class="users-toolbar-buttons">
+                <button class="btn-secondary" id="importUsersBtn">
+                  <i class="fas fa-file-import"></i> Import Users
+                </button>
+                <button class="btn-secondary" id="importMembersBtn">
+                  <i class="fas fa-file-import"></i> Import Members
+                </button>
+                <button class="btn-secondary" id="exportUsersBtn">
+                  <i class="fas fa-file-export"></i> Export Users
+                </button>
+                <button class="btn-secondary" id="exportMembersBtn">
+                  <i class="fas fa-file-export"></i> Export Members
+                </button>
+                <button class="btn-secondary" id="syncMembersBtnUsers">
+                  <i class="fas fa-sync-alt"></i> Sync Members
+                </button>
+                <button
+                  class="btn-primary users-AddUser"
+                  id="addUserBtn"
+                  onclick="openAddUser()"
+                >
+                  <i class="fas fa-user-plus"></i> Add User
+                </button>
+                <button
+                  class="btn-primary users-AddMember"
+                  id="addMemberBtn"
+                  onclick="openAddMember()"
+                >
+                  <i class="fas fa-user-plus"></i> Add Member
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="usersTable" class="users-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Member #</th>
+                  <th>Roles</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersBody">
+                <!-- Users rows will be dynamically generated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <!-- Roles Section -->
+        <section id="roles" class="section">
+          <h2>Roles Management</h2>
+          <div class="section-toolbar roles-toolbar improved-toolbar">
+            <div class="roles-toolbar-row">
+              <input
+                type="text"
+                id="rolesSearch"
+                class="roles-search"
+                placeholder="Search roles..."
+              />
+              <div class="roles-toolbar-buttons">
+                <button class="btn-secondary" id="rolesImportBtn">
+                  <i class="fas fa-file-import"></i> Import
+                </button>
+                <button class="btn-secondary" id="rolesExportBtn">
+                  <i class="fas fa-file-export"></i> Export
+                </button>
+                <button
+                  class="btn-primary roles-AddRole"
+                  onclick="openAddRole()"
+                >
+                  <i class="fas fa-plus"></i> Add
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="rolesTable" class="roles-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Role Name</th>
+                  <th>Calling Name</th>
+                  <th>Sub Role Names</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="rolesBody">
+                <!-- Roles rows will be dynamically generated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <!-- Callings Section -->
+        <section id="callings" class="section">
+          <h2>Callings Management</h2>
+          <div class="section-toolbar callings-toolbar improved-toolbar">
+            <div class="callings-toolbar-row">
+              <input
+                type="text"
+                id="callingsSearch"
+                class="callings-search"
+                placeholder="Search callings..."
+              />
+              <div class="callings-toolbar-buttons">
+                <button class="btn-secondary" id="callingsImportBtn">
+                  <i class="fas fa-file-import"></i> Import
+                </button>
+                <button class="btn-secondary" id="callingsExportBtn">
+                  <i class="fas fa-file-export"></i> Export
+                </button>
+                <button class="btn-secondary" id="callingsSyncBtn">
+                  <i class="fas fa-sync-alt"></i> Sync
+                </button>
+                <button
+                  class="btn-primary callings-AddCalling"
+                  onclick="openAddCalling()"
+                >
+                  <i class="fas fa-plus"></i> Add
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="callingsTable" class="callings-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Level</th>
+                  <th>Has Title</th>
+                  <th>Title</th>
+                  <th>Title Ordinal</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="callingsBody">
+                <!-- Callings rows will be dynamically generated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <!-- Organization Section -->
+        <section id="organization" class="section">
+          <h2>Organization Structure</h2>
+          <div class="section-toolbar organization-toolbar improved-toolbar">
+            <div class="config-toolbar-row">
+              <input
+                type="text"
+                id="organizationSearch"
+                class="config-search"
+                placeholder="Search organization..."
+              />
+              <div class="config-toolbar-buttons">
+                <button class="btn-secondary" id="orgImportBtn">Import</button>
+                <button class="btn-secondary" id="orgExportBtn">Export</button>
+                <button class="btn-primary" id="orgAddBtn">Add Stake</button>
+              </div>
+            </div>
+          </div>
+          <div id="organizationTable" class="organization-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Unit Name</th>
+                  <th>Unit Number</th>
+                  <th>Unit Type</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="organizationBody">
+                <!-- Organization rows will be dynamically generated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <!-- Configuration Section -->
+        <section id="configuration" class="section">
+          <h2>System Configuration</h2>
+          <div class="section-toolbar configuration-toolbar improved-toolbar">
+            <div class="config-toolbar-row">
+              <input
+                type="text"
+                id="configurationSearch"
+                class="config-search"
+                placeholder="Search configuration..."
+              />
+              <div class="config-toolbar-buttons">
+                <button class="btn-secondary" id="configImportBtn">
+                  Import
+                </button>
+                <button class="btn-secondary" id="configExportBtn">
+                  Export
+                </button>
+                <button class="btn-secondary" id="configRekeyBtn">
+                  Encryption Rekey
+                </button>
+                <button class="btn-secondary" id="configCloudMigrateBtn">
+                  Cloud Store Migration
+                </button>
+                <button class="btn-primary" id="configAddBtn">
+                  Add Setting
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="configurationTable" class="configuration-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Setting</th>
+                  <th>Value</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="configurationBody">
+                <!-- Configuration rows will be dynamically generated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="section active">
+          <h2>Dashboard</h2>
+          <div class="dashboard-grid">
+            <div class="card dashboard-totalMembers">
+              <div class="card-icon">
+                <i class="fas fa-users"></i>
+              </div>
+              <div class="card-content">
+                <h3>Total Members</h3>
+                <p class="stat" id="dashboardTotalMembers">245</p>
+              </div>
+            </div>
+
+            <div class="card dashboard-thisWeeksEvents">
+              <div class="card-icon">
+                <i class="fas fa-calendar-check"></i>
+              </div>
+              <div class="card-content">
+                <h3>This Week Events</h3>
+                <p class="stat">8</p>
+              </div>
+            </div>
+
+            <div class="card dashboard-pendingTasks">
+              <div class="card-icon">
+                <i class="fas fa-tasks"></i>
+              </div>
+              <div class="card-content">
+                <h3>Pending Tasks</h3>
+                <p class="stat">12</p>
+              </div>
+            </div>
+
+            <div class="card dashboard-needsAssistance">
+              <div class="card-icon">
+                <i class="fas fa-hand-holding-heart"></i>
+              </div>
+              <div class="card-content">
+                <h3>Needs Assistance</h3>
+                <p class="stat">5</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-section">
+            <h3>Quick Actions</h3>
+            <div class="action-buttons">
+              <button
+                class="action-btn dashboard-QuickActions-ResetPassword"
+                id="resetPasswordBtn"
+                onclick="quickAction('reset-password')"
+              >
+                <i class="fas fa-key"></i> Reset Password
+              </button>
+              <button
+                class="action-btn dashboard-QuickActions-AddMember"
+                onclick="quickAction('new-member')"
+              >
+                <i class="fas fa-user-plus"></i> Add Member
+              </button>
+              <button
+                class="action-btn dashboard-QuickActions-ScheduleEvent"
+                onclick="quickAction('new-event')"
+              >
+                <i class="fas fa-calendar-plus"></i> Schedule Event
+              </button>
+              <button
+                class="action-btn dashboard-QuickActions-AssignTask"
+                onclick="quickAction('assign-task')"
+              >
+                <i class="fas fa-clipboard-list"></i> Assign Task
+              </button>
+              <button
+                class="action-btn dashboard-QuickActions-SendMessage"
+                onclick="quickAction('send-message')"
+              >
+                <i class="fas fa-envelope"></i> Send Message
+              </button>
+            </div>
+          </div>
+
+          <div class="dashboard-section">
+            <h3>Recent Activities</h3>
+            <div class="activity-list">
+              <div class="activity-item dashboard-RecentActivities">
+                <div class="activity-icon">
+                  <i class="fas fa-user-check"></i>
+                </div>
+                <div class="activity-content">
+                  <p>John Smith added to ward</p>
+                  <span class="time">2 hours ago</span>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon">
+                  <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="activity-content">
+                  <p>Ward activity scheduled for Saturday</p>
+                  <span class="time">5 hours ago</span>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon">
+                  <i class="fas fa-clipboard-check"></i>
+                </div>
+                <div class="activity-content">
+                  <p>Sacrament preparation assigned to Home Teachers</p>
+                  <span class="time">1 day ago</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- Members Section -->
+        <section id="members" class="section">
+          <h2>Member Directory</h2>
+          <div class="section-toolbar">
+            <div class="flex-row-wrap">
+              <input
+                type="text members-SearchMember"
+                id="memberSearch"
+                placeholder="Search members..."
+                class="search-input"
+                onkeyup="filterMembers()"
+              />
+              <button class="btn-secondary" id="syncMembersBtnMembers">
+                <i class="fas fa-sync-alt"></i> Sync Members
+              </button>
+              <button
+                class="btn-primary members-AddMember"
+                onclick="openAddMember()"
+              >
+                <i class="fas fa-user-plus"></i> Add Member
+              </button>
+            </div>
+          </div>
+          <div id="membersTable" class="members-table">
+            <table>
+              <thead>
+                <tr>
+                  <th id="nameHeader">Name</th>
+                  <th id="emailHeader">Email</th>
+                  <th id="genderHeader">Gender</th>
+                  <th id="memberNumberHeader">Member #</th>
+                  <th id="phoneHeader">Phone</th>
+                  <th id="unitHeader" class="hidden">Unit</th>
+                  <th id="callingHeader">Calling</th>
+                  <th id="stakeNumberHeader">Stake #</th>
+                  <th id="unitNumberHeader">Unit #</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="membersBody">
+                <!-- Member rows will be dynamically generated by JavaScript -->
+              </tbody>
+            </table>
+            <div class="centered-margin">
+              <label for="membersPageSize">Rows per page:</label>
+              <select
+                id="membersPageSize"
+                onchange="changeMembersPageSize()"
+                class="margin-x"
+              >
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </div>
+            <div
+              id="membersPagination"
+              class="pagination centered-margin"
+            ></div>
+          </div>
+        </section>
+        <!-- Assignments Section -->
+        <section id="assignments" class="section">
+          <h2>Assignments & Responsibilities</h2>
+          <div class="section-toolbar">
+            <button
+              class="btn-primary assignments-AssignTask"
+              onclick="openNewAssignment()"
+            >
+              <i class="fas fa-plus"></i> New Assignment
+            </button>
+            <select
+              id="filterAssignments"
+              onchange="filterAssignments()"
+              class="filter-select assignments-FilterTasks"
+              title="Filter assignments"
+            >
+              <option value="">All Assignments</option>
+              <option value="active">Active</option>
+              <option value="completed">Completed</option>
+              <option value="overdue">Overdue</option>
+            </select>
+          </div>
+          <div class="assignments-list">
+            <div class="assignment-card">
+              <div class="assignment-header">
+                <h3>Sacrament Preparation</h3>
+                <span class="status-badge active">Active</span>
+              </div>
+              <p class="assignment-desc">
+                Prepare and distribute sacrament for Sunday meeting
+              </p>
+              <div class="assignment-info">
+                <span><i class="fas fa-user"></i> James Johnson</span>
+                <span><i class="fas fa-calendar"></i> Due: Dec 20, 2025</span>
+              </div>
+              <div class="assignment-actions">
+                <button class="btn-small" onclick="editAssignment(1)">
+                  Edit
+                </button>
+                <button
+                  class="btn-small assignments-EditTask"
+                  onclick="editAssignment(1)"
+                >
+                  Edit
+                </button>
+                <button
+                  class="btn-small assignments-ActionTask"
+                  onclick="markComplete(1)"
+                >
+                  Complete
+                </button>
+              </div>
+            </div>
+
+            <div class="assignment-card">
+              <div class="assignment-header">
+                <h3>Youth Activity Planning</h3>
+                <span class="status-badge active">Active</span>
+              </div>
+              <p class="assignment-desc">
+                Organize and plan the monthly youth activity
+              </p>
+              <div class="assignment-info">
+                <span
+                  ><i class="fas fa-users"></i> Sarah Williams, Michael
+                  Brown</span
+                >
+                <span><i class="fas fa-calendar"></i> Due: Dec 25, 2025</span>
+              </div>
+              <div class="assignment-actions">
+                <button class="btn-small" onclick="editAssignment(2)">
+                  Edit
+                </button>
+                <button
+                  class="btn-small assignments-EditTask"
+                  onclick="editAssignment(2)"
+                >
+                  Edit
+                </button>
+                <button
+                  class="btn-small assignments-ActionTask"
+                  onclick="markComplete(2)"
+                >
+                  Complete
+                </button>
+              </div>
+            </div>
+
+            <div class="assignment-card">
+              <div class="assignment-header">
+                <h3>Ward Newsletter</h3>
+                <span class="status-badge completed">Completed</span>
+              </div>
+              <p class="assignment-desc">
+                Create and distribute ward newsletter
+              </p>
+              <div class="assignment-info">
+                <span><i class="fas fa-user"></i> Jane Doe</span>
+                <span><i class="fas fa-calendar"></i> Due: Dec 18, 2025</span>
+              </div>
+              <div class="assignment-actions">
+                <button class="btn-small" onclick="viewAssignment(3)">
+                  View
+                </button>
+                <button
+                  class="btn-small assignments-ViewTask"
+                  onclick="viewAssignment(3)"
+                >
+                  View
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- Scheduling Section -->
+        <section id="scheduling" class="section">
+          <h2>Ward Scheduling</h2>
+          <div class="section-toolbar">
+            <button
+              class="btn-primary scheduling-ScheduleEvent"
+              onclick="openScheduleEvent()"
+            >
+              <i class="fas fa-calendar-plus"></i> Schedule Event
+            </button>
+            <select
+              id="scheduleFilter"
+              onchange="filterSchedule()"
+              class="filter-select scheduling-FilterEventTypes scheduling-FilterEventDates"
+              title="Filter events"
+            >
+              <option value="">All Events</option>
+              <option value="sacrament">Sacrament Meeting</option>
+              <option value="activities">Activities</option>
+              <option value="meetings">Meetings</option>
+            </select>
+          </div>
+          <div class="calendar-view">
+            <div class="calendar-header">
+              <button onclick="previousMonth()">&lt;</button>
+              <h3 id="currentMonth">December 2025</h3>
+              <button onclick="nextMonth()">&gt;</button>
+            </div>
+            <div class="calendar-grid" id="calendarGrid">
+              <!-- Calendar will be generated by JavaScript -->
+            </div>
+          </div>
+          <div class="events-list">
+            <h3>Upcoming Events</h3>
+            <div class="event-item">
+              <div class="event-date">
+                <div class="date-day">20</div>
+                <div class="date-month">DEC</div>
+              </div>
+              <div class="event-details">
+                <h4>Sacrament Meeting</h4>
+                <p>9:00 AM - 10:15 AM</p>
+              </div>
+              <button class="btn-small" onclick="editEvent(1)">Edit</button>
+              <button
+                class="btn-small scheduling-EditEvents"
+                onclick="editEvent(1)"
+              >
+                Edit
+              </button>
+            </div>
+
+            <div class="event-item">
+              <div class="event-date">
+                <div class="date-day">22</div>
+                <div class="date-month">DEC</div>
+              </div>
+              <div class="event-details">
+                <h4>Youth Activity</h4>
+                <p>6:00 PM - 8:00 PM</p>
+              </div>
+              <button class="btn-small" onclick="editEvent(2)">Edit</button>
+              <button
+                class="btn-small scheduling-EditEvents"
+                onclick="editEvent(2)"
+              >
+                Edit
+              </button>
+            </div>
+
+            <div class="event-item">
+              <div class="event-date">
+                <div class="date-day">25</div>
+                <div class="date-month">DEC</div>
+              </div>
+              <div class="event-details">
+                <h4>Ward Christmas Party</h4>
+                <p>5:00 PM - 7:00 PM</p>
+              </div>
+              <button class="btn-small" onclick="editEvent(3)">Edit</button>
+              <button
+                class="btn-small scheduling-EditEvents"
+                onclick="editEvent(3)"
+              >
+                Edit
+              </button>
+            </div>
+          </div>
+        </section>
+        <!-- Forms Section -->
+        <section id="forms" class="section">
+          <h2>Forms & Templates</h2>
+          <div class="forms-grid">
+            <div class="form-card forms-MemberReferral">
+              <div class="form-icon">
+                <i class="fas fa-file-signature"></i>
+              </div>
+              <h3>Member Referral Form</h3>
+              <p>Submit referrals for members needing assistance</p>
+              <button class="btn-primary" onclick="openForm('referral')">
+                Open Form
+              </button>
+            </div>
+
+            <div class="form-card">
+              <div class="form-icon">
+                <i class="fas fa-user-check"></i>
+              </div>
+              <h3>Home Teaching Report</h3>
+              <p>Record monthly home teaching visits and updates</p>
+              <button
+                class="btn-primary forms-HomeTeaching"
+                onclick="openForm('homeTeaching')"
+              >
+                Open Form
+              </button>
+            </div>
+
+            <div class="form-card">
+              <div class="form-icon">
+                <i class="fas fa-heart"></i>
+              </div>
+              <h3>Welfare Assistance Request</h3>
+              <p>Request welfare or emergency assistance</p>
+              <button
+                class="btn-primary forms-WelfareAssistance"
+                onclick="openForm('welfare')"
+              >
+                Open Form
+              </button>
+            </div>
+
+            <div class="form-card">
+              <div class="form-icon">
+                <i class="fas fa-graduation-cap"></i>
+              </div>
+              <h3>Missionary Recommendation</h3>
+              <p>Submit missionary recommendations and tracking</p>
+              <button
+                class="btn-primary forms-MissionaryRecommendation"
+                onclick="openForm('missionary')"
+              >
+                Open Form
+              </button>
+            </div>
+
+            <div class="form-card">
+              <div class="form-icon">
+                <i class="fas fa-users"></i>
+              </div>
+              <h3>Activity Planning Form</h3>
+              <p>Plan and coordinate ward activities</p>
+              <button
+                class="btn-primary forms-ActivityPlanning"
+                onclick="openForm('activity')"
+              >
+                Open Form
+              </button>
+            </div>
+
+            <div class="form-card">
+              <div class="form-icon">
+                <i class="fas fa-clipboard-list"></i>
+              </div>
+              <h3>Service Project Log</h3>
+              <p>Track and log service projects completed</p>
+              <button
+                class="btn-primary forms-ServiceProjectLog"
+                onclick="openForm('service')"
+              >
+                Open Form
+              </button>
+            </div>
+          </div>
+        </section>
+        <!-- Reports Section -->
+        <section id="reports" class="section">
+          <h2>Reports & Analytics</h2>
+          <div class="reports-grid">
+            <div class="report-card reports-Statistics">
+              <h3>Ward Statistics</h3>
+              <div class="report-stats">
+                <div class="stat-item reports-Statistics-activeMembers">
+                  <span class="label">Active Members</span>
+                  <span class="value">245</span>
+                </div>
+                <div class="stat-item reports-Statistics-recentConverts">
+                  <span class="label">Recent Converts</span>
+                  <span class="value">8</span>
+                </div>
+                <div class="stat-item reports-Statistics-Missionaries">
+                  <span class="label">Missionaries</span>
+                  <span class="value">12</span>
+                </div>
+                <div class="stat-item reports-Statistics-InNeedOfHelp">
+                  <span class="label">In Need of Help</span>
+                  <span class="value">5</span>
+                </div>
+              </div>
+              <button
+                class="btn-secondary"
+                onclick="exportReport('ward-stats')"
+              >
+                Export
+              </button>
+            </div>
+
+            <div class="report-card">
+              <h3>Activity Attendance</h3>
+              <p class="report-desc">
+                Monthly attendance summary for ward activities
+              </p>
+              <button
+                class="btn-secondary reports-ActivityAttendance"
+                onclick="generateReport('attendance')"
+              >
+                Generate Report
+              </button>
+            </div>
+
+            <div class="report-card">
+              <h3>Assignment Completion</h3>
+              <p class="report-desc">
+                Track completion rates for assigned tasks
+              </p>
+              <button
+                class="btn-secondary reports-AssignmentCompletion"
+                onclick="generateReport('assignments')"
+              >
+                Generate Report
+              </button>
+            </div>
+
+            <div class="report-card">
+              <h3>Visiting Teaching</h3>
+              <p class="report-desc">
+                Visiting Teaching completion and report statistics
+              </p>
+              <button
+                class="btn-secondary reports-VisitingTeaching"
+                onclick="generateReport('visitingTeaching')"
+              >
+                Generate Report
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+      <!-- Modal for adding/editing items -->
+      <div id="modal" class="modal">
+        <div class="modal-content">
+          <button
+            class="modal-close-btn"
+            onclick="closeModal()"
+            aria-label="Close modal"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+          <h3 id="modalTitle">Modal Title</h3>
+          <div id="modalBody">
+            <!-- Dynamic content goes here -->
+          </div>
+        </div>
+      </div>
     </div>
-</body>
-    <script type="module" src="scripts/script.js"></script>
-    <script type="module" src="scripts/members.ui.js"></script>
+  </body>
+  <script type="module" src="scripts/script.js"></script>
+  <script type="module" src="scripts/members.ui.js"></script>
 </html>
