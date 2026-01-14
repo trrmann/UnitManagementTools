@@ -2,7 +2,7 @@ module.exports = [
   {
     files: ["**/*.js", "**/*.mjs"],
     languageOptions: {
-      ecmaVersion: 2022,
+      ecmaVersion: 2021,
       sourceType: "module",
       globals: {
         window: "readonly",
@@ -16,7 +16,7 @@ module.exports = [
     linterOptions: {
       reportUnusedDisableDirectives: true,
     },
-    // recommended rules are included by default in flat config
+    extends: ["eslint:recommended"],
     rules: {
       "no-unused-vars": "warn",
       "no-console": "off",
